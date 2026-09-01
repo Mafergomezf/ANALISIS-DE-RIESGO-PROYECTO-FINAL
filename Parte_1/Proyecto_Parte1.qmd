@@ -1,0 +1,97 @@
+---
+title: "Proyecto Final - Parte 1"
+subtitle: "Alsea, S.A.B. de C.V. (ALSEA.MX)"
+format:
+  html:
+    toc: true
+    number-sections: true
+    embed-resources: true
+---
+
+# Introducción
+
+En esta primera parte del proyecto analizaremos a la empresa Alsea para entender a qué se dedica, cómo funciona su negocio y la importancia que tiene dentro del sector. Después revisaremos su información financiera, indicadores, el comportamiento de su EPS, dividendos y splits. Finalmente, identificaremos los principales riesgos a los que se enfrenta la empresa y cómo estos podrían llegar a afectar su acción
+
+# Descripción general del activo y del negocio
+
+## Giro y función principal de la empresa
+
+Alsea es una empresa mexicana dedicada principalmente a la operación de restaurantes, cafeterías y establecimientos de comida rápida de distintas marcas reconocidas. Su negocio se divide en tres segmentos principales: comida rápida, cafeterías y restaurantes de servicio completo. Entre las marcas que opera se encuentran Domino’s Pizza, Starbucks, Burger King, Chili’s, P.F. Chang’s, Italianni’s, The Cheesecake Factory, Vips, Foster’s Hollywood y Ginos.
+
+Su función no solo consiste en operar los establecimientos, sino también en encargarse de distintas actividades que permiten que estos funcionen, como la cadena de suministro, los servicios administrativos, el desarrollo de nuevas unidades y algunos servicios inmobiliarios. Esto le permite manejar varias marcas y establecimientos al mismo tiempo en diferentes mercados.
+
+## Fecha de inicio de operaciones y evolución general
+
+La historia de Alsea comienza en 1990 con la apertura de su primer Domino’s Pizza en México y posteriormente con la adquisición de la franquicia maestra de la marca en el país. A partir de ahí la empresa comenzó a crecer tanto en número de unidades como en marcas. En 1999 realizó su oferta pública inicial en la Bolsa Mexicana de Valores y en los siguientes años fue incorporando nuevas marcas como Starbucks, Burger King, Chili’s, P.F. Chang’s, Italianni’s y Vips.
+
+Uno de los cambios más importantes en su evolución fue su expansión fuera de México. En 2006 comenzó su internacionalización con operaciones de Burger King en Argentina y Chile, y después continuó entrando a otros mercados de América Latina y Europa. En 2014 llegó a España mediante la adquisición de Grupo Zena y en los años siguientes amplió todavía más su presencia en Europa. Esta evolución muestra cómo Alsea pasó de operar inicialmente una sola marca en México a convertirse en una empresa con un portafolio más amplio y presencia internacional.
+
+## Principales líneas de negocio
+
+Alsea divide sus operaciones en tres principales líneas de negocio: comida rápida, cafeterías y restaurantes de servicio completo. Cada una de estas líneas está compuesta por diferentes marcas y atiende a distintos tipos de consumidores.
+
+En el segmento de comida rápida opera principalmente marcas como Domino’s Pizza y Burger King. En cafeterías, Starbucks representa una de las marcas más importantes dentro del portafolio de la empresa. Por otro lado, en restaurantes de servicio completo se encuentran marcas como Chili’s, P.F. Chang’s, Italianni’s, The Cheesecake Factory, Vips, Foster’s Hollywood y Ginos.
+
+Esta división le permite a Alsea participar en diferentes segmentos del consumo de alimentos y bebidas, lo que hace que su operación no dependa solamente de una sola marca o tipo de restaurante.
+
+## Presencia geográfica
+
+## Marcas, subsidiarias o unidades relevantes
+
+## Número aproximado de empleados
+
+## Ubicación de plantas productivas, centros logísticos o infraestructura clave
+
+## Principales competidores y posición en el mercado
+
+## Eventos recientes relevantes
+
+# Análisis de estados financieros
+
+```{r}
+library(tidyverse)
+library(fpp3)
+library(tidyquant)
+```
+
+## Ingresos
+
+## Margen de utilidad bruta
+
+## Margen de utilidad operativa
+
+## Margen de utilidad neta
+
+## Nivel de endeudamiento y estructura del capital
+
+# Indicadores financieros clave
+
+## ROE
+
+## ROA
+
+## Deuda / Capital
+
+## Deuda / EBITDA
+
+## Margen EBITDA
+
+# Cálculo del EPS trimestral 2019-2025
+
+# Dividendos y Split
+
+## Dividendos
+
+## Split
+
+# Identificación de los tipos de riesgos
+
+## Riesgos operativos
+
+## Riesgos macroeconómicos
+
+## Riesgos financieros
+
+# Conclusión
+
+# Referencias
