@@ -1,0 +1,353 @@
+---
+title: "Proyecto Final - Parte 1"
+subtitle: "Alsea, S.A.B. de C.V. (ALSEA.MX)"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE
+)
+
+library(readxl)
+library(tidyverse)
+```
+
+# Introducción
+
+# Descripción general del activo y del negocio
+
+## Giro y función principal de la empresa
+
+## Fecha de inicio de operaciones y evolución general
+
+## Principales líneas de negocio
+
+## Presencia geográfica
+
+## Marcas, subsidiarias o unidades relevantes
+
+## Número aproximado de empleados
+
+## Ubicación de plantas productivas, centros logísticos o infraestructura clave
+
+## Principales competidores y posición en el mercado
+
+## Eventos recientes relevantes
+
+# Análisis de estados financieros
+
+```{r}
+anual <- read_excel(
+  "data/Alsea, S.A.B. DE C.V.xlsx",
+  sheet = "Anual",
+  skip = 9
+)
+
+anual <- anual[-1, -1]
+
+anual <- anual |>
+  mutate(
+    `2025` = as.numeric(`2025`),
+    `2024` = as.numeric(`2024`),
+    `2023` = as.numeric(`2023`),
+    `2022` = as.numeric(`2022`),
+    `2021` = as.numeric(`2021`)
+  )
+
+```
+
+## Ingresos
+
+```{r}
+ingresos <- anual |>
+  filter(`Estado de Resultados` == "Ingresos netos por ventas") |>
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)
+```
+
+```{r echo=FALSE}
+ingresos_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  `Ingresos (millones MXN)` = c(
+    ingresos$`2025` / 1000,
+    ingresos$`2024` / 1000,
+    ingresos$`2023` / 1000
+  ),
+  check.names = FALSE
+)
+
+ingresos_tabla
+```
+
+Los ingresos netos por ventas de Alsea han ido aumentando en los últimos tres años. En 2023 fueron de aproximadamente \$76,231 millones de pesos, en 2024 subieron a \$77,563 millones y en 2025 llegaron a \$86,013 millones. Se puede ver que entre 2023 y 2024 el crecimiento fue pequeño, de aproximadamente 1.75%, pero en 2025 el aumento fue mucho mayor, de alrededor de 10.89%. Esto muestra que la empresa ha tenido una tendencia positiva en sus ventas, sobre todo en el último año analizado.
+
+## Margen de utilidad bruta
+
+```{r}
+utilidad_bruta <- anual |>
+  filter(`Estado de Resultados` == "Utilidad bruta") |>
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)
+```
+
+```{r echo=FALSE}
+
+utilidad_bruta_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Utilidad_bruta = c(
+    utilidad_bruta$`2025` / 1000,
+    utilidad_bruta$`2024` / 1000,
+    utilidad_bruta$`2023` / 1000
+  )
+)
+
+utilidad_bruta_tabla
+```
+
+```{r echo=FALSE}
+margen_bruto_2025 <- utilidad_bruta$`2025` / ingresos$`2025`
+margen_bruto_2024 <- utilidad_bruta$`2024` / ingresos$`2024`
+margen_bruto_2023 <- utilidad_bruta$`2023` / ingresos$`2023`
+
+```
+
+```{r echo =FALSE  }
+margen_bruto_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Margen_bruto = c(
+    margen_bruto_2025 * 100,
+    margen_bruto_2024 * 100,
+    margen_bruto_2023 * 100
+  )
+)
+
+margen_bruto_tabla
+```
+
+El margen de utilidad bruta de Alsea se mantuvo bastante estable en los tres años analizados. En 2023 fue de aproximadamente 66.68%, en 2024 subió ligeramente a 66.98% y en 2025 bajó a 66.02%. Aunque hubo una pequeña disminución en 2025, el margen se ha mantenido alrededor del 66%, por lo que no se observan cambios muy grandes en la proporción de utilidad que queda después de cubrir el costo directo de las ventas.
+
+## Margen de utilidad operativa
+
+```{r}
+utilidad_operativa <- anual |>
+  filter(`Estado de Resultados` == "Ganancia operativa (EBIT)") |>
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)
+```
+
+```{r echo =FALSE}
+utilidad_operativa_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Utilidad_operativa = c(
+    utilidad_operativa$`2025` / 1000,
+    utilidad_operativa$`2024` / 1000,
+    utilidad_operativa$`2023` / 1000
+  )
+)
+
+utilidad_operativa_tabla
+```
+
+```{r}
+margen_operativo_2025 <- utilidad_operativa$`2025` / ingresos$`2025`
+margen_operativo_2024 <- utilidad_operativa$`2024` / ingresos$`2024`
+margen_operativo_2023 <- utilidad_operativa$`2023` / ingresos$`2023`
+
+```
+
+```{r echo=FALSE}
+margen_operativo_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Margen_operativo = c(
+    margen_operativo_2025 * 100,
+    margen_operativo_2024 * 100,
+    margen_operativo_2023 * 100
+  )
+)
+
+margen_operativo_tabla
+```
+
+La utilidad operativa de Alsea aumentó ligeramente en los tres años analizados, pasando de \$8,030.019 millones de pesos en 2023 a \$8,197.673 millones en 2024 y \$8,228.641 millones en 2025. Sin embargo, el margen operativo fue de 10.53% en 2023, 10.57% en 2024 y bajó a 9.57% en 2025. Esto quiere decir que, aunque la utilidad operativa aumentó en términos de dinero, en 2025 representó una menor proporción de las ventas, por lo que los gastos operativos tuvieron un mayor peso sobre los ingresos.
+
+## Margen de utilidad neta
+
+```{r}
+utilidad_neta <- anual |>
+  filter(`Estado de Resultados` == "Ganancia (Pérdida) Neta") |>
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)
+
+```
+
+```{r echo=FALSE}
+utilidad_neta_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Utilidad_neta = c(
+    utilidad_neta$`2025` / 1000,
+    utilidad_neta$`2024` / 1000,
+    utilidad_neta$`2023` / 1000
+  )
+)
+
+utilidad_neta_tabla
+```
+
+```{r}
+margen_neto_2025 <- utilidad_neta$`2025` / ingresos$`2025`
+margen_neto_2024 <- utilidad_neta$`2024` / ingresos$`2024`
+margen_neto_2023 <- utilidad_neta$`2023` / ingresos$`2023`
+```
+
+```{r echo=FALSE}
+margen_neto_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Margen_neto = c(
+    margen_neto_2025 * 100,
+    margen_neto_2024 * 100,
+    margen_neto_2023 * 100
+  )
+)
+
+margen_neto_tabla
+```
+
+La utilidad neta de Alsea cambió bastante durante los tres años analizados. En 2023 fue de \$3,041.618 millones de pesos, en 2024 bajó a \$762.591 millones y en 2025 volvió a aumentar a \$2,235.932 millones. Esto también se refleja en el margen neto, que fue de 3.989999% en 2023, bajó a 0.9831872% en 2024 y después aumentó a 2.599526% en 2025. Esto muestra que 2024 fue el año más débil de los tres en cuanto a la utilidad final que Alsea logró conservar de sus ventas, mientras que en 2025 hubo una recuperación, aunque todavía sin regresar al nivel de 2023.
+
+## Nivel de endeudamiento y estructura del capital
+
+```{r}
+estructura_capital <- anual |>
+  filter(`Estado de Resultados` %in% c(
+    "Pasivos Totales",
+    "Total de patrimonio"
+  )) |>
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)
+```
+
+```{r echo=FALSE}
+estructura_capital_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Patrimonio = c(
+    estructura_capital$`2025`[1] / 1000,
+    estructura_capital$`2024`[1] / 1000,
+    estructura_capital$`2023`[1] / 1000
+  ),
+  Pasivos = c(
+    estructura_capital$`2025`[2] / 1000,
+    estructura_capital$`2024`[2] / 1000,
+    estructura_capital$`2023`[2] / 1000
+  )
+)
+
+estructura_capital_tabla
+
+```
+
+```{r}
+deuda_financiera <- anual |>
+  filter(`Estado de Resultados` %in% c(
+    "Créditos y préstamos no corrientes",
+    "Créditos y préstamos corrientes"
+  )) |>
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)
+```
+
+```{r echo=FALSE}
+deuda_financiera_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Deuda_no_corriente = c(
+    deuda_financiera$`2025`[1] / 1000,
+    deuda_financiera$`2024`[1] / 1000,
+    deuda_financiera$`2023`[1] / 1000
+  ),
+  Deuda_corriente = c(
+    deuda_financiera$`2025`[2] / 1000,
+    deuda_financiera$`2024`[2] / 1000,
+    deuda_financiera$`2023`[2] / 1000
+  )
+)
+
+deuda_financiera_tabla
+```
+
+```{r}
+deuda_total_2025 <- sum(deuda_financiera$`2025`)
+deuda_total_2024 <- sum(deuda_financiera$`2024`)
+deuda_total_2023 <- sum(deuda_financiera$`2023`)
+```
+
+```{r echo=FALSE}
+deuda_total_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Deuda_total = c(
+    deuda_total_2025 / 1000,
+    deuda_total_2024 / 1000,
+    deuda_total_2023 / 1000
+  )
+)
+
+deuda_total_tabla
+```
+
+```{r}
+patrimonio <- estructura_capital |>
+  filter(`Estado de Resultados` == "Total de patrimonio")
+
+deuda_patrimonio_2025 <- deuda_total_2025 / patrimonio$`2025`
+deuda_patrimonio_2024 <- deuda_total_2024 / patrimonio$`2024`
+deuda_patrimonio_2023 <- deuda_total_2023 / patrimonio$`2023`
+```
+
+```{r echo=FALSE}
+deuda_patrimonio_tabla <- data.frame(
+  Año = c(2025, 2024, 2023),
+  Deuda_patrimonio = c(
+    deuda_patrimonio_2025,
+    deuda_patrimonio_2024,
+    deuda_patrimonio_2023
+  )
+)
+
+deuda_patrimonio_tabla
+```
+
+La estructura de capital de Alsea muestra que los pasivos son mayores que el patrimonio en los tres años analizados. En 2023 los pasivos fueron de \$67,836.506 millones de pesos y el patrimonio de \$9,597.084 millones. En 2024 los pasivos aumentaron a \$72,925.233 millones, mientras que el patrimonio disminuyó a \$9,397.692 millones. Para 2025 los pasivos bajaron a \$71,518.037 millones, pero el patrimonio también disminuyó a \$8,778.766 millones.
+
+En cuanto a la deuda financiera, en 2023 la deuda no corriente fue de \$39,483.732 millones y la deuda corriente de \$5,053.248 millones, dando una deuda total de \$44,536.980 millones. En 2024 la deuda no corriente aumentó a \$43,823.029 millones y la corriente a \$6,519.771 millones, por lo que la deuda total llegó a \$50,342.800 millones. Para 2025 la deuda no corriente bajó a \$33,334.765 millones, pero la deuda corriente aumentó bastante hasta \$17,559.845 millones, haciendo que la deuda total subiera a \$50,894.610 millones.
+\
+También se puede ver que la relación deuda/patrimonio ha ido aumentando, pasando de **4.640678 en 2023**, a **5.356932 en 2024** y finalmente a **5.797467 en 2025**. Esto quiere decir que Alsea tiene una cantidad cada vez mayor de deuda financiera en relación con su patrimonio. Aunque en 2025 disminuyó la deuda de largo plazo, aumentó bastante la deuda corriente y el patrimonio siguió bajando, por lo que el nivel de apalancamiento de la empresa terminó siendo mayor.
+
+# Indicadores financieros clave
+
+## ROE
+
+## ROA
+
+## Deuda / Capital
+
+## Deuda / EBITDA
+
+## Margen EBITDA
+
+# Cálculo del EPS trimestral 2019-2025
+
+# Dividendos y Split
+
+## Dividendos
+
+## Split
+
+# Identificación de los tipos de riesgos
+
+## Riesgos operativos
+
+## Riesgos macroeconómicos
+
+## Riesgos financieros
+
+# Conclusión
+
+# Referencias
