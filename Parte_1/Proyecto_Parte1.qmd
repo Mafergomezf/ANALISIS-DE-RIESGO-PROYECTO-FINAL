@@ -31,6 +31,12 @@ format:
 ## Eventos recientes relevantes
 
 # Análisis de estados financieros
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(fpp3)
+library(tidyquant)
+library(pdftools)
+```
 
 ## Ingresos
 
