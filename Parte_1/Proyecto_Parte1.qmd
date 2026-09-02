@@ -10,6 +10,7 @@ format:
 
 # Introducción
 
+
 # Descripción general del activo y del negocio
 
 ## Giro y función principal de la empresa
@@ -36,6 +37,14 @@ library(tidyverse)
 library(fpp3)
 library(tidyquant)
 library(pdftools)
+```
+
+```{r}
+pdf_2025 <- pdf_text("fuentes/alsea_2025_bmv.pdf")
+pdf_2024 <- pdf_text("fuentes/alsea_2024_bmv.pdf")
+pdf_2023 <- pdf_text("fuentes/alsea_2023_bmv.pdf")
+length(pdf_2025)
+
 ```
 
 ## Ingresos
