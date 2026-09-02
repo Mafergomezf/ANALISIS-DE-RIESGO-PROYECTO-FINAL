@@ -1550,7 +1550,7 @@ anual &lt;- anual |&gt;
 <pre class="r"><code>ingresos &lt;- anual |&gt;
   filter(`Estado de Resultados` == &quot;Ingresos netos por ventas&quot;) |&gt;
   select(`Estado de Resultados`, `2025`, `2024`, `2023`)</code></pre>
-<pre><code>##    Año Ingresos (millones MXN)
+<pre><code>##    Año Ingresos..millones.MXN.
 ## 1 2025                86013.06
 ## 2 2024                77563.15
 ## 3 2023                76231.05</code></pre>
@@ -1675,6 +1675,29 @@ deuda_patrimonio_2023 &lt;- deuda_total_2023 / patrimonio$`2023`</code></pre>
 ## 1 2025         5.797467
 ## 2 2024         5.356932
 ## 3 2023         4.640678</code></pre>
+<p>La estructura de capital de Alsea muestra que los pasivos son mayores
+que el patrimonio en los tres años analizados. En 2023 los pasivos
+fueron de $67,836.506 millones de pesos y el patrimonio de $9,597.084
+millones. En 2024 los pasivos aumentaron a $72,925.233 millones,
+mientras que el patrimonio disminuyó a $9,397.692 millones. Para 2025
+los pasivos bajaron a $71,518.037 millones, pero el patrimonio también
+disminuyó a $8,778.766 millones.</p>
+<p>En cuanto a la deuda financiera, en 2023 la deuda no corriente fue de
+$39,483.732 millones y la deuda corriente de $5,053.248 millones, dando
+una deuda total de $44,536.980 millones. En 2024 la deuda no corriente
+aumentó a $43,823.029 millones y la corriente a $6,519.771 millones, por
+lo que la deuda total llegó a $50,342.800 millones. Para 2025 la deuda
+no corriente bajó a $33,334.765 millones, pero la deuda corriente
+aumentó bastante hasta $17,559.845 millones, haciendo que la deuda total
+subiera a $50,894.610 millones.<br />
+También se puede ver que la relación deuda/patrimonio ha ido aumentando,
+pasando de <strong>4.640678 en 2023</strong>, a <strong>5.356932 en
+2024</strong> y finalmente a <strong>5.797467 en 2025</strong>. Esto
+quiere decir que Alsea tiene una cantidad cada vez mayor de deuda
+financiera en relación con su patrimonio. Aunque en 2025 disminuyó la
+deuda de largo plazo, aumentó bastante la deuda corriente y el
+patrimonio siguió bajando, por lo que el nivel de apalancamiento de la
+empresa terminó siendo mayor.</p>
 </div>
 </div>
 <div id="indicadores-financieros-clave" class="section level1" number="4">
@@ -1682,18 +1705,100 @@ deuda_patrimonio_2023 &lt;- deuda_total_2023 / patrimonio$`2023`</code></pre>
 clave</h1>
 <div id="roe" class="section level2" number="4.1">
 <h2><span class="header-section-number">4.1</span> ROE</h2>
+<pre class="r"><code>roe_2025 &lt;- utilidad_neta$`2025` / patrimonio$`2025`
+roe_2024 &lt;- utilidad_neta$`2024` / patrimonio$`2024`
+roe_2023 &lt;- utilidad_neta$`2023` / patrimonio$`2023`</code></pre>
+<pre><code>##    Año       ROE
+## 1 2025 25.469776
+## 2 2024  8.114663
+## 3 2023 31.693148</code></pre>
+<p>El ROE de Alsea cambió bastante durante los tres años analizados. En
+2023 fue de 31.69%, en 2024 bajó a 8.11% y en 2025 volvió a aumentar a
+25.47%. Esto muestra que en 2024 la empresa generó una menor utilidad en
+relación con el patrimonio de los accionistas, mientras que en 2025 tuvo
+una recuperación importante. Sin embargo, todavía no regresó al nivel de
+rentabilidad sobre el patrimonio que había tenido en 2023</p>
 </div>
 <div id="roa" class="section level2" number="4.2">
 <h2><span class="header-section-number">4.2</span> ROA</h2>
+<pre class="r"><code>activos &lt;- anual |&gt;
+  filter(`Estado de Resultados` == &quot;Activos Totales&quot;) |&gt;
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)</code></pre>
+<pre class="r"><code>roa_2025 &lt;- utilidad_neta$`2025` / activos$`2025`
+roa_2024 &lt;- utilidad_neta$`2024` / activos$`2024`
+roa_2023 &lt;- utilidad_neta$`2023` / activos$`2023`</code></pre>
+<pre><code>##    Año      ROA
+## 1 2025 2.784584
+## 2 2024 0.926341
+## 3 2023 3.928034</code></pre>
+<p>El ROA de Alsea fue de 3.93% en 2023, bajó a 0.93% en 2024 y después
+aumentó a 2.78% en 2025. Esto muestra que en 2024 la empresa tuvo una
+menor capacidad para generar utilidad a partir de sus activos, mientras
+que en 2025 hubo una recuperación. Sin embargo, el ROA de 2025 todavía
+se encuentra por debajo del nivel que tenía en 2023, por lo que aunque
+la empresa mejoró su rentabilidad sobre los activos, aún no regresó al
+nivel anterior.</p>
 </div>
 <div id="deuda-capital" class="section level2" number="4.3">
 <h2><span class="header-section-number">4.3</span> Deuda / Capital</h2>
+<pre><code>##    Año Deuda_Capital
+## 1 2025      5.797467
+## 2 2024      5.356932
+## 3 2023      4.640678</code></pre>
+<p>La relación Deuda/Capital de Alsea fue de 4.640678 en 2023, aumentó a
+5.356932 en 2024 y llegó a 5.797467 en 2025. Esto muestra que la deuda
+financiera ha ido aumentando en relación con el patrimonio de la
+empresa. En 2025, por cada peso de patrimonio, Alsea tenía
+aproximadamente 5.80 pesos de deuda financiera, lo que muestra un nivel
+de apalancamiento alto y mayor al observado en los dos años
+anteriores.</p>
 </div>
 <div id="deuda-ebitda" class="section level2" number="4.4">
 <h2><span class="header-section-number">4.4</span> Deuda / EBITDA</h2>
+<pre class="r"><code>ebitda &lt;- anual |&gt;
+  filter(`Estado de Resultados` == &quot;EBITDA&quot;) |&gt;
+  select(`Estado de Resultados`, `2025`, `2024`, `2023`)</code></pre>
+<pre class="r"><code>deuda_ebitda_2025 &lt;- deuda_total_2025 / ebitda$`2025`
+deuda_ebitda_2024 &lt;- deuda_total_2024 / ebitda$`2024`
+deuda_ebitda_2023 &lt;- deuda_total_2023 / ebitda$`2023`</code></pre>
+<pre><code>##    Año Deuda_EBITDA
+## 1 2025     3.009262
+## 2 2024     3.106806
+## 3 2023     2.814839</code></pre>
+<p>La relación Deuda/EBITDA de Alsea fue de 2.814839 en 2023, aumentó a
+3.106806 en 2024 y después bajó ligeramente a 3.009262 en 2025. Esto
+muestra que en 2024 la deuda de la empresa representó una mayor cantidad
+de veces su EBITDA, mientras que en 2025 hubo una pequeña mejora. Aun
+así, la relación se mantiene alrededor de 3 veces, por lo que Alsea
+sigue teniendo un nivel de deuda importante en comparación con la
+capacidad que genera a través de su operación.</p>
 </div>
 <div id="margen-ebitda" class="section level2" number="4.5">
 <h2><span class="header-section-number">4.5</span> Margen EBITDA</h2>
+<pre class="r"><code>margen_ebitda_2025 &lt;- ebitda$`2025` / ingresos$`2025`
+margen_ebitda_2024 &lt;- ebitda$`2024` / ingresos$`2024`
+margen_ebitda_2023 &lt;- ebitda$`2023` / ingresos$`2023`</code></pre>
+<pre class="r"><code>margen_ebitda_tabla &lt;- data.frame(
+  Año = c(2025, 2024, 2023),
+  Margen_EBITDA = c(
+    margen_ebitda_2025 * 100,
+    margen_ebitda_2024 * 100,
+    margen_ebitda_2023 * 100
+  )
+)
+
+margen_ebitda_tabla</code></pre>
+<pre><code>##    Año Margen_EBITDA
+## 1 2025      19.66289
+## 2 2024      20.89141
+## 3 2023      20.75560</code></pre>
+<p>El margen EBITDA de Alsea se mantuvo bastante estable entre 2023 y
+2024, pasando de 20.75560% a 20.89141%, pero en 2025 bajó a 19.66289%.
+Esto muestra que en 2025 una menor proporción de los ingresos terminó
+convirtiéndose en EBITDA. Aunque la disminución no fue muy grande, sí
+refleja que la rentabilidad operativa antes de intereses, impuestos,
+depreciación y amortización fue un poco menor que en los dos años
+anteriores.</p>
 </div>
 </div>
 <div id="cálculo-del-eps-trimestral-2019-2025" class="section level1" number="5">
