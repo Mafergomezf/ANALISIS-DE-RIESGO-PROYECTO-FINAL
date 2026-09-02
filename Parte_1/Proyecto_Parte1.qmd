@@ -15,81 +15,101 @@ format:
 
 ## Giro y función principal de la empresa
 
+
 ## Fecha de inicio de operaciones y evolución general
+
 
 ## Principales líneas de negocio
 
+
 ## Presencia geográfica
+
 
 ## Marcas, subsidiarias o unidades relevantes
 
+
 ## Número aproximado de empleados
+
 
 ## Ubicación de plantas productivas, centros logísticos o infraestructura clave
 
+
 ## Principales competidores y posición en el mercado
+
 
 ## Eventos recientes relevantes
 
-# Análisis de estados financieros
-```{r setup, message=FALSE, warning=FALSE}
-library(quantmod)
-library(moments)
 
+# Análisis de estados financieros
+```{r}
+library(readxl)
 ```
 
 ```{r}
-ticker <- "ALSEA.MX"
-
-getSymbols(
-  ticker,
-  src = "yahoo",
-  from = "2019-01-01"
+anual <- read_excel(
+  "data/alsea_emis.xlsx",
+  sheet = "Anual"
 )
 
-price <- Ad(get(ticker))
-head(price)
-
+head(anual)
 ```
+
 
 ## Ingresos
 
+
 ## Margen de utilidad bruta
+
 
 ## Margen de utilidad operativa
 
+
 ## Margen de utilidad neta
 
+
 ## Nivel de endeudamiento y estructura del capital
+
 
 # Indicadores financieros clave
 
 ## ROE
 
+
 ## ROA
+
 
 ## Deuda / Capital
 
+
 ## Deuda / EBITDA
+
 
 ## Margen EBITDA
 
+
 # Cálculo del EPS trimestral 2019-2025
+
 
 # Dividendos y Split
 
 ## Dividendos
 
+
 ## Split
+
 
 # Identificación de los tipos de riesgos
 
 ## Riesgos operativos
 
+
 ## Riesgos macroeconómicos
+
 
 ## Riesgos financieros
 
+
 # Conclusión
+
 
 # Referencias
