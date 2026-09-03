@@ -543,6 +543,7 @@ En 2024 el EPS siguió siendo positivo, pero disminuyó considerablemente, espec
 En general, el comportamiento del EPS muestra que la rentabilidad por acción de Alsea no ha sido completamente estable durante estos años. Se observa una caída muy fuerte en 2020, seguida de una recuperación en los años posteriores, aunque todavía existen variaciones importantes entre trimestres. Esto indica que las utilidades generadas para los accionistas pueden cambiar de manera considerable dependiendo del desempeño de la empresa en cada periodo.
 
 # Dividendos y Split
+hola
 
 ## Dividendos
 
