@@ -612,27 +612,34 @@ En 2024 el EPS volvió a disminuir y mostró valores más bajos, mientras que en
 # Dividendos y Split
 
 ## Dividendos
-Alsea sí ha distribuido dividendos a sus accionistas, aunque no mantiene una frecuencia completamente constante. De acuerdo con el historial revisado, la empresa realizó pagos en 2013 y posteriormente de manera más frecuente entre 2015 y 2018. Sin embargo, entre 2019 y 2023 no se registraron pagos de dividendos. En 2024 la empresa retomó la distribución con un dividendo de $1.20 MXN por acción y en 2025 realizó otro pago de aproximadamente $0.5342 MXN por acción.
-
-Esto muestra que la política de dividendos de Alsea ha cambiado a lo largo del tiempo. Después de varios años en los que los pagos fueron relativamente frecuentes, hubo un periodo prolongado sin distribución de dividendos y posteriormente se retomaron en 2024. Por lo tanto, los dividendos de Alsea no pueden considerarse un flujo completamente estable o predecible para los accionistas.
+Alsea sí ha distribuido dividendos a sus accionistas, aunque no mantiene una frecuencia completamente constante. Para analizar su historial de dividendos se utilizó información obtenida de FactSet, donde se muestran las fechas ex-dividendo y el monto pagado por acción.
 
 ```{r}
 dividendos <- read_excel(
   "data/Price_Summary.xlsx",
   sheet = "Price Summary",
-  skip = 3
-)
+  skip = 3)
+```
+
+```{r}
 dividendos_hist <- dividendos |>
   select(`Ex-Date`, Amt) |>
   filter(`Ex-Date` != "06-May-2026")
 
 dividendos_hist
-
 ```
-## Split
-Alsea sí ha realizado splits de sus acciones históricamente, aunque estos eventos ocurrieron antes del periodo de 2019 a 2025. Entre los antecedentes se encuentra un split de 4 a 1 realizado el 7 de febrero de 2007, además de otros ajustes registrados en 2004, 2005, 2006 y 2008. El split más reciente fue el 24 de abril de 2012, con una proporción aproximada de 1.0267 a 1.
+De acuerdo con el historial obtenido, Alsea realizó pagos de dividendos en 2013 y posteriormente de manera más frecuente entre 2015 y 2018. Sin embargo, después del pago realizado en 2018 hubo un periodo prolongado sin distribución de dividendos, ya que entre 2019 y 2023 no se registraron nuevos pagos.
 
-Esto significa que durante el periodo analizado de 2019 a 2025 no se registraron nuevos splits en las acciones de Alsea. Aunque la empresa sí tiene antecedentes de este tipo de eventos corporativos, no han sido una práctica reciente.
+En 2024 la empresa retomó la distribución de utilidades con un dividendo de $1.20 MXN por acción, y en 2025 realizó nuevamente un pago, aunque por un monto menor, de aproximadamente $0.5342 MXN por acción.
+
+Este comportamiento muestra que Alsea no mantiene una frecuencia fija de pago de dividendos. Después de varios años en los que los pagos fueron relativamente frecuentes, la empresa suspendió su distribución durante varios años y posteriormente la retomó en 2024. Por lo tanto, la política de dividendos ha presentado cambios importantes a lo largo del tiempo y los dividendos no pueden considerarse un flujo completamente estable o predecible para los accionistas.
+
+## Split
+Alsea también ha realizado splits de sus acciones históricamente, aunque estos eventos ocurrieron antes del periodo de 2019 a 2025. Entre los antecedentes destaca el split realizado el 7 de febrero de 2007, con una proporción de 4 a 1, lo que significa que por cada acción existente se generaron cuatro acciones después del ajuste.
+
+Posteriormente se registraron otros ajustes, entre ellos uno en 2008 y el split más reciente de la empresa, realizado el 24 de abril de 2012, con una proporción aproximada de 1.0267 a 1.
+
+Durante el periodo analizado de 2019 a 2025 no se registraron nuevos splits de las acciones de Alsea. Por lo tanto, aunque la empresa sí tiene antecedentes de divisiones de acciones, estos eventos no han sido una práctica reciente y no tuvieron efecto directo sobre el número de acciones mediante splits durante los años analizados.
 
 # Identificación de los tipos de riesgos
 
