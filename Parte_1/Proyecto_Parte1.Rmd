@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 library(readxl)
 library(tidyverse)
+library(tsibble)
 ```
 
 # Introducción
@@ -269,6 +270,18 @@ margen_neto_tabla
 La utilidad neta de Alsea cambió bastante durante los tres años analizados. En 2023 fue de \$3,041.618 millones de pesos, en 2024 bajó a \$762.591 millones y en 2025 volvió a aumentar a \$2,235.932 millones. Esto también se refleja en el margen neto, que fue de 3.989999% en 2023, bajó a 0.9831872% en 2024 y después aumentó a 2.599526% en 2025. Esto muestra que 2024 fue el año más débil de los tres en cuanto a la utilidad final que Alsea logró conservar de sus ventas, mientras que en 2025 hubo una recuperación, aunque todavía sin regresar al nivel de 2023.
 
 ## Nivel de endeudamiento y estructura del capital
+El nivel de endeudamiento permite observar qué tan dependiente es una empresa del financiamiento externo para operar y crecer. Por otro lado, la estructura del capital muestra cómo se financian los activos de la empresa, principalmente a través de deuda y patrimonio.
+
+Para este análisis se tomaron los pasivos totales, el patrimonio y la deuda financiera de Alsea para 2023, 2024 y 2025. La deuda financiera se obtuvo sumando los créditos y préstamos corrientes y no corrientes de cada año.
+
+$$ \text{Deuda financiera total} = \text{Deuda corriente} + \text{Deuda no corriente} $$
+
+También se calculó la relación deuda/patrimonio para observar cuánta deuda financiera tiene la empresa por cada peso aportado por los accionistas:
+
+$$ \text{Deuda/Patrimonio} = \frac{\text{Deuda financiera total}}{\text{Patrimonio}} $$
+
+Un valor mayor en esta relación indica un mayor nivel de apalancamiento financiero y, por lo tanto, una mayor dependencia de la deuda en comparación con los recursos propios de la empresa.
+
 
 ```{r}
 estructura_capital <- anual |>
@@ -374,6 +387,13 @@ También se puede ver que la relación deuda/patrimonio ha ido aumentando, pasan
 # Indicadores financieros clave
 
 ## ROE
+El ROE (Return on Equity) mide qué tan rentable es una empresa en relación con el patrimonio de sus accionistas. Este indicador permite observar cuánta utilidad genera la empresa por cada peso de patrimonio.
+
+Para calcularlo se divide la utilidad neta entre el patrimonio:
+
+$$ ROE = \frac{\text{Utilidad neta}}{\text{Patrimonio}} \times 100 $$
+
+En este análisis se utilizó la utilidad neta y el patrimonio de Alsea para 2023, 2024 y 2025. Aunque se muestran los tres años para observar su evolución, el dato más actual corresponde a 2025.
 
 ```{r}
 roe_2025 <- utilidad_neta$`2025` / patrimonio$`2025`
@@ -394,9 +414,16 @@ roe_tabla <- data.frame(
 roe_tabla
 ```
 
-El ROE de Alsea cambió bastante durante los tres años analizados. En 2023 fue de 31.69%, en 2024 bajó a 8.11% y en 2025 volvió a aumentar a 25.47%. Esto muestra que en 2024 la empresa generó una menor utilidad en relación con el patrimonio de los accionistas, mientras que en 2025 tuvo una recuperación importante. Sin embargo, todavía no regresó al nivel de rentabilidad sobre el patrimonio que había tenido en 2023
+El ROE de Alsea cambió bastante durante los tres años analizados. En 2023 fue de 31.69%, en 2024 bajó a 8.11% y en 2025, que es el dato más reciente, volvió a aumentar hasta 25.47%. Esto significa que en 2025 Alsea generó aproximadamente $0.25 pesos de utilidad neta por cada peso de patrimonio. La recuperación del ROE se relaciona con el aumento de la utilidad neta de la empresa durante 2025. Sin embargo, el indicador todavía se encuentra por debajo del nivel de 2023. Además, debido a que Alsea tiene un nivel importante de endeudamiento y un patrimonio relativamente menor, el ROE debe analizarse junto con sus indicadores de apalancamiento, ya que un ROE alto no necesariamente significa que toda la mejora provenga únicamente de una mayor eficiencia del negocio.
 
 ## ROA
+El ROA (Return on Assets) mide qué tan eficiente es una empresa para generar utilidad a partir de sus activos. Este indicador permite observar cuánta utilidad produce la empresa por cada peso invertido en activos.
+
+Para calcularlo se divide la utilidad neta entre los activos totales:
+
+$$ ROA = \frac{\text{Utilidad neta}}{\text{Activos totales}} \times 100 $$
+
+En este análisis se utilizó la utilidad neta y los activos totales de Alsea para 2023, 2024 y 2025. Aunque se muestran los tres años para observar su evolución, el dato más actual corresponde a 2025.
 
 ```{r}
 activos <- anual |>
@@ -423,27 +450,44 @@ roa_tabla <- data.frame(
 
 roa_tabla
 ```
-
-El ROA de Alsea fue de 3.93% en 2023, bajó a 0.93% en 2024 y después aumentó a 2.78% en 2025. Esto muestra que en 2024 la empresa tuvo una menor capacidad para generar utilidad a partir de sus activos, mientras que en 2025 hubo una recuperación. Sin embargo, el ROA de 2025 todavía se encuentra por debajo del nivel que tenía en 2023, por lo que aunque la empresa mejoró su rentabilidad sobre los activos, aún no regresó al nivel anterior.
+El ROA de Alsea fue de 3.93% en 2023, bajó a 0.93% en 2024 y en 2025, que es el dato más reciente, aumentó a 2.78%. Esto significa que en 2025 Alsea generó aproximadamente $0.028 pesos de utilidad neta por cada peso invertido en activos. La recuperación del ROA se relaciona con el aumento de la utilidad neta durante 2025, aunque todavía no alcanza el nivel de 2023. En el caso de Alsea, este indicador es importante porque la empresa requiere una cantidad considerable de activos para operar su red de restaurantes, cafeterías, centros de distribución e infraestructura, por lo que el ROA permite observar qué tan bien está aprovechando esos recursos para generar ganancias.
 
 ## Deuda / Capital
+La relación Deuda/Capital muestra qué proporción de la estructura de financiamiento de una empresa proviene de deuda. Este indicador permite observar qué tan dependiente es la empresa del financiamiento con deuda en comparación con el capital total utilizado para financiarse.
+
+Para calcularlo se divide la deuda financiera total entre la suma de la deuda financiera y el patrimonio:
+
+$$ \text{Deuda/Capital} = \frac{\text{Deuda financiera total}} {\text{Deuda financiera total} + \text{Patrimonio}} \times 100 $$
+
+En este análisis se utilizó la deuda financiera total y el patrimonio de Alsea para 2023, 2024 y 2025. Aunque se muestran los tres años para observar su evolución, el dato más actual corresponde a 2025.
+```{r}
+deuda_capital_2025 <- deuda_total_2025 / (deuda_total_2025 + patrimonio$`2025`)
+deuda_capital_2024 <- deuda_total_2024 / (deuda_total_2024 + patrimonio$`2024`)
+deuda_capital_2023 <- deuda_total_2023 / (deuda_total_2023 + patrimonio$`2023`)
+```
 
 ```{r echo =FALSE}
 deuda_capital_tabla <- data.frame(
   Año = c(2025, 2024, 2023),
   Deuda_Capital = c(
-    deuda_patrimonio_2025,
-    deuda_patrimonio_2024,
-    deuda_patrimonio_2023
+    deuda_capital_2025 * 100,
+    deuda_capital_2024 * 100,
+    deuda_capital_2023 * 100
   )
 )
 
 deuda_capital_tabla
 ```
-
-La relación Deuda/Capital de Alsea fue de 4.640678 en 2023, aumentó a 5.356932 en 2024 y llegó a 5.797467 en 2025. Esto muestra que la deuda financiera ha ido aumentando en relación con el patrimonio de la empresa. En 2025, por cada peso de patrimonio, Alsea tenía aproximadamente 5.80 pesos de deuda financiera, lo que muestra un nivel de apalancamiento alto y mayor al observado en los dos años anteriores.
+La relación Deuda/Capital de Alsea fue de aproximadamente 82.27% en 2023, aumentó a 84.27% en 2024 y en 2025, que es el dato más reciente, llegó a 85.29%. Esto significa que una parte muy importante del capital utilizado para financiar a la empresa proviene de deuda. En el caso de Alsea, este indicador es relevante porque la empresa opera una red muy grande de restaurantes y requiere recursos para mantener sus operaciones, abrir nuevas unidades y financiar su infraestructura. El aumento de esta relación muestra una mayor dependencia del financiamiento con deuda, lo que puede aumentar el riesgo financiero si la empresa enfrenta mayores costos de financiamiento o una disminución en su capacidad para generar utilidades.
 
 ## Deuda / EBITDA
+La relación Deuda/EBITDA muestra cuántas veces el EBITDA de una empresa representa su nivel de deuda financiera. Este indicador se utiliza para evaluar qué tan pesada es la deuda en relación con la capacidad que tiene la empresa para generar recursos a partir de su operación.
+
+Para calcularlo se divide la deuda financiera total entre el EBITDA:
+
+$$ \text{Deuda/EBITDA} = \frac{\text{Deuda financiera total}}{\text{EBITDA}} $$
+
+En este análisis se utilizó la deuda financiera total y el EBITDA de Alsea para 2023, 2024 y 2025. Aunque se muestran los tres años para observar su evolución, el dato más actual corresponde a 2025.
 
 ```{r}
 ebitda <- anual |>
@@ -471,10 +515,16 @@ deuda_ebitda_tabla <- data.frame(
 
 deuda_ebitda_tabla
 ```
-
-La relación Deuda/EBITDA de Alsea fue de 2.814839 en 2023, aumentó a 3.106806 en 2024 y después bajó ligeramente a 3.009262 en 2025. Esto muestra que en 2024 la deuda de la empresa representó una mayor cantidad de veces su EBITDA, mientras que en 2025 hubo una pequeña mejora. Aun así, la relación se mantiene alrededor de 3 veces, por lo que Alsea sigue teniendo un nivel de deuda importante en comparación con la capacidad que genera a través de su operación.
+La relación Deuda/EBITDA de Alsea fue de aproximadamente 2.81 veces en 2023, aumentó a 3.11 veces en 2024 y en 2025, que es el dato más reciente, disminuyó ligeramente a 3.01 veces. Esto significa que la deuda financiera de Alsea equivale aproximadamente a tres veces el EBITDA que genera la empresa. La disminución de 2025 representa una pequeña mejora respecto a 2024, aunque el nivel sigue siendo mayor al de 2023. En el caso de Alsea, este indicador es importante porque permite evaluar si la generación operativa de sus restaurantes y demás unidades es suficiente en relación con el nivel de deuda que mantiene la empresa.
 
 ## Margen EBITDA
+El margen EBITDA muestra qué porcentaje de los ingresos se convierte en EBITDA, es decir, en ganancias antes de intereses, impuestos, depreciación y amortización. Este indicador permite observar la rentabilidad operativa del negocio sin considerar todavía los efectos del financiamiento, los impuestos y los cargos contables relacionados con depreciación y amortización.
+
+Para calcularlo se divide el EBITDA entre los ingresos netos por ventas:
+
+$$ \text{Margen EBITDA} = \frac{\text{EBITDA}}{\text{Ingresos netos por ventas}} \times 100 $$
+
+En este análisis se utilizó el EBITDA y los ingresos netos por ventas de Alsea para 2023, 2024 y 2025. Aunque se muestran los tres años para observar su evolución, el dato más actual corresponde a 2025.
 
 ```{r}
 margen_ebitda_2025 <- ebitda$`2025` / ingresos$`2025`
@@ -495,15 +545,19 @@ margen_ebitda_tabla <- data.frame(
 margen_ebitda_tabla
 
 ```
-
-El margen EBITDA de Alsea se mantuvo bastante estable entre 2023 y 2024, pasando de 20.75560% a 20.89141%, pero en 2025 bajó a 19.66289%. Esto muestra que en 2025 una menor proporción de los ingresos terminó convirtiéndose en EBITDA. Aunque la disminución no fue muy grande, sí refleja que la rentabilidad operativa antes de intereses, impuestos, depreciación y amortización fue un poco menor que en los dos años anteriores.
+El margen EBITDA de Alsea fue de aproximadamente 20.76% en 2023, aumentó ligeramente a 20.89% en 2024 y en 2025, que es el dato más reciente, disminuyó a 19.66%. Esto significa que en 2025 alrededor del 19.66% de los ingresos de la empresa se convirtió en EBITDA. En el caso de Alsea, este indicador es importante porque permite observar qué tan rentable es la operación de sus restaurantes y demás unidades antes de considerar intereses, impuestos, depreciación y amortización. La disminución observada en 2025 muestra que una menor proporción de las ventas terminó convirtiéndose en EBITDA, por lo que la rentabilidad operativa fue un poco menor que en los dos años anteriores.
 
 # Cálculo del EPS trimestral 2019-2025
+El EPS (Earnings Per Share) o utilidad por acción muestra cuánto beneficio genera la empresa por cada acción en circulación. En este caso se utiliza el EPS diluido, ya que considera el posible efecto de instrumentos que podrían aumentar el número de acciones y reducir la utilidad correspondiente a cada una.
+
+Para este análisis se utilizaron datos trimestrales de FactSet desde 2019 hasta 2025 con el objetivo de observar cómo ha evolucionado la rentabilidad por acción de Alsea y qué tan estable ha sido durante el periodo.
+
 ```{r}
 eps <- read_excel(
   "data/EPS_ALSEA.xlsx",
-  skip = 7
-)
+  skip = 7)
+eps <- eps |>
+  mutate(across(-`...1`,as.numeric))
 ```
 
 ```{r}
@@ -513,63 +567,52 @@ eps_diluido <- eps |>
 
 ```{r echo= FALSE}
 eps_tabla <- data.frame(
-  Año = c(2019, 2020, 2021, 2022, 2023, 2024, 2025),
+  Fecha = yearquarter(c(
+    "2019 Q1", "2019 Q2", "2019 Q3", "2019 Q4",
+    "2020 Q1", "2020 Q2", "2020 Q3", "2020 Q4",
+    "2021 Q1", "2021 Q2", "2021 Q3", "2021 Q4",
+    "2022 Q1", "2022 Q2", "2022 Q3", "2022 Q4",
+    "2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4",
+    "2024 Q1", "2024 Q2", "2024 Q3", "2024 Q4",
+    "2025 Q1", "2025 Q2", "2025 Q3", "2025 Q4"
+  )),
 
-  Q1 = round(c(
-    eps_diluido$`MAR '19`,
-    eps_diluido$`MAR '20`,
-    eps_diluido$`MAR '21`,
-    eps_diluido$`MAR '22`,
-    eps_diluido$`MAR '23`,
-    eps_diluido$`MAR '24`,
-    eps_diluido$`MAR '25`
-  ), 4),
+  EPS = round(c(
+    eps_diluido$`MAR '19`, eps_diluido$`JUN '19`, eps_diluido$`SEP '19`, eps_diluido$`DEC '19`,
+    eps_diluido$`MAR '20`, eps_diluido$`JUN '20`, eps_diluido$`SEP '20`, eps_diluido$`DEC '20`,
+    eps_diluido$`MAR '21`, eps_diluido$`JUN '21`, eps_diluido$`SEP '21`, eps_diluido$`DEC '21`,
+    eps_diluido$`MAR '22`, eps_diluido$`JUN '22`, eps_diluido$`SEP '22`, eps_diluido$`DEC '22`,
+    eps_diluido$`MAR '23`, eps_diluido$`JUN '23`, eps_diluido$`SEP '23`, eps_diluido$`DEC '23`,
+    eps_diluido$`MAR '24`, eps_diluido$`JUN '24`, eps_diluido$`SEP '24`, eps_diluido$`DEC '24`,
+    eps_diluido$`MAR '25`, eps_diluido$`JUN '25`, eps_diluido$`SEP '25`, eps_diluido$`DEC '25`
+  ), 4)
+)
+eps_tabla <- eps_tabla |>
+  as_tsibble(index = Fecha)
+```
 
-  Q2 = round(c(
-    eps_diluido$`JUN '19`,
-    eps_diluido$`JUN '20`,
-    eps_diluido$`JUN '21`,
-    eps_diluido$`JUN '22`,
-    eps_diluido$`JUN '23`,
-    eps_diluido$`JUN '24`,
-    eps_diluido$`JUN '25`
-  ), 4),
-
-  Q3 = round(c(
-    eps_diluido$`SEP '19`,
-    eps_diluido$`SEP '20`,
-    eps_diluido$`SEP '21`,
-    eps_diluido$`SEP '22`,
-    eps_diluido$`SEP '23`,
-    eps_diluido$`SEP '24`,
-    eps_diluido$`SEP '25`
-  ), 4),
-
-  Q4 = round(as.numeric(c(
-  eps_diluido$`DEC '19`,
-  eps_diluido$`DEC '20`,
-  eps_diluido$`DEC '21`,
-  eps_diluido$`DEC '22`,
-  eps_diluido$`DEC '23`,
-  eps_diluido$`DEC '24`,
-  eps_diluido$`DEC '25`
-)), 4)
+```{r}
+plot(
+  as.Date(eps_tabla$Fecha),
+  eps_tabla$EPS,
+  type = "o",
+  xlab = "Fecha",
+  ylab = "EPS",
+  main = "Evolución trimestral del EPS de Alsea"
 )
 
-eps_tabla
+abline(h = 0)
 ```
-El EPS diluido de Alsea muestra varios cambios durante el periodo de 2019 a 2025. En 2019 todos los trimestres tuvieron valores positivos, aunque relativamente bajos. En 2020 la situación cambió bastante, ya que durante los primeros tres trimestres el EPS fue negativo y en el segundo trimestre llegó hasta -3.1161, siendo el valor más bajo de todo el periodo analizado. Esto muestra el fuerte impacto que tuvo ese año sobre la rentabilidad de la empresa por acción.
+El EPS diluido de Alsea presentó cambios importantes entre 2019 y 2025, por lo que no se puede considerar completamente estable durante todo el periodo. En 2019 los valores se mantuvieron positivos y relativamente bajos, pero en 2020 hubo una caída muy fuerte, especialmente en el segundo trimestre, cuando el EPS llegó a -3.1161. Esto muestra un deterioro importante en la rentabilidad por acción durante ese año.
 
-A partir de 2021 se puede observar una recuperación. Aunque el primer trimestre todavía presentó un EPS negativo de -0.3722, los siguientes trimestres volvieron a tener resultados positivos. Durante 2022 y 2023 el EPS se mantuvo positivo en todos los trimestres y en el cuarto trimestre de 2023 alcanzó 1.8485, que fue el valor más alto del periodo.
+A partir de 2021 comenzó una recuperación. Aunque el primer trimestre todavía fue negativo, posteriormente el EPS regresó a valores positivos. Durante 2022 y 2023 se observa una mejora más clara y el punto más alto del periodo se presentó en el cuarto trimestre de 2023, con un EPS de 1.8485.
 
-En 2024 el EPS siguió siendo positivo, pero disminuyó considerablemente, especialmente en el tercer trimestre, donde fue de solamente 0.0146. Finalmente, en 2025 hubo una recuperación importante en el segundo trimestre, con un EPS de 1.4079, aunque en los demás trimestres los resultados fueron menores.
-
-En general, el comportamiento del EPS muestra que la rentabilidad por acción de Alsea no ha sido completamente estable durante estos años. Se observa una caída muy fuerte en 2020, seguida de una recuperación en los años posteriores, aunque todavía existen variaciones importantes entre trimestres. Esto indica que las utilidades generadas para los accionistas pueden cambiar de manera considerable dependiendo del desempeño de la empresa en cada periodo.
+En 2024 el EPS volvió a disminuir y mostró valores más bajos, mientras que en 2025 se observa una nueva recuperación, principalmente en el segundo trimestre, cuando alcanzó 1.4079. En general, la gráfica muestra que la rentabilidad por acción de Alsea ha tenido periodos de caídas fuertes y recuperaciones posteriores, por lo que existe una variación importante entre trimestres y no se observa una estabilidad completa en el tiempo.
 
 # Dividendos y Split
 
 ## Dividendos
-Alsea sí ha distribuido dividendos a sus accionistas, aunque no mantiene una frecuencia completamente constante. De acuerdo con el historial de FactSet, la empresa realizó pagos en 2013 y posteriormente de manera más frecuente entre 2015 y 2018. Sin embargo, entre 2019 y 2023 no se registraron pagos de dividendos. En 2024 la empresa retomó la distribución con un dividendo de $1.20 pesos por acción y en 2025 realizó un nuevo pago de aproximadamente $0.5342 pesos por acción.
+Alsea sí ha distribuido dividendos a sus accionistas, aunque no mantiene una frecuencia completamente constante. De acuerdo con el historial revisado, la empresa realizó pagos en 2013 y posteriormente de manera más frecuente entre 2015 y 2018. Sin embargo, entre 2019 y 2023 no se registraron pagos de dividendos. En 2024 la empresa retomó la distribución con un dividendo de $1.20 MXN por acción y en 2025 realizó otro pago de aproximadamente $0.5342 MXN por acción.
 
 Esto muestra que la política de dividendos de Alsea ha cambiado a lo largo del tiempo. Después de varios años en los que los pagos fueron relativamente frecuentes, hubo un periodo prolongado sin distribución de dividendos y posteriormente se retomaron en 2024. Por lo tanto, los dividendos de Alsea no pueden considerarse un flujo completamente estable o predecible para los accionistas.
 
@@ -587,9 +630,9 @@ dividendos_hist
 
 ```
 ## Split
-Alsea sí ha pagado dividendos a sus accionistas, aunque no mantiene una frecuencia completamente constante. En el historial revisado se observan pagos en 2013 y posteriormente de manera más frecuente entre 2015 y 2018. Después hubo un periodo prolongado sin pagos entre 2019 y 2023, y la empresa retomó la distribución de dividendos en 2024 con un pago de $1.20 MXN por acción. En 2025 volvió a pagar dividendos, aunque por un monto menor, de aproximadamente $0.5342 MXN por acción. Esto muestra que la política de dividendos de Alsea ha tenido cambios importantes a lo largo del tiempo, ya que los pagos no siguen una frecuencia fija y pueden suspenderse durante varios años antes de retomarse.
+Alsea sí ha realizado splits de sus acciones históricamente, aunque estos eventos ocurrieron antes del periodo de 2019 a 2025. Entre los antecedentes se encuentra un split de 4 a 1 realizado el 7 de febrero de 2007, además de otros ajustes registrados en 2004, 2005, 2006 y 2008. El split más reciente fue el 24 de abril de 2012, con una proporción aproximada de 1.0267 a 1.
 
-En cuanto a los splits, Alsea sí ha realizado divisiones de sus acciones históricamente, aunque estos eventos ocurrieron antes del periodo de 2019 a 2025. Entre los antecedentes se encuentra un split de 4 a 1 realizado el 7 de febrero de 2007, además de otros ajustes en 2004, 2005, 2006, 2008 y 2012. El split más reciente registrado fue el 24 de abril de 2012, con una proporción de aproximadamente 1.0266525 a 1. Por lo tanto, durante el periodo analizado no se registraron nuevos splits de las acciones de Alsea.
+Esto significa que durante el periodo analizado de 2019 a 2025 no se registraron nuevos splits en las acciones de Alsea. Aunque la empresa sí tiene antecedentes de este tipo de eventos corporativos, no han sido una práctica reciente.
 
 # Identificación de los tipos de riesgos
 
