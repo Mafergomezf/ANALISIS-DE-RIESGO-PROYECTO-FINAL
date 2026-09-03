@@ -1896,6 +1896,45 @@ anteriores.</p>
 <div id="cálculo-del-eps-trimestral-2019-2025" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Cálculo del EPS
 trimestral 2019-2025</h1>
+<pre class="r"><code>eps &lt;- read_excel(
+  &quot;data/EPS_ALSEA.xlsx&quot;,
+  skip = 7
+)</code></pre>
+<pre class="r"><code>eps_diluido &lt;- eps |&gt;
+  filter(`...1` == &quot;EPS (diluted)&quot;)</code></pre>
+<pre><code>##    Año      Q1      Q2      Q3     Q4
+## 1 2019  0.1274  0.2085  0.2294 0.5441
+## 2 2020 -0.3350 -3.1161 -0.5716 0.1389
+## 3 2021 -0.3722  0.1658  0.2063 0.9960
+## 4 2022  0.6269  0.2545  0.3859 0.7784
+## 5 2023  0.7217  0.5445  0.6068 1.8485
+## 6 2024  0.4958  0.1719  0.0146 0.2666
+## 7 2025  0.2829  1.4079  0.4569 0.8100</code></pre>
+<p>El EPS diluido de Alsea muestra varios cambios durante el periodo de
+2019 a 2025. En 2019 todos los trimestres tuvieron valores positivos,
+aunque relativamente bajos. En 2020 la situación cambió bastante, ya que
+durante los primeros tres trimestres el EPS fue negativo y en el segundo
+trimestre llegó hasta -3.1161, siendo el valor más bajo de todo el
+periodo analizado. Esto muestra el fuerte impacto que tuvo ese año sobre
+la rentabilidad de la empresa por acción.</p>
+<p>A partir de 2021 se puede observar una recuperación. Aunque el primer
+trimestre todavía presentó un EPS negativo de -0.3722, los siguientes
+trimestres volvieron a tener resultados positivos. Durante 2022 y 2023
+el EPS se mantuvo positivo en todos los trimestres y en el cuarto
+trimestre de 2023 alcanzó 1.8485, que fue el valor más alto del
+periodo.</p>
+<p>En 2024 el EPS siguió siendo positivo, pero disminuyó
+considerablemente, especialmente en el tercer trimestre, donde fue de
+solamente 0.0146. Finalmente, en 2025 hubo una recuperación importante
+en el segundo trimestre, con un EPS de 1.4079, aunque en los demás
+trimestres los resultados fueron menores.</p>
+<p>En general, el comportamiento del EPS muestra que la rentabilidad por
+acción de Alsea no ha sido completamente estable durante estos años. Se
+observa una caída muy fuerte en 2020, seguida de una recuperación en los
+años posteriores, aunque todavía existen variaciones importantes entre
+trimestres. Esto indica que las utilidades generadas para los
+accionistas pueden cambiar de manera considerable dependiendo del
+desempeño de la empresa en cada periodo.</p>
 </div>
 <div id="dividendos-y-split" class="section level1" number="6">
 <h1><span class="header-section-number">6</span> Dividendos y Split</h1>

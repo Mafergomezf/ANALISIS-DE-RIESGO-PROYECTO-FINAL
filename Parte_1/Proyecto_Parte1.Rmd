@@ -475,7 +475,72 @@ margen_ebitda_tabla
 El margen EBITDA de Alsea se mantuvo bastante estable entre 2023 y 2024, pasando de 20.75560% a 20.89141%, pero en 2025 bajó a 19.66289%. Esto muestra que en 2025 una menor proporción de los ingresos terminó convirtiéndose en EBITDA. Aunque la disminución no fue muy grande, sí refleja que la rentabilidad operativa antes de intereses, impuestos, depreciación y amortización fue un poco menor que en los dos años anteriores.
 
 # Cálculo del EPS trimestral 2019-2025
+```{r}
+eps <- read_excel(
+  "data/EPS_ALSEA.xlsx",
+  skip = 7
+)
+```
 
+```{r}
+eps_diluido <- eps |>
+  filter(`...1` == "EPS (diluted)")
+```
+
+```{r echo= FALSE}
+eps_tabla <- data.frame(
+  Año = c(2019, 2020, 2021, 2022, 2023, 2024, 2025),
+
+  Q1 = round(c(
+    eps_diluido$`MAR '19`,
+    eps_diluido$`MAR '20`,
+    eps_diluido$`MAR '21`,
+    eps_diluido$`MAR '22`,
+    eps_diluido$`MAR '23`,
+    eps_diluido$`MAR '24`,
+    eps_diluido$`MAR '25`
+  ), 4),
+
+  Q2 = round(c(
+    eps_diluido$`JUN '19`,
+    eps_diluido$`JUN '20`,
+    eps_diluido$`JUN '21`,
+    eps_diluido$`JUN '22`,
+    eps_diluido$`JUN '23`,
+    eps_diluido$`JUN '24`,
+    eps_diluido$`JUN '25`
+  ), 4),
+
+  Q3 = round(c(
+    eps_diluido$`SEP '19`,
+    eps_diluido$`SEP '20`,
+    eps_diluido$`SEP '21`,
+    eps_diluido$`SEP '22`,
+    eps_diluido$`SEP '23`,
+    eps_diluido$`SEP '24`,
+    eps_diluido$`SEP '25`
+  ), 4),
+
+  Q4 = round(as.numeric(c(
+  eps_diluido$`DEC '19`,
+  eps_diluido$`DEC '20`,
+  eps_diluido$`DEC '21`,
+  eps_diluido$`DEC '22`,
+  eps_diluido$`DEC '23`,
+  eps_diluido$`DEC '24`,
+  eps_diluido$`DEC '25`
+)), 4)
+)
+
+eps_tabla
+```
+El EPS diluido de Alsea muestra varios cambios durante el periodo de 2019 a 2025. En 2019 todos los trimestres tuvieron valores positivos, aunque relativamente bajos. En 2020 la situación cambió bastante, ya que durante los primeros tres trimestres el EPS fue negativo y en el segundo trimestre llegó hasta -3.1161, siendo el valor más bajo de todo el periodo analizado. Esto muestra el fuerte impacto que tuvo ese año sobre la rentabilidad de la empresa por acción.
+
+A partir de 2021 se puede observar una recuperación. Aunque el primer trimestre todavía presentó un EPS negativo de -0.3722, los siguientes trimestres volvieron a tener resultados positivos. Durante 2022 y 2023 el EPS se mantuvo positivo en todos los trimestres y en el cuarto trimestre de 2023 alcanzó 1.8485, que fue el valor más alto del periodo.
+
+En 2024 el EPS siguió siendo positivo, pero disminuyó considerablemente, especialmente en el tercer trimestre, donde fue de solamente 0.0146. Finalmente, en 2025 hubo una recuperación importante en el segundo trimestre, con un EPS de 1.4079, aunque en los demás trimestres los resultados fueron menores.
+
+En general, el comportamiento del EPS muestra que la rentabilidad por acción de Alsea no ha sido completamente estable durante estos años. Se observa una caída muy fuerte en 2020, seguida de una recuperación en los años posteriores, aunque todavía existen variaciones importantes entre trimestres. Esto indica que las utilidades generadas para los accionistas pueden cambiar de manera considerable dependiendo del desempeño de la empresa en cada periodo.
 
 # Dividendos y Split
 
