@@ -92,6 +92,7 @@ anual <- anual |>
 ```
 
 ## Ingresos
+Los ingresos representan el dinero que obtiene la empresa por la venta de sus productos y servicios antes de descontar costos y gastos. En el caso de Alsea, corresponden principalmente a las ventas generadas por la operación de sus restaurantes y cafeterías.
 
 ```{r}
 ingresos <- anual |>
@@ -115,6 +116,13 @@ ingresos_tabla
 Los ingresos netos por ventas de Alsea han ido aumentando en los últimos tres años. En 2023 fueron de aproximadamente \$76,231 millones de pesos, en 2024 subieron a \$77,563 millones y en 2025 llegaron a \$86,013 millones. Se puede ver que entre 2023 y 2024 el crecimiento fue pequeño, de aproximadamente 1.75%, pero en 2025 el aumento fue mucho mayor, de alrededor de 10.89%. Esto muestra que la empresa ha tenido una tendencia positiva en sus ventas, sobre todo en el último año analizado.
 
 ## Margen de utilidad bruta
+El margen de utilidad bruta muestra qué porcentaje de los ingresos por ventas queda después de cubrir los costos directamente relacionados con los productos y servicios que vende la empresa. Entre mayor sea este margen, mayor es la proporción de las ventas que queda disponible antes de considerar los gastos operativos, intereses e impuestos.
+
+Para calcularlo se divide la utilidad bruta entre los ingresos netos por ventas:
+
+$$ \text{Margen de utilidad bruta} = \frac{\text{Utilidad bruta}}{\text{Ingresos netos por ventas}} \times 100 $$
+
+En este análisis se obtuvieron de los estados financieros de Alsea la utilidad bruta y los ingresos netos por ventas correspondientes a 2023, 2024 y 2025. Después se dividió la utilidad bruta de cada año entre los ingresos del mismo año para obtener el margen correspondiente.
 
 ```{r}
 utilidad_bruta <- anual |>
@@ -159,6 +167,14 @@ margen_bruto_tabla
 El margen de utilidad bruta de Alsea se mantuvo bastante estable en los tres años analizados. En 2023 fue de aproximadamente 66.68%, en 2024 subió ligeramente a 66.98% y en 2025 bajó a 66.02%. Aunque hubo una pequeña disminución en 2025, el margen se ha mantenido alrededor del 66%, por lo que no se observan cambios muy grandes en la proporción de utilidad que queda después de cubrir el costo directo de las ventas.
 
 ## Margen de utilidad operativa
+El margen de utilidad operativa muestra qué porcentaje de los ingresos queda después de cubrir los costos de venta y los gastos necesarios para operar el negocio. Este margen permite observar qué tan eficiente es la empresa en su operación principal antes de considerar intereses e impuestos.
+
+Para calcularlo se divide la utilidad operativa entre los ingresos netos por ventas:
+
+$$ \text{Margen de utilidad operativa} = \frac{\text{Utilidad operativa}}{\text{Ingresos netos por ventas}} \times 100 $$
+
+En este análisis se obtuvo la ganancia operativa (EBIT) de Alsea para 2023, 2024 y 2025 y se dividió entre los ingresos netos por ventas de cada año para calcular el margen operativo correspondiente.
+
 
 ```{r}
 utilidad_operativa <- anual |>
@@ -202,6 +218,14 @@ margen_operativo_tabla
 La utilidad operativa de Alsea aumentó ligeramente en los tres años analizados, pasando de \$8,030.019 millones de pesos en 2023 a \$8,197.673 millones en 2024 y \$8,228.641 millones en 2025. Sin embargo, el margen operativo fue de 10.53% en 2023, 10.57% en 2024 y bajó a 9.57% en 2025. Esto quiere decir que, aunque la utilidad operativa aumentó en términos de dinero, en 2025 representó una menor proporción de las ventas, por lo que los gastos operativos tuvieron un mayor peso sobre los ingresos.
 
 ## Margen de utilidad neta
+El margen de utilidad neta muestra qué porcentaje de los ingresos termina convirtiéndose en utilidad para la empresa después de considerar todos los costos y gastos, incluyendo los gastos operativos, intereses e impuestos. Este margen permite observar qué tan rentable es la empresa al final de todo el proceso.
+
+Para calcularlo se divide la utilidad neta entre los ingresos netos por ventas:
+
+$$ \text{Margen de utilidad neta} = \frac{\text{Utilidad neta}}{\text{Ingresos netos por ventas}} \times 100 $$
+
+En este análisis se obtuvo la utilidad neta de Alsea para 2023, 2024 y 2025 y se dividió entre los ingresos netos por ventas de cada año para calcular el margen neto correspondiente.
+
 
 ```{r}
 utilidad_neta <- anual |>
