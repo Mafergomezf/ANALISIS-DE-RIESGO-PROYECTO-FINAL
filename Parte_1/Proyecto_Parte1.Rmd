@@ -20,6 +20,7 @@ library(tsibble)
 ```
 
 # Introducción
+
 En esta primera parte del proyecto se realizará un análisis de Alsea, S.A.B. de C.V., con el objetivo de comprender su modelo de negocio, situación financiera y principales riesgos antes de aplicar herramientas cuantitativas para analizar el comportamiento de su acción.
 
 Primero se describirán aspectos generales de la empresa, como su actividad principal, tamaño, presencia geográfica, marcas y posición dentro del mercado. Posteriormente, se analizarán sus estados financieros, nivel de endeudamiento e indicadores financieros como ROE, ROA, deuda sobre capital, deuda sobre EBITDA y margen EBITDA.
@@ -93,6 +94,7 @@ anual <- anual |>
 ```
 
 ## Ingresos
+
 Los ingresos representan el dinero que obtiene la empresa por la venta de sus productos y servicios antes de descontar costos y gastos. En el caso de Alsea, corresponden principalmente a las ventas generadas por la operación de sus restaurantes y cafeterías.
 
 ```{r}
@@ -117,6 +119,7 @@ ingresos_tabla
 Los ingresos netos por ventas de Alsea han ido aumentando en los últimos tres años. En 2023 fueron de aproximadamente \$76,231 millones de pesos, en 2024 subieron a \$77,563 millones y en 2025 llegaron a \$86,013 millones. Se puede ver que entre 2023 y 2024 el crecimiento fue pequeño, de aproximadamente 1.75%, pero en 2025 el aumento fue mucho mayor, de alrededor de 10.89%. Esto muestra que la empresa ha tenido una tendencia positiva en sus ventas, sobre todo en el último año analizado.
 
 ## Margen de utilidad bruta
+
 El margen de utilidad bruta muestra qué porcentaje de los ingresos por ventas queda después de cubrir los costos directamente relacionados con los productos y servicios que vende la empresa. Entre mayor sea este margen, mayor es la proporción de las ventas que queda disponible antes de considerar los gastos operativos, intereses e impuestos.
 
 Para calcularlo se divide la utilidad bruta entre los ingresos netos por ventas:
@@ -168,6 +171,7 @@ margen_bruto_tabla
 El margen de utilidad bruta de Alsea se mantuvo bastante estable en los tres años analizados. En 2023 fue de aproximadamente 66.68%, en 2024 subió ligeramente a 66.98% y en 2025 bajó a 66.02%. Aunque hubo una pequeña disminución en 2025, el margen se ha mantenido alrededor del 66%, por lo que no se observan cambios muy grandes en la proporción de utilidad que queda después de cubrir el costo directo de las ventas.
 
 ## Margen de utilidad operativa
+
 El margen de utilidad operativa muestra qué porcentaje de los ingresos queda después de cubrir los costos de venta y los gastos necesarios para operar el negocio. Este margen permite observar qué tan eficiente es la empresa en su operación principal antes de considerar intereses e impuestos.
 
 Para calcularlo se divide la utilidad operativa entre los ingresos netos por ventas:
@@ -175,7 +179,6 @@ Para calcularlo se divide la utilidad operativa entre los ingresos netos por ven
 $$ \text{Margen de utilidad operativa} = \frac{\text{Utilidad operativa}}{\text{Ingresos netos por ventas}} \times 100 $$
 
 En este análisis se obtuvo la ganancia operativa (EBIT) de Alsea para 2023, 2024 y 2025 y se dividió entre los ingresos netos por ventas de cada año para calcular el margen operativo correspondiente.
-
 
 ```{r}
 utilidad_operativa <- anual |>
@@ -219,6 +222,7 @@ margen_operativo_tabla
 La utilidad operativa de Alsea aumentó ligeramente en los tres años analizados, pasando de \$8,030.019 millones de pesos en 2023 a \$8,197.673 millones en 2024 y \$8,228.641 millones en 2025. Sin embargo, el margen operativo fue de 10.53% en 2023, 10.57% en 2024 y bajó a 9.57% en 2025. Esto quiere decir que, aunque la utilidad operativa aumentó en términos de dinero, en 2025 representó una menor proporción de las ventas, por lo que los gastos operativos tuvieron un mayor peso sobre los ingresos.
 
 ## Margen de utilidad neta
+
 El margen de utilidad neta muestra qué porcentaje de los ingresos termina convirtiéndose en utilidad para la empresa después de considerar todos los costos y gastos, incluyendo los gastos operativos, intereses e impuestos. Este margen permite observar qué tan rentable es la empresa al final de todo el proceso.
 
 Para calcularlo se divide la utilidad neta entre los ingresos netos por ventas:
@@ -226,7 +230,6 @@ Para calcularlo se divide la utilidad neta entre los ingresos netos por ventas:
 $$ \text{Margen de utilidad neta} = \frac{\text{Utilidad neta}}{\text{Ingresos netos por ventas}} \times 100 $$
 
 En este análisis se obtuvo la utilidad neta de Alsea para 2023, 2024 y 2025 y se dividió entre los ingresos netos por ventas de cada año para calcular el margen neto correspondiente.
-
 
 ```{r}
 utilidad_neta <- anual |>
@@ -270,6 +273,7 @@ margen_neto_tabla
 La utilidad neta de Alsea cambió bastante durante los tres años analizados. En 2023 fue de \$3,041.618 millones de pesos, en 2024 bajó a \$762.591 millones y en 2025 volvió a aumentar a \$2,235.932 millones. Esto también se refleja en el margen neto, que fue de 3.989999% en 2023, bajó a 0.9831872% en 2024 y después aumentó a 2.599526% en 2025. Esto muestra que 2024 fue el año más débil de los tres en cuanto a la utilidad final que Alsea logró conservar de sus ventas, mientras que en 2025 hubo una recuperación, aunque todavía sin regresar al nivel de 2023.
 
 ## Nivel de endeudamiento y estructura del capital
+
 El nivel de endeudamiento permite observar qué tan dependiente es una empresa del financiamiento externo para operar y crecer. Por otro lado, la estructura del capital muestra cómo se financian los activos de la empresa, principalmente a través de deuda y patrimonio.
 
 Para este análisis se tomaron los pasivos totales, el patrimonio y la deuda financiera de Alsea para 2023, 2024 y 2025. La deuda financiera se obtuvo sumando los créditos y préstamos corrientes y no corrientes de cada año.
@@ -281,7 +285,6 @@ También se calculó la relación deuda/patrimonio para observar cuánta deuda f
 $$ \text{Deuda/Patrimonio} = \frac{\text{Deuda financiera total}}{\text{Patrimonio}} $$
 
 Un valor mayor en esta relación indica un mayor nivel de apalancamiento financiero y, por lo tanto, una mayor dependencia de la deuda en comparación con los recursos propios de la empresa.
-
 
 ```{r}
 estructura_capital <- anual |>
@@ -387,6 +390,7 @@ También se puede ver que la relación deuda/patrimonio ha ido aumentando, pasan
 # Indicadores financieros clave
 
 ## ROE
+
 El ROE (Return on Equity) mide qué tan rentable es una empresa en relación con el patrimonio de sus accionistas. Este indicador permite observar cuánta utilidad genera la empresa por cada peso de patrimonio.
 
 Para calcularlo se divide la utilidad neta entre el patrimonio:
@@ -414,9 +418,10 @@ roe_tabla <- data.frame(
 roe_tabla
 ```
 
-El ROE de Alsea cambió bastante durante los tres años analizados. En 2023 fue de 31.69%, en 2024 bajó a 8.11% y en 2025, que es el dato más reciente, volvió a aumentar hasta 25.47%. Esto significa que en 2025 Alsea generó aproximadamente $0.25 pesos de utilidad neta por cada peso de patrimonio. La recuperación del ROE se relaciona con el aumento de la utilidad neta de la empresa durante 2025. Sin embargo, el indicador todavía se encuentra por debajo del nivel de 2023. Además, debido a que Alsea tiene un nivel importante de endeudamiento y un patrimonio relativamente menor, el ROE debe analizarse junto con sus indicadores de apalancamiento, ya que un ROE alto no necesariamente significa que toda la mejora provenga únicamente de una mayor eficiencia del negocio.
+El ROE de Alsea cambió bastante durante los tres años analizados. En 2023 fue de 31.69%, en 2024 bajó a 8.11% y en 2025, que es el dato más reciente, volvió a aumentar hasta 25.47%. Esto significa que en 2025 Alsea generó aproximadamente \$0.25 pesos de utilidad neta por cada peso de patrimonio. La recuperación del ROE se relaciona con el aumento de la utilidad neta de la empresa durante 2025. Sin embargo, el indicador todavía se encuentra por debajo del nivel de 2023. Además, debido a que Alsea tiene un nivel importante de endeudamiento y un patrimonio relativamente menor, el ROE debe analizarse junto con sus indicadores de apalancamiento, ya que un ROE alto no necesariamente significa que toda la mejora provenga únicamente de una mayor eficiencia del negocio.
 
 ## ROA
+
 El ROA (Return on Assets) mide qué tan eficiente es una empresa para generar utilidad a partir de sus activos. Este indicador permite observar cuánta utilidad produce la empresa por cada peso invertido en activos.
 
 Para calcularlo se divide la utilidad neta entre los activos totales:
@@ -450,9 +455,11 @@ roa_tabla <- data.frame(
 
 roa_tabla
 ```
-El ROA de Alsea fue de 3.93% en 2023, bajó a 0.93% en 2024 y en 2025, que es el dato más reciente, aumentó a 2.78%. Esto significa que en 2025 Alsea generó aproximadamente $0.028 pesos de utilidad neta por cada peso invertido en activos. La recuperación del ROA se relaciona con el aumento de la utilidad neta durante 2025, aunque todavía no alcanza el nivel de 2023. En el caso de Alsea, este indicador es importante porque la empresa requiere una cantidad considerable de activos para operar su red de restaurantes, cafeterías, centros de distribución e infraestructura, por lo que el ROA permite observar qué tan bien está aprovechando esos recursos para generar ganancias.
+
+El ROA de Alsea fue de 3.93% en 2023, bajó a 0.93% en 2024 y en 2025, que es el dato más reciente, aumentó a 2.78%. Esto significa que en 2025 Alsea generó aproximadamente \$0.028 pesos de utilidad neta por cada peso invertido en activos. La recuperación del ROA se relaciona con el aumento de la utilidad neta durante 2025, aunque todavía no alcanza el nivel de 2023. En el caso de Alsea, este indicador es importante porque la empresa requiere una cantidad considerable de activos para operar su red de restaurantes, cafeterías, centros de distribución e infraestructura, por lo que el ROA permite observar qué tan bien está aprovechando esos recursos para generar ganancias.
 
 ## Deuda / Capital
+
 La relación Deuda/Capital muestra qué proporción de la estructura de financiamiento de una empresa proviene de deuda. Este indicador permite observar qué tan dependiente es la empresa del financiamiento con deuda en comparación con el capital total utilizado para financiarse.
 
 Para calcularlo se divide la deuda financiera total entre la suma de la deuda financiera y el patrimonio:
@@ -460,6 +467,7 @@ Para calcularlo se divide la deuda financiera total entre la suma de la deuda fi
 $$ \text{Deuda/Capital} = \frac{\text{Deuda financiera total}} {\text{Deuda financiera total} + \text{Patrimonio}} \times 100 $$
 
 En este análisis se utilizó la deuda financiera total y el patrimonio de Alsea para 2023, 2024 y 2025. Aunque se muestran los tres años para observar su evolución, el dato más actual corresponde a 2025.
+
 ```{r}
 deuda_capital_2025 <- deuda_total_2025 / (deuda_total_2025 + patrimonio$`2025`)
 deuda_capital_2024 <- deuda_total_2024 / (deuda_total_2024 + patrimonio$`2024`)
@@ -478,9 +486,11 @@ deuda_capital_tabla <- data.frame(
 
 deuda_capital_tabla
 ```
+
 La relación Deuda/Capital de Alsea fue de aproximadamente 82.27% en 2023, aumentó a 84.27% en 2024 y en 2025, que es el dato más reciente, llegó a 85.29%. Esto significa que una parte muy importante del capital utilizado para financiar a la empresa proviene de deuda. En el caso de Alsea, este indicador es relevante porque la empresa opera una red muy grande de restaurantes y requiere recursos para mantener sus operaciones, abrir nuevas unidades y financiar su infraestructura. El aumento de esta relación muestra una mayor dependencia del financiamiento con deuda, lo que puede aumentar el riesgo financiero si la empresa enfrenta mayores costos de financiamiento o una disminución en su capacidad para generar utilidades.
 
 ## Deuda / EBITDA
+
 La relación Deuda/EBITDA muestra cuántas veces el EBITDA de una empresa representa su nivel de deuda financiera. Este indicador se utiliza para evaluar qué tan pesada es la deuda en relación con la capacidad que tiene la empresa para generar recursos a partir de su operación.
 
 Para calcularlo se divide la deuda financiera total entre el EBITDA:
@@ -515,9 +525,11 @@ deuda_ebitda_tabla <- data.frame(
 
 deuda_ebitda_tabla
 ```
+
 La relación Deuda/EBITDA de Alsea fue de aproximadamente 2.81 veces en 2023, aumentó a 3.11 veces en 2024 y en 2025, que es el dato más reciente, disminuyó ligeramente a 3.01 veces. Esto significa que la deuda financiera de Alsea equivale aproximadamente a tres veces el EBITDA que genera la empresa. La disminución de 2025 representa una pequeña mejora respecto a 2024, aunque el nivel sigue siendo mayor al de 2023. En el caso de Alsea, este indicador es importante porque permite evaluar si la generación operativa de sus restaurantes y demás unidades es suficiente en relación con el nivel de deuda que mantiene la empresa.
 
 ## Margen EBITDA
+
 El margen EBITDA muestra qué porcentaje de los ingresos se convierte en EBITDA, es decir, en ganancias antes de intereses, impuestos, depreciación y amortización. Este indicador permite observar la rentabilidad operativa del negocio sin considerar todavía los efectos del financiamiento, los impuestos y los cargos contables relacionados con depreciación y amortización.
 
 Para calcularlo se divide el EBITDA entre los ingresos netos por ventas:
@@ -545,9 +557,11 @@ margen_ebitda_tabla <- data.frame(
 margen_ebitda_tabla
 
 ```
+
 El margen EBITDA de Alsea fue de aproximadamente 20.76% en 2023, aumentó ligeramente a 20.89% en 2024 y en 2025, que es el dato más reciente, disminuyó a 19.66%. Esto significa que en 2025 alrededor del 19.66% de los ingresos de la empresa se convirtió en EBITDA. En el caso de Alsea, este indicador es importante porque permite observar qué tan rentable es la operación de sus restaurantes y demás unidades antes de considerar intereses, impuestos, depreciación y amortización. La disminución observada en 2025 muestra que una menor proporción de las ventas terminó convirtiéndose en EBITDA, por lo que la rentabilidad operativa fue un poco menor que en los dos años anteriores.
 
 # Cálculo del EPS trimestral 2019-2025
+
 El EPS (Earnings Per Share) o utilidad por acción muestra cuánto beneficio genera la empresa por cada acción en circulación. En este caso se utiliza el EPS diluido, ya que considera el posible efecto de instrumentos que podrían aumentar el número de acciones y reducir la utilidad correspondiente a cada una.
 
 Para este análisis se utilizaron datos trimestrales de FactSet desde 2019 hasta 2025 con el objetivo de observar cómo ha evolucionado la rentabilidad por acción de Alsea y qué tan estable ha sido durante el periodo.
@@ -603,6 +617,7 @@ plot(
 
 abline(h = 0)
 ```
+
 El EPS diluido de Alsea presentó cambios importantes entre 2019 y 2025, por lo que no se puede considerar completamente estable durante todo el periodo. En 2019 los valores se mantuvieron positivos y relativamente bajos, pero en 2020 hubo una caída muy fuerte, especialmente en el segundo trimestre, cuando el EPS llegó a -3.1161. Esto muestra un deterioro importante en la rentabilidad por acción durante ese año.
 
 A partir de 2021 comenzó una recuperación. Aunque el primer trimestre todavía fue negativo, posteriormente el EPS regresó a valores positivos. Durante 2022 y 2023 se observa una mejora más clara y el punto más alto del periodo se presentó en el cuarto trimestre de 2023, con un EPS de 1.8485.
@@ -612,6 +627,7 @@ En 2024 el EPS volvió a disminuir y mostró valores más bajos, mientras que en
 # Dividendos y Split
 
 ## Dividendos
+
 Alsea sí ha distribuido dividendos a sus accionistas, aunque no mantiene una frecuencia completamente constante. Para analizar su historial de dividendos se utilizó información obtenida de FactSet, donde se muestran las fechas ex-dividendo y el monto pagado por acción.
 
 ```{r}
@@ -628,13 +644,15 @@ dividendos_hist <- dividendos |>
 
 dividendos_hist
 ```
+
 De acuerdo con el historial obtenido, Alsea realizó pagos de dividendos en 2013 y posteriormente de manera más frecuente entre 2015 y 2018. Sin embargo, después del pago realizado en 2018 hubo un periodo prolongado sin distribución de dividendos, ya que entre 2019 y 2023 no se registraron nuevos pagos.
 
-En 2024 la empresa retomó la distribución de utilidades con un dividendo de $1.20 MXN por acción, y en 2025 realizó nuevamente un pago, aunque por un monto menor, de aproximadamente $0.5342 MXN por acción.
+En 2024 la empresa retomó la distribución de utilidades con un dividendo de \$1.20 MXN por acción, y en 2025 realizó nuevamente un pago, aunque por un monto menor, de aproximadamente \$0.5342 MXN por acción.
 
 Este comportamiento muestra que Alsea no mantiene una frecuencia fija de pago de dividendos. Después de varios años en los que los pagos fueron relativamente frecuentes, la empresa suspendió su distribución durante varios años y posteriormente la retomó en 2024. Por lo tanto, la política de dividendos ha presentado cambios importantes a lo largo del tiempo y los dividendos no pueden considerarse un flujo completamente estable o predecible para los accionistas.
 
 ## Split
+
 Alsea también ha realizado splits de sus acciones históricamente, aunque estos eventos ocurrieron antes del periodo de 2019 a 2025. Entre los antecedentes destaca el split realizado el 7 de febrero de 2007, con una proporción de 4 a 1, lo que significa que por cada acción existente se generaron cuatro acciones después del ajuste.
 
 Posteriormente se registraron otros ajustes, entre ellos uno en 2008 y el split más reciente de la empresa, realizado el 24 de abril de 2012, con una proporción aproximada de 1.0267 a 1.
@@ -645,32 +663,61 @@ Durante el periodo analizado de 2019 a 2025 no se registraron nuevos splits de l
 
 ## Riesgos operativos
 
-Uno de los riesgos más importantes es la inflación, ya que puede aumentar el precio de alimentos, materias primas, energía, transporte y salarios. Para Alsea esto es relevante porque estos elementos forman parte importante del costo de operación de sus restaurantes. En los resultados analizados se observa que, aunque los ingresos aumentaron aproximadamente 10.89% en 2025, el margen bruto disminuyó de 66.98% en 2024 a 66.02% en 2025 y el margen operativo pasó de 10.57% a 9.57%. Esto muestra que un crecimiento en las ventas no necesariamente significa una mejora en la misma proporción de la rentabilidad, especialmente cuando aumentan los costos.
+Alsea enfrenta diferentes riesgos operativos debido al tamaño y complejidad de su negocio. La empresa administra miles de restaurantes de distintas marcas y opera en varios países, por lo que cualquier problema relacionado con proveedores, alimentos, personal, tecnología o funcionamiento de los establecimientos puede afectar sus ventas y resultados.
+
+Uno de los principales riesgos se encuentra en la cadena de suministro. Alsea depende de proveedores para recibir alimentos, bebidas y otros insumos necesarios para mantener en operación sus restaurantes. Una interrupción en el abastecimiento, problemas de transporte o falta de algún producto podría provocar dificultades para ofrecer ciertos productos y generar costos adicionales. Por esta razón, la empresa cuenta con programas de evaluación y monitoreo de proveedores y procesos específicos de distribución y logística.
+
+Otro riesgo importante es la calidad e inocuidad de los alimentos. Al tratarse de una empresa del sector restaurantero, un problema de contaminación, conservación o preparación de alimentos podría afectar directamente a los consumidores. Además del posible costo económico, un incidente de este tipo podría afectar la reputación de marcas importantes como Starbucks, Domino's o Vips. Para disminuir este riesgo, Alsea mantiene controles sobre la adquisición de materias primas, cadena de frío, limpieza, almacenamiento y preparación de alimentos.
+
+También existe un riesgo relacionado con el personal. El funcionamiento de los restaurantes depende de contar con suficientes empleados capacitados para mantener la calidad y rapidez del servicio. Una alta rotación de trabajadores, falta de personal o problemas de capacitación pueden aumentar los costos y afectar la experiencia de los clientes. Debido al tamaño de Alsea y a la cantidad de establecimientos que opera, la administración de sus recursos humanos representa una parte importante de su operación.
+
+La tecnología y ciberseguridad representan otro riesgo operativo. La empresa utiliza sistemas para ventas, pagos, aplicaciones, programas de lealtad, pedidos digitales y administración de información. Una falla tecnológica o un ataque cibernético podría interrumpir las operaciones de los restaurantes o comprometer información de clientes y de la propia empresa. Alsea reconoce la ciberseguridad, protección de datos y transformación digital como temas relevantes dentro de su administración de riesgos.
+
+Finalmente, Alsea está expuesta al riesgo de que alguna de sus marcas pierda aceptación entre los consumidores. Los gustos y hábitos de consumo pueden cambiar rápidamente, por lo que la empresa necesita mantener sus productos, servicio y experiencia atractivos frente a sus competidores. Su portafolio de diferentes marcas ayuda a disminuir la dependencia de una sola cadena, aunque también aumenta la complejidad para mantener estándares similares de operación y calidad.
+
+En conjunto, los riesgos operativos identificados pueden tener un impacto directo sobre los resultados financieros de Alsea. Una interrupción en el suministro, mayores costos laborales o de insumos, problemas de calidad o una interrupción tecnológica pueden incrementar los costos de operación o reducir las ventas. Esto es particularmente relevante considerando que, aunque los ingresos aumentaron 10.89% en 2025, el margen bruto disminuyó de 66.98% a 66.02% y el margen operativo de 10.57% a 9.57%, lo que muestra que el crecimiento de los ingresos no necesariamente se traduce en una mejora proporcional de la rentabilidad.
 
 ## Riesgos macroeconómicos
 
 Alsea se encuentra expuesta a diferentes riesgos macroeconómicos debido a que opera en varios países y su negocio depende directamente del consumo de las personas. Entre los factores que más pueden afectar a la empresa se encuentran la inflación, el crecimiento económico, el tipo de cambio y las tasas de interés.
 
+Uno de los riesgos más importantes es la inflación, ya que puede aumentar el precio de alimentos, materias primas, energía, transporte y salarios. Para Alsea esto es relevante porque estos elementos forman parte importante del costo de operación de sus restaurantes. En los resultados analizados se observa que, aunque los ingresos aumentaron aproximadamente 10.89% en 2025, el margen bruto disminuyó de 66.98% en 2024 a 66.02% en 2025 y el margen operativo pasó de 10.57% a 9.57%. Esto muestra que un crecimiento en las ventas no necesariamente significa una mejora en la misma proporción de la rentabilidad, especialmente cuando aumentan los costos.
+
 También existe riesgo relacionado con el crecimiento económico y el consumo. Alsea opera restaurantes, cafeterías y establecimientos de comida, por lo que una parte de sus ventas depende del ingreso disponible de los consumidores. Durante periodos de menor crecimiento económico, desempleo o pérdida del poder adquisitivo, las personas pueden disminuir la frecuencia con la que comen fuera de casa o buscar opciones más económicas. Esto podría afectar las ventas de las diferentes marcas operadas por la empresa.
 
 Otro factor relevante es el tipo de cambio. Alsea tiene presencia en 12 países, por lo que obtiene ingresos y realiza operaciones en diferentes monedas. Los cambios en el valor del peso mexicano frente al dólar, euro y otras monedas pueden afectar tanto el valor de sus resultados internacionales como el costo de algunos insumos y obligaciones. Aunque la diversificación geográfica reduce la dependencia de un solo mercado, también aumenta la exposición de la empresa a movimientos cambiarios.
+
+Finalmente, las tasas de interés representan un riesgo importante debido al nivel de endeudamiento de Alsea. En 2025 la relación deuda/capital fue aproximadamente de 5.80 y la deuda/EBITDA se ubicó alrededor de 3.01 veces. Esto significa que un aumento en las tasas de interés podría incrementar el costo del financiamiento y ejercer mayor presión sobre las utilidades y el flujo de efectivo de la empresa.
 
 En conjunto, Alsea presenta una exposición importante a las condiciones económicas de los países donde opera. La combinación de inflación elevada, menor crecimiento económico, movimientos desfavorables en los tipos de cambio y tasas de interés altas podría afectar sus ventas, costos y gastos financieros. Por esta razón, aunque la empresa cuenta con una operación diversificada y sus ingresos han mostrado crecimiento, sus resultados financieros también pueden ser sensibles a cambios en el entorno macroeconómico.
 
 ## Riesgos financieros
 
-Finalmente, las tasas de interés representan un riesgo importante debido al nivel de endeudamiento de Alsea. En 2025 la relación deuda/capital fue aproximadamente de 85.29% y la deuda/EBITDA se ubicó alrededor de 3.01 veces. Esto significa que un aumento en las tasas de interés podría incrementar el costo del financiamiento y ejercer mayor presión sobre las utilidades y el flujo de efectivo de la empresa.
+El principal riesgo financiero de Alsea proviene de su nivel de endeudamiento y de la composición de esa deuda. Al 31 de diciembre de 2025 la deuda con costo ascendía a \$33,989 millones de pesos, de los cuales alrededor del 54% está contratado a tasa variable, referenciado a la TIIE o al Euribor más una sobretasa. Esto significa que un aumento en las tasas de referencia se traduce de forma casi inmediata en un mayor costo de financiamiento. El efecto ya es visible: los intereses pagados pasaron de \$3,101 millones en 2024 a \$4,744 millones en 2025, un incremento de 53.0%, y la cobertura de intereses (utilidad de operación entre gastos financieros) es de apenas 1.47 veces. A esto se suma el riesgo cambiario, ya que la empresa mantiene una posición monetaria neta pasiva en moneda extranjera de \$15,984 millones de pesos, equivalente a 1.8 veces su capital contable, derivada principalmente de un bono en dólares y otro en euros. Alsea mitiga parcialmente esta exposición con coberturas por 459.20 millones de dólares para los siguientes doce meses, a un tipo de cambio promedio de \$18.71 pesos por dólar.
+
+El segundo riesgo relevante es el de liquidez y refinanciamiento. Durante 2025 una parte importante de la deuda se reclasificó al corto plazo por la proximidad de sus vencimientos, de modo que el pasivo circulante alcanzó \$34,367 millones frente a un activo circulante de \$12,540 millones, es decir, una razón circulante de 0.36 veces. Al mismo tiempo el flujo libre de caja fue negativo en \$1,180 millones, cuando el año anterior había sido positivo en \$330 millones. Fitch Ratings estimó vencimientos por \$16,600 millones para 2026 y condicionó su calificación a que la empresa lograra atenderlos; en agosto de 2025 elevó la calificación nacional de Alsea a AA-(mex) con perspectiva estable, aunque señaló que un nivel de deuda ajustada a EBITDAR superior a 3.5 veces de forma sostenida podría llevar a una baja. La compañía concluyó la reestructuración de su deuda en enero de 2026. En conjunto, Alsea no enfrenta un problema de solvencia, pero sí una dependencia estructural de su capacidad de refinanciarse en condiciones favorables.
 
 # Conclusión
+Alsea puede caracterizarse como un negocio sólido en etapa de consolidación, cuyo crecimiento ya no proviene principalmente de la expansión. Los ingresos aumentaron 10.89% en 2025 y se abrieron 169 unidades hasta alcanzar 4,820 establecimientos en doce países, pero ese crecimiento vino acompañado de una compresión generalizada de márgenes: el bruto pasó de 66.98% a 66.02%, el operativo de 10.57% a 9.57% y el de EBITDA de 20.89% a 19.66%. La empresa vendió más pero convirtió una proporción menor de esas ventas en utilidad. A esto se suma un cambio de estrategia visible en el portafolio, pues durante 2025 desinvirtió TGI Friday's en España y Chili's y P.F. Chang's en Chile mientras incorporaba Raising Cane's, un comportamiento propio de una compañía que depura sus marcas para concentrar recursos, no de una en expansión que agrega sin podar.
+
+Los indicadores revelan de dónde proviene realmente la rentabilidad. El contraste entre un ROE de 25.47% y un ROA de 2.78% muestra que el rendimiento para el accionista no se genera por eficiencia en el uso de los activos, sino por apalancamiento: la deuda financiera de $50,894.610 millones equivale a 5.80 veces el patrimonio y a 3.01 veces el EBITDA, con una tendencia creciente frente a las 4.64 y 5.36 veces de 2023 y 2024. El modelo de negocio explica esta estructura, ya que operar marcas internacionales bajo franquicia maestra permite crecer sin construir marca desde cero, pero obliga a financiar con deuda la apertura y remodelación de unidades. La volatilidad de la utilidad neta confirma la fragilidad del esquema: $3,041.618 millones en 2023, $762.591 millones en 2024 y $2,235.932 millones en 2025. Los riesgos que podrían afectar esta trayectoria se agrupan en dos bloques: en el no sistemático están los riesgos operativos ya analizados, atenuados por la diversificación de marcas pero limitados por la concentración de 55.1% de las ventas en México; en el sistemático, más apremiante en el corto plazo, están la razón circulante de 0.36 veces, el flujo libre de caja negativo de $1,180 millones, la cobertura de intereses de 1.47 veces y una posición neta pasiva en moneda extranjera de $15,984 millones.
+
+De estos fundamentos se desprende la expectativa de que la acción muestre volatilidad superior a la del mercado y alta sensibilidad a choques externos. El doble apalancamiento, operativo por los costos fijos de una red de miles de restaurantes y financiero por una deuda de 5.80 veces el patrimonio, hace que variaciones pequeñas en ventas produzcan variaciones amplificadas en la utilidad neta, que es la variable que el mercado descuenta al valuar la acción. La serie del EPS trimestral ya lo confirma: se desplomó a −3.12 en el segundo trimestre de 2020, alcanzó 1.8485 en el cuarto trimestre de 2023 y repuntó a 1.4079 en el segundo trimestre de 2025. Cabe anticipar entonces una desviación estándar elevada, kurtosis alta con colas pesadas y sesgo negativo, ya que el downside está menos acotado que el upside, además de una beta superior a la unidad, porque los riesgos dominantes son sistemáticos y la diversificación de Alsea reduce justamente el riesgo que sí puede eliminarse. Estas son hipótesis derivadas del análisis fundamental, no mediciones, por lo que la siguiente etapa deberá someterlas a prueba con la serie histórica de rendimientos, calculando la volatilidad realizada frente al índice de referencia, estimando la beta y examinando los momentos de tercer y cuarto orden.
 
 # Referencias
 
-Alsea, S.A.B. de C.V. (2025). *Información financiera y reportes para inversionistas 2025*. Alsea. https://www.alsea.net/investor-relations
+Alsea, S.A.B. de C.V. (s. f.). *Historia y perfil corporativo*. Alsea. https://www.alsea.net
 
-Alsea, S.A.B. de C.V. (s. f.). *Historia de Alsea*. Alsea. https://www.alsea.net
+Alsea, S.A.B. de C.V. (2025). *Informe anual 2025*. Alsea. https://www.alsea.net/investor-relations/reports-center/annual-reports.html
+
+Alsea, S.A.B. de C.V. (2026). *Reporte trimestral: cuarto trimestre y año completo 2025 (Clave de cotización: ALSEA)* [Reporte presentado ante la Bolsa Mexicana de Valores]. Bolsa Mexicana de Valores. https://www.alsea.net/uploads/es/documents/alsea_reporte_trimestral_bmv_sific/reporte_trimestral_4T2025_BMV.pdf
+
+Bolsa Mexicana de Valores. (s. f.). *Alsea, S.A.B. de C.V. (ALSEA): Información de la emisora*. Bolsa Mexicana de Valores.
 
 EMIS. (2026). *Alsea, S.A.B. de C.V.: Información financiera y estados financieros* [Base de datos]. EMIS.
 
 FactSet Research Systems Inc. (2026). *Alsea, S.A.B. de C.V. (ALSEA-MX): Financials, key items and corporate actions* [Base de datos]. FactSet.
 
-Bolsa Mexicana de Valores. (2026). *Alsea, S.A.B. de C.V. (ALSEA): Información de la emisora*. BMV.
+Fitch Ratings. (2025, 22 de agosto). *Fitch sube calificación nacional de Alsea a ‘AA-(mex)’; perspectiva estable* [Comentario de acción de calificación]. Fitch Ratings México. https://bmv.com.mx/docs-pub/eventoca/eventoca_1488403_2.pdf
+
+Investing.com. (s. f.). *Historial de splits de Alsea (ALSEA)*. https://mx.investing.com/equities/alsea-historical-data-splits
