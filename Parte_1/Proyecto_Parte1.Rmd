@@ -1,12 +1,18 @@
 ---
 title: "Proyecto Final - Parte 1"
 subtitle: "Alsea, S.A.B. de C.V. (ALSEA.MX)"
+author:
+  - "Nicole Getzabel Flores Godínez"
+  - "Andrea Gutiérrez Rentería"
+  - "Isaac Emiliano Meza López"
+  - "María Fernanda Gómez Flores"
 output:
   html_document:
     toc: true
     toc_float: true
     number_sections: true
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
