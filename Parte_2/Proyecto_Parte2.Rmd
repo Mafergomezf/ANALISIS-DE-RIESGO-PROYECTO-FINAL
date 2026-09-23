@@ -1,0 +1,61 @@
+---
+title: "Proyecto Final - Parte 2"
+subtitle: "Alsea, S.A.B. de C.V. (ALSEA.MX)"
+author:
+  - "Nicole Getzabel Flores Godínez"
+  - "Andrea Gutiérrez Rentería"
+  - "Isaac Emiliano Meza López"
+  - "María Fernanda Gómez Flores"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(quantmod)
+library(moments)
+```
+
+# Introducción
+
+# Exploración de la serie histórica
+
+## Precio histórico de ALSEA
+
+## Rendimientos
+
+## Periodos relevantes
+
+## Máximo drawdown
+
+# Identificación de eventos y explicación de cambios
+
+## Periodo 1
+
+## Periodo 2
+
+## Periodo 3
+
+## Periodo 4
+
+## Periodo 5
+
+# Relación con el entorno económico
+
+## Rendimiento anual de ALSEA y crecimiento del PIB
+
+## Interpretación de la relación con el ciclo económico
+
+# Análisis del periodo reciente
+
+# Conclusión
+
+# Referencias
