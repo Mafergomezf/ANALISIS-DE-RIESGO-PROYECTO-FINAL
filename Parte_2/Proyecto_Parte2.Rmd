@@ -20,41 +20,22 @@ knitr::opts_chunk$set(
   message = FALSE
 )
 
+library(readxl)
 library(quantmod)
 library(moments)
 ```
-
 
 # Introducción
 
 # Exploración de la serie histórica
 
-
+## Preparación y cobertura de los datos
 
 ## Precio histórico de ALSEA
 
-Para comenzar el análisis se descargó la serie histórica del precio de la acción de Alsea desde 1999, año en que la empresa comenzó a cotizar en la Bolsa Mexicana de Valores, hasta el cierre del primer semestre de 2026. Se utiliza el precio de cierre ajustado, ya que incorpora los ajustes históricos que pueden existir por dividendos o splits y permite trabajar con una serie comparable a lo largo del tiempo.
-```{r precio-historico}
-ticker <- "ALSEA.MX"
-inicio <- "1999-01-01"
-fin <- "2026-07-01"
-
-getSymbols(
-  ticker,
-  src = "yahoo",
-  from = inicio,
-  to = fin
-)
-
-prices <- na.omit(Ad(get(ticker)))
-
-head(prices)
-tail(prices)
-```
-
-
-
 ## Rendimientos
+
+## Comportamiento general de la serie
 
 ## Periodos relevantes
 
