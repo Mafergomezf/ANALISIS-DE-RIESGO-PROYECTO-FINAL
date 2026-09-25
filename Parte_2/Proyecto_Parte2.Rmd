@@ -21,32 +21,29 @@ knitr::opts_chunk$set(
 )
 
 library(readxl)
-library(tidyverse)
 library(quantmod)
 library(moments)
 ```
 
 # Introducción
 
-En esta segunda parte del proyecto se analizará el comportamiento histórico del precio de la acción de Alsea y sus rendimientos, con el objetivo de identificar movimientos relevantes y relacionarlos con eventos económicos, políticos y específicos de la empresa.
+En esta segunda parte del proyecto vamos a analizar cómo se ha movido históricamente el precio de la acción de Alsea y sus rendimientos, para después relacionar esos movimientos con eventos reales que pudieron haber afectado a la empresa y al mercado.
 
-Primero se estudiará la trayectoria histórica del precio y de los rendimientos de la acción, además de estimar el máximo drawdown observado durante el periodo de análisis. A partir de estas series se identificarán distintos periodos en los que Alsea presentó incrementos o caídas pronunciadas.
+Primero vamos a revisar la serie de precios y rendimientos e identificar periodos donde hubo cambios fuertes, tanto caídas como recuperaciones. También vamos a calcular el máximo drawdown para ver cuál ha sido la caída acumulada más fuerte de la acción dentro del periodo que estamos analizando.
 
-Posteriormente, se investigarán los principales acontecimientos ocurridos durante esos periodos para analizar qué información o choques pudieron haber influido en el comportamiento del precio. También se comparará el rendimiento anual de la acción con el crecimiento anual del PIB de México para observar su relación con el ciclo económico.
-
-Finalmente, se analizarán los acontecimientos más recientes y se integrarán los resultados para reflexionar sobre la exposición de los activos financieros a nueva información, choques externos e incertidumbre.
+Después se van a investigar noticias y eventos económicos, políticos y específicos de Alsea para entender qué estaba pasando alrededor de esos movimientos. La idea no es decir que una noticia por sí sola causó un cambio en el precio, sino analizar qué información nueva o qué choques pudieron cambiar las expectativas de los inversionistas.
 
 # Exploración de la serie histórica
 
-## Preparación y cobertura de los datos
+## Paquetes necesarios
 
-La acción de Alsea comenzó a cotizar en la Bolsa Mexicana de Valores el 25 de junio de 1999. Para construir la serie histórica utilizada en este análisis se emplearon datos obtenidos de FactSet, una de las fuentes sugeridas para el proyecto.
+Para trabajar la serie usamos principalmente `quantmod`, porque es la librería que hemos utilizado en clase para rendimientos y series financieras. Como los precios de ALSEA los descargamos de FactSet en Excel, también usamos `readxl` para poder importar el archivo.
 
-El archivo exportado de FactSet contiene información de fecha, precio, volumen y variaciones de la acción. La base presenta observaciones de precio desde el 13 de septiembre de 2000; sin embargo, durante los primeros años existen periodos en los que el precio permanece sin cambios y no se reporta información de volumen o variaciones diarias.
+## Importación y cobertura de los datos
 
-Por esta razón, es importante distinguir entre la cobertura histórica disponible en la fuente y el periodo que posteriormente se utilizará para realizar los cálculos cuantitativos. Esta separación evita interpretar como movimientos normales de mercado observaciones para las que la información disponible es limitada.
+Alsea comenzó a cotizar en la Bolsa Mexicana de Valores el 25 de junio de 1999. Para este análisis utilizamos la información histórica descargada de FactSet.
 
-```{r importacion-datos, include=FALSE}
+```{r importar_datos}
 precios_factset <- read_excel(
   "data/Precios_ALSEA_FactSet.xlsx",
   skip = 2
@@ -59,98 +56,131 @@ precios_factset <- precios_factset[
 ]
 ```
 
-Para mantener el periodo solicitado en la entrega, la información se limita al cierre del primer semestre de 2026.
+Como la tarea pide analizar hasta el primer semestre de 2026, cortamos la serie al 30 de junio de 2026.
 
-```{r periodo-analisis}
-precios_alsea <- precios_factset |>
-  dplyr::filter(Date <= as.Date("2026-06-30"))
+```{r periodo_analisis}
+precios_alsea <- precios_factset[
+  precios_factset$Date <= as.Date("2026-06-30"),
+]
 
 fecha_inicial <- first(precios_alsea$Date)
 fecha_final <- last(precios_alsea$Date)
 observaciones <- NROW(precios_alsea)
 
-data.frame(
+cobertura <- data.frame(
   Fecha_inicial = fecha_inicial,
   Fecha_final = fecha_final,
   Observaciones = observaciones
 )
+
+cobertura
 ```
 
-La base contiene **6,487 observaciones diarias** entre el **13 de septiembre de 2000 y el 30 de junio de 2026**. Aunque Alsea comenzó a cotizar desde 1999, esta es la cobertura disponible en la serie histórica exportada de FactSet.
+La base tiene **6,487 observaciones diarias** entre el **13 de septiembre de 2000 y el 30 de junio de 2026**. Aunque Alsea empezó a cotizar desde 1999, en el archivo de FactSet que tenemos la información disponible empieza en septiembre de 2000, por eso no estamos usando datos anteriores que realmente no aparecen en la base.
 
-Al revisar las primeras observaciones se encontró que entre 2000 y los primeros meses de 2004 existen periodos con precios repetidos y sin información de volumen. A partir del 20 de abril de 2004 la base comienza a presentar de manera más regular información de precio, volumen y variaciones diarias. Antes de utilizar la serie para calcular rendimientos y medidas de riesgo, se revisará también el tratamiento que FactSet aplica a los eventos corporativos, debido a que estos pueden generar cambios mecánicos en el precio que no representan una ganancia o pérdida económica para el inversionista.
+También encontramos que en los primeros años hay varios precios repetidos y días donde no aparece volumen ni rendimiento. Por eso revisamos con más detalle la parte inicial de la serie antes de calcular los rendimientos.
+
+```{r revision_datos_iniciales, include=FALSE}
+revision_2004 <- precios_alsea[
+  precios_alsea$Date >= as.Date("2004-04-15") &
+  precios_alsea$Date <= as.Date("2004-04-30"),
+]
+
+revision_2007 <- precios_alsea[
+  precios_alsea$Date >= as.Date("2007-02-01") &
+  precios_alsea$Date <= as.Date("2007-02-15"),
+]
+
+revision_2004
+revision_2007
+```
+
+A partir del **20 de abril de 2004** ya se observa información más regular en precio, volumen y variaciones diarias. Antes de esa fecha había varios precios repetidos y datos faltantes, por lo que decidimos empezar los cálculos cuantitativos desde ahí.
+
+También revisamos febrero de 2007 porque Alsea tuvo un split de acciones en ese periodo. En la serie de FactSet no aparece una caída mecánica fuerte alrededor de esa fecha y los precios continúan de forma normal, por lo que la serie parece ya considerar ese ajuste.
+
+Por esta razón, usamos el 20 de abril de 2004 como inicio para los cálculos y el primer rendimiento queda a partir del 21 de abril de 2004.
 
 ## Precio histórico de ALSEA
 
-La gráfica del precio permite observar la trayectoria general de la acción de Alsea a lo largo del periodo disponible e identificar visualmente etapas de crecimiento, caídas pronunciadas y posteriores recuperaciones.
+Primero graficamos el precio histórico para ver de manera general cómo se ha comportado la acción.
 
-Para esta primera exploración se utiliza toda la información de precio disponible en FactSet hasta el 30 de junio de 2026. El periodo inicial debe interpretarse con cautela debido a las limitaciones de información identificadas anteriormente.
-
-```{r grafica-precio}
+```{r grafica_precio}
 plot(
   precios_alsea$Date,
   precios_alsea$Price,
   type = "l",
   main = "ALSEA - Precio histórico",
-  xlab = "Fecha",
-  ylab = "Precio (MXN)"
+  ylab = "Precio (MXN)",
+  xlab = "",
+  col = "red"
 )
 ```
 
-## Rendimientos
+En la gráfica se puede ver que el precio no ha tenido un comportamiento estable durante todo el periodo. Hay etapas donde la acción crece durante varios años y otras donde presenta caídas fuertes.
 
-El rendimiento permite medir el cambio porcentual del precio de la acción entre dos periodos consecutivos. En este análisis se calculan tanto el rendimiento simple como el rendimiento logarítmico para distinguir claramente ambas medidas.
+Visualmente destacan varios cambios importantes, sobre todo alrededor de 2008-2009 y 2020. También se ve una etapa de crecimiento importante después de la crisis de 2008 y otra recuperación fuerte después de 2020.
 
-El rendimiento simple se define como:
+## Precio, log del precio y los rendimientos
 
-$$R_t = \frac{P_t}{P_{t-1}} - 1$$
+Siguiendo lo que hemos trabajado en clase, primero convertimos el precio a una serie de tiempo y después calculamos el logaritmo del precio, el rendimiento simple y el rendimiento logarítmico.
 
-mientras que el rendimiento logarítmico se calcula como:
+```{r precio_y_rendimientos}
+serie_analisis <- precios_alsea[
+  precios_alsea$Date >= as.Date("2004-04-20"),
+]
 
-$$r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)$$
-
-Para el análisis de riesgo se utilizará principalmente el rendimiento logarítmico, ya que es la medida que se ha trabajado en clase y permite sumar rendimientos a través del tiempo de manera consistente.
-
-```{r calculo-rendimientos}
-serie_analisis <- precios_alsea |>
-  dplyr::filter(Date >= as.Date("2004-04-20"))
-
-prices <- xts(
+precio <- xts(
   serie_analisis$Price,
   order.by = serie_analisis$Date
 )
 
+log_precio <- log(precio)
+
 simple_rend <- dailyReturn(
-  prices,
+  precio,
   type = "arithmetic"
 )[-1]
 
 log_rend <- dailyReturn(
-  prices,
+  precio,
   type = "log"
 )[-1]
 
-head(cbind(simple_rend, log_rend))
+head(cbind(simple_rend, log_rend, log_precio[index(log_rend)]))
 ```
 
-```{r grafica-rendimientos}
+El rendimiento simple se calcula como:
+
+$$R_t=\frac{P_t}{P_{t-1}}-1$$
+
+y el rendimiento logarítmico como:
+
+$$r_t=\ln\left(\frac{P_t}{P_{t-1}}\right)$$
+
+Calculamos los dos para no mezclar conceptos, pero para el análisis usamos principalmente el rendimiento logarítmico porque es el que hemos trabajado en clase y nos permite analizar los cambios diarios del precio de una forma consistente.
+
+## Gráfica de los rendimientos
+
+```{r grafica_rendimientos}
 plot(
   log_rend,
   main = "ALSEA - Rendimiento logarítmico diario",
   ylab = "Rendimiento",
-  xlab = ""
+  xlab = "",
+  col = "purple"
 )
 
 abline(h = 0)
 ```
 
-La serie de rendimientos muestra que la mayoría de los cambios diarios se concentra alrededor de cero, aunque existen periodos en los que la magnitud de las variaciones aumenta considerablemente. Esto sugiere que la magnitud de las variaciones de la acción no se mantiene constante a lo largo del tiempo, ya que existen etapas de relativa estabilidad y otras en las que se concentran movimientos mucho más fuertes.
+En la gráfica se puede ver que la mayoría de los rendimientos diarios están cerca de cero, pero hay ciertos periodos donde los cambios son mucho más grandes.
 
-Entre los movimientos diarios más pronunciados destacan varias observaciones durante la crisis financiera de 2008-2009 y, de manera especialmente clara, durante marzo de 2020. El 17 de marzo de 2020 se observa el rendimiento logarítmico negativo más grande de la muestra, seguido por otra caída importante el 18 de marzo. Posteriormente también aparecen rendimientos positivos elevados durante abril de 2020, lo que muestra que los periodos de fuertes caídas pueden estar acompañados por recuperaciones igualmente rápidas.
+Esto nos dice que no todos los periodos tienen el mismo nivel de movimientos. Hay etapas relativamente tranquilas y otras donde la acción presenta caídas y subidas mucho más fuertes.
 
-Estos movimientos extremos permiten identificar posibles episodios de mayor incertidumbre para la acción. Sin embargo, un rendimiento diario aislado no es suficiente para explicar el comportamiento del activo, por lo que en los siguientes apartados se analizarán periodos más amplios y posteriormente se investigarán los eventos económicos, políticos y empresariales que pudieron haber influido en ellos.
+Para ubicar mejor esos días, ordenamos los rendimientos desde los más negativos hasta los más positivos.
 
-```{r movimientos-extremos}
+```{r movimientos_extremos}
 rendimientos_tabla <- data.frame(
   Fecha = index(log_rend),
   Rendimiento = as.numeric(log_rend)
@@ -168,64 +198,59 @@ head(rendimientos_negativos, 10)
 head(rendimientos_positivos, 10)
 ```
 
+Entre los rendimientos negativos más fuertes aparecen varias fechas de **2008-2009** y especialmente de **marzo de 2020**. El rendimiento logarítmico negativo más grande de la muestra fue el **17 de marzo de 2020** y al día siguiente también hubo otra caída muy fuerte.
+
+Después también aparecen rendimientos positivos altos, sobre todo en periodos donde el precio comenzó a recuperarse. Esto es importante porque nos muestra que cuando hay mucha incertidumbre no solo pueden existir caídas grandes, también pueden aparecer recuperaciones rápidas.
+
 ## Comportamiento general de la serie
 
-La trayectoria histórica de ALSEA muestra varias etapas claramente diferenciadas. Durante los primeros años de la serie el precio se mantuvo en niveles relativamente bajos, mientras que a partir de mediados de la década de 2000 comenzó una fase de crecimiento importante que llevó a la acción a niveles mucho más altos durante los años siguientes.
+En general, la serie muestra diferentes etapas. Primero el precio se encontraba en niveles relativamente bajos y después comenzó a crecer de forma importante.
 
-Posteriormente se observan distintos episodios de caídas y recuperaciones. Uno de los primeros movimientos relevantes ocurre alrededor de la crisis financiera de 2008-2009, cuando los rendimientos diarios presentan una mayor dispersión y aparecen algunas de las variaciones más extremas de toda la muestra. Después de ese periodo, el precio inicia una recuperación que se extiende durante varios años y alcanza niveles cercanos a sus máximos históricos hacia la segunda mitad de la década de 2010.
+En 2008-2009 se observa una caída fuerte y varios rendimientos diarios extremos. Después de eso la acción se recupera y vuelve a crecer durante varios años.
 
-A partir de 2018 se observa nuevamente una etapa de debilitamiento del precio. Esta tendencia se vuelve mucho más pronunciada durante 2020, cuando la serie presenta una de las caídas más fuertes del periodo analizado y los rendimientos muestran niveles extraordinarios de variación. Posteriormente, la acción inicia una recuperación gradual, aunque con nuevas etapas de inestabilidad y correcciones en los años siguientes.
+Más adelante, entre 2018 y 2019, el precio vuelve a debilitarse y en 2020 la caída se vuelve mucho más fuerte. En ese año también aparecen algunos de los rendimientos diarios más extremos de toda la muestra.
 
-En conjunto, la serie muestra que el comportamiento de ALSEA no ha sido estable a lo largo del tiempo. Existen periodos prolongados de crecimiento, pero también episodios de pérdidas importantes y aumentos repentinos en la magnitud de los movimientos. Esto sugiere que el precio de la acción responde de manera significativa a cambios en las expectativas y al entorno económico y empresarial, por lo que resulta necesario analizar con mayor detalle los periodos en los que se observan movimientos más pronunciados.
+Después de 2020 la acción presenta una recuperación muy importante, aunque eso no significa que desde ahí el comportamiento haya sido estable. En los años siguientes también se observan correcciones y nuevas caídas.
 
-## Periodos relevantes
+Por eso consideramos que no basta con ver únicamente si el precio subió o bajó. También es importante analizar qué estaba pasando en esos momentos y qué nueva información pudieron estar recibiendo los inversionistas.
 
-Los movimientos diarios extremos permiten ubicar posibles etapas de mayor inestabilidad, pero para el análisis no se consideran únicamente días aislados. A partir de la gráfica del precio, la serie de rendimientos y las observaciones extremas, se seleccionan periodos más amplios en los que se observa una caída o recuperación relevante de la acción.
+## Identificación de periodos relevantes
 
-```{r revision-periodos}
-head(rendimientos_negativos, 15)
-head(rendimientos_positivos, 15)
+Para elegir los periodos no tomamos solamente los días con rendimientos extremos, porque la tarea pide analizar etapas más amplias. Primero seleccionamos varias ventanas donde visualmente se observaban movimientos importantes y calculamos cuánto cambió el precio entre el inicio y el final de cada una.
+
+```{r periodos_candidatos}
+periodo_1 <- serie_analisis[
+  serie_analisis$Date >= as.Date("2008-01-01") &
+  serie_analisis$Date <= as.Date("2009-06-30"),
+]
+
+periodo_2 <- serie_analisis[
+  serie_analisis$Date >= as.Date("2015-01-01") &
+  serie_analisis$Date <= as.Date("2017-12-31"),
+]
+
+periodo_3 <- serie_analisis[
+  serie_analisis$Date >= as.Date("2018-01-01") &
+  serie_analisis$Date <= as.Date("2019-12-31"),
+]
+
+periodo_4 <- serie_analisis[
+  serie_analisis$Date >= as.Date("2020-02-01") &
+  serie_analisis$Date <= as.Date("2020-05-31"),
+]
+
+periodo_5 <- serie_analisis[
+  serie_analisis$Date >= as.Date("2020-06-01") &
+  serie_analisis$Date <= as.Date("2023-12-31"),
+]
+
+periodo_6 <- serie_analisis[
+  serie_analisis$Date >= as.Date("2024-01-01") &
+  serie_analisis$Date <= as.Date("2026-06-30"),
+]
 ```
 
-```{r periodos-candidatos}
-periodo_1 <- serie_analisis |>
-  dplyr::filter(
-    Date >= as.Date("2008-01-01"),
-    Date <= as.Date("2009-06-30")
-  )
-
-periodo_2 <- serie_analisis |>
-  dplyr::filter(
-    Date >= as.Date("2015-01-01"),
-    Date <= as.Date("2017-12-31")
-  )
-
-periodo_3 <- serie_analisis |>
-  dplyr::filter(
-    Date >= as.Date("2018-01-01"),
-    Date <= as.Date("2019-12-31")
-  )
-
-periodo_4 <- serie_analisis |>
-  dplyr::filter(
-    Date >= as.Date("2020-02-01"),
-    Date <= as.Date("2020-05-31")
-  )
-
-periodo_5 <- serie_analisis |>
-  dplyr::filter(
-    Date >= as.Date("2020-06-01"),
-    Date <= as.Date("2023-12-31")
-  )
-
-periodo_6 <- serie_analisis |>
-  dplyr::filter(
-    Date >= as.Date("2024-01-01"),
-    Date <= as.Date("2026-06-30")
-  )
-```
-
-```{r cambios-periodos}
+```{r cambios_periodos}
 cambio_1 <- (last(periodo_1$Price) / first(periodo_1$Price) - 1) * 100
 cambio_2 <- (last(periodo_2$Price) / first(periodo_2$Price) - 1) * 100
 cambio_3 <- (last(periodo_3$Price) / first(periodo_3$Price) - 1) * 100
@@ -255,51 +280,63 @@ cambios_periodos <- data.frame(
 cambios_periodos
 ```
 
-A partir de la trayectoria del precio y de los rendimientos diarios se seleccionaron cinco periodos que presentan movimientos relevantes de la acción. Para comparar inicialmente la magnitud de estos cambios se calculó la variación porcentual entre el primer y el último precio de cada ventana.
+Este cambio porcentual se calcula como:
 
-Los periodos seleccionados fueron **2008-2009**, con una caída aproximada de **48.76%**; **2015-2017**, con un incremento de **61.33%**; **2018-2019**, con una disminución de **23.39%**; **febrero-mayo de 2020**, con una caída de **59.12%**; y **2020-2023**, periodo en el que la acción presentó una recuperación de aproximadamente **234.69%**.
+$$Cambio=\left(\frac{P_{final}}{P_{inicial}}-1\right)\times100$$
 
-La selección incluye tanto episodios de pérdidas como de recuperación, ya que el objetivo no es analizar únicamente los momentos negativos, sino entender cómo distintos cambios en el entorno económico y empresarial pueden modificar las expectativas de los inversionistas y reflejarse en el precio de la acción.
+Aquí es importante aclarar que este cálculo solo compara el precio del inicio y del final de cada ventana. No es lo mismo que el máximo drawdown y tampoco es un rendimiento logarítmico acumulado.
 
-El periodo comprendido entre 2024 y el primer semestre de 2026 se analizará posteriormente dentro de la sección correspondiente al periodo reciente.
+Los cinco periodos que elegimos para analizar fueron:
 
-Es importante señalar que estos porcentajes representan el cambio entre el primer y el último precio de cada ventana seleccionada. No corresponden al máximo drawdown ni a un rendimiento logarítmico acumulado, por lo que su función en esta sección es únicamente comparar la magnitud general de los movimientos observados.
+- **2008-2009:** caída aproximada de **48.76%**.
+- **2015-2017:** incremento aproximado de **61.33%**.
+- **2018-2019:** caída aproximada de **23.39%**.
+- **Febrero-mayo de 2020:** caída aproximada de **59.12%**.
+- **2020-2023:** incremento aproximado de **234.69%**.
 
-## Máximo drawdown
+Elegimos periodos tanto de caídas como de recuperación porque queremos entender qué eventos pudieron cambiar las expectativas del mercado en ambos sentidos y no solo analizar momentos negativos.
 
-El máximo drawdown mide la mayor caída que presenta el precio de un activo desde un máximo previo hasta un mínimo posterior antes de recuperar ese nivel. A diferencia de observar únicamente rendimientos diarios negativos, esta medida permite identificar la pérdida acumulada más severa experimentada durante el periodo analizado.
+El periodo de **2024 a junio de 2026** tuvo una caída aproximada de **27.54%**, pero lo dejamos para el apartado de periodos recientes porque ahí se va a analizar específicamente lo que ha pasado durante el último año.
 
-Para calcularlo se compara en cada fecha el precio de la acción contra el máximo histórico observado hasta ese momento.
+# Máximo drawdown
 
-```{r maximo-drawdown}
-precio <- as.numeric(prices)
+El máximo drawdown nos sirve para medir cuál fue la caída acumulada más fuerte desde un máximo previo hasta un mínimo posterior.
 
-maximo_previo <- cummax(precio)
+La fórmula es:
 
-drawdown <- (precio / maximo_previo) - 1
+$$Drawdown_t=\frac{P_t}{P_{max,t}}-1$$
+
+donde $P_{max,t}$ es el precio máximo que se había observado hasta ese momento.
+
+```{r maximo_drawdown}
+precio_num <- as.numeric(precio)
+
+maximo_previo <- cummax(precio_num)
+
+drawdown <- (precio_num / maximo_previo) - 1
 
 max_drawdown <- min(drawdown)
 
-fecha_minimo <- index(prices)[
-  which.min(drawdown)
-]
+indice_minimo <- which.min(drawdown)
+
+fecha_minimo <- index(precio)[indice_minimo]
 
 max_drawdown * 100
 fecha_minimo
 ```
 
-```{r detalle-maximo-drawdown}
-indice_minimo <- which.min(drawdown)
+Después identificamos también desde qué máximo empezó esa caída para poder interpretar mejor el resultado.
 
-precio_minimo <- precio[indice_minimo]
+```{r detalle_drawdown}
+precio_minimo <- precio_num[indice_minimo]
 
 indice_maximo <- which.max(
-  precio[1:indice_minimo]
+  precio_num[1:indice_minimo]
 )
 
-precio_maximo <- precio[indice_maximo]
+precio_maximo <- precio_num[indice_maximo]
 
-fecha_maximo <- index(prices)[indice_maximo]
+fecha_maximo <- index(precio)[indice_maximo]
 
 detalle_drawdown <- data.frame(
   Fecha_maximo = fecha_maximo,
@@ -312,35 +349,39 @@ detalle_drawdown <- data.frame(
 detalle_drawdown
 ```
 
-```{r grafica-drawdown}
+```{r grafica_drawdown}
 plot(
-  index(prices),
+  index(precio),
   drawdown,
   type = "l",
   main = "ALSEA - Drawdown histórico",
-  xlab = "Fecha",
-  ylab = "Drawdown"
+  ylab = "Drawdown",
+  xlab = "",
+  col = "blue"
 )
 
 abline(h = 0)
 ```
-El máximo drawdown de ALSEA durante el periodo analizado fue de aproximadamente -84.47%. Este episodio comenzó a partir de un máximo previo de aproximadamente $20.07 MXN registrado el 13 de abril de 2007 y alcanzó su punto mínimo el 11 de marzo de 2009, cuando el precio cayó hasta aproximadamente $3.12 MXN.
-Esto significa que, tomando como referencia el máximo alcanzado antes de la caída, la acción llegó a perder cerca del 84% de su valor antes de iniciar una recuperación. El resultado permite observar que una caída acumulada puede ser mucho mayor que un rendimiento negativo observado en un solo día o que el cambio entre el inicio y el final de una ventana determinada.
-Este episodio coincide con el periodo de la crisis financiera internacional de 2008-2009, por lo que posteriormente será necesario analizar los acontecimientos económicos y empresariales ocurridos durante esos años para evaluar qué factores pudieron haber contribuido al deterioro del precio de la acción.
-Con esto ya queda completo ## Máximo drawdown.
-El siguiente bloque ya sería # Identificación de eventos y explicación de cambios, empezando con Periodo 1: 2008-2009, donde sí tendremos que investigar fuentes y justificar qué eventos pudieron relacionarse con esa caída.
+
+El máximo drawdown de ALSEA fue de aproximadamente **-84.47%**. El máximo previo se registró el **13 de abril de 2007**, cuando el precio estaba alrededor de **$20.07 MXN**, y el punto más bajo de esta caída fue el **11 de marzo de 2009**, cuando el precio llegó aproximadamente a **$3.12 MXN**.
+
+Esto quiere decir que, tomando como referencia ese máximo anterior, la acción llegó a perder cerca del 84% de su valor antes de recuperarse.
+
+También es importante no confundir este resultado con la caída de 48.76% que calculamos para el periodo 2008-2009. Ese porcentaje solo compara el precio del inicio y el final de la ventana que seleccionamos, mientras que el drawdown busca el máximo previo y el mínimo posterior.
+
+Este resultado muestra que una pérdida se puede ir acumulando durante un periodo y terminar siendo mucho mayor que una caída observada en un solo día. Además, el mínimo ocurre durante la crisis financiera de 2008-2009, por lo que ese periodo claramente necesita analizarse con noticias y eventos del entorno para entender mejor qué estaba pasando.
 
 # Identificación de eventos y explicación de cambios
 
-## Periodo 1
+## Periodo 1: 2008-2009
 
-## Periodo 2
+## Periodo 2: 2015-2017
 
-## Periodo 3
+## Periodo 3: 2018-2019
 
-## Periodo 4
+## Periodo 4: Febrero-mayo 2020
 
-## Periodo 5
+## Periodo 5: 2020-2023
 
 # Relación con el entorno económico
 
@@ -348,7 +389,7 @@ El siguiente bloque ya sería # Identificación de eventos y explicación de cam
 
 ## Interpretación de la relación con el ciclo económico
 
-# Análisis del periodo reciente
+# Análisis de los periodos más recientes
 
 # Conclusión
 
