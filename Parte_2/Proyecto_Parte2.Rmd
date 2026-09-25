@@ -21,21 +21,148 @@ knitr::opts_chunk$set(
 )
 
 library(readxl)
+library(tidyverse)
 library(quantmod)
 library(moments)
 ```
 
 # Introducción
 
+En esta segunda parte del proyecto se analizará el comportamiento histórico del precio de la acción de Alsea y sus rendimientos, con el objetivo de identificar movimientos relevantes y relacionarlos con eventos económicos, políticos y específicos de la empresa.
+
+Primero se estudiará la trayectoria histórica del precio y de los rendimientos de la acción, además de estimar el máximo drawdown observado durante el periodo de análisis. A partir de estas series se identificarán distintos periodos en los que Alsea presentó incrementos o caídas pronunciadas.
+
+Posteriormente, se investigarán los principales acontecimientos ocurridos durante esos periodos para analizar qué información o choques pudieron haber influido en el comportamiento del precio. También se comparará el rendimiento anual de la acción con el crecimiento anual del PIB de México para observar su relación con el ciclo económico.
+
+Finalmente, se analizarán los acontecimientos más recientes y se integrarán los resultados para reflexionar sobre la exposición de los activos financieros a nueva información, choques externos e incertidumbre.
+
 # Exploración de la serie histórica
 
 ## Preparación y cobertura de los datos
 
+La acción de Alsea comenzó a cotizar en la Bolsa Mexicana de Valores el 25 de junio de 1999. Para construir la serie histórica utilizada en este análisis se emplearon datos obtenidos de FactSet, una de las fuentes sugeridas para el proyecto.
+
+El archivo exportado de FactSet contiene información de fecha, precio, volumen y variaciones de la acción. La base presenta observaciones de precio desde el 13 de septiembre de 2000; sin embargo, durante los primeros años existen periodos en los que el precio permanece sin cambios y no se reporta información de volumen o variaciones diarias.
+
+Por esta razón, es importante distinguir entre la cobertura histórica disponible en la fuente y el periodo que posteriormente se utilizará para realizar los cálculos cuantitativos. Esta separación evita interpretar como movimientos normales de mercado observaciones para las que la información disponible es limitada.
+
+```{r importacion-datos, include=FALSE}
+precios_factset <- read_excel(
+  "data/Precios_ALSEA_FactSet.xlsx",
+  skip = 2
+)
+
+precios_factset$Date <- as.Date(precios_factset$Date)
+
+precios_factset <- precios_factset[
+  order(precios_factset$Date),
+]
+```
+
+Para mantener el periodo solicitado en la entrega, la información se limita al cierre del primer semestre de 2026.
+
+```{r periodo-analisis, include=FALSE}
+precios_alsea <- precios_factset |>
+  dplyr::filter(Date <= as.Date("2026-06-30"))
+
+fecha_inicial <- first(precios_alsea$Date)
+fecha_final <- last(precios_alsea$Date)
+observaciones <- NROW(precios_alsea)
+```
+
+La base contiene **6,487 observaciones diarias** entre el **13 de septiembre de 2000 y el 30 de junio de 2026**. Aunque Alsea comenzó a cotizar desde 1999, esta es la cobertura disponible en la serie histórica exportada de FactSet.
+
+Al revisar las primeras observaciones se encontró que entre 2000 y los primeros meses de 2004 existen periodos con precios repetidos y sin información de volumen. A partir del 20 de abril de 2004 la base comienza a presentar de manera más regular información de precio, volumen y variaciones diarias. Antes de utilizar la serie para calcular rendimientos y medidas de riesgo, se revisará también el tratamiento que FactSet aplica a los eventos corporativos, debido a que estos pueden generar cambios mecánicos en el precio que no representan una ganancia o pérdida económica para el inversionista.
+
 ## Precio histórico de ALSEA
 
+La gráfica del precio permite observar la trayectoria general de la acción de Alsea a lo largo del periodo disponible e identificar visualmente etapas de crecimiento, caídas pronunciadas y posteriores recuperaciones.
+
+Para esta primera exploración se utiliza toda la información de precio disponible en FactSet hasta el 30 de junio de 2026. El periodo inicial debe interpretarse con cautela debido a las limitaciones de información identificadas anteriormente.
+
+```{r grafica-precio}
+plot(
+  precios_alsea$Date,
+  precios_alsea$Price,
+  type = "l",
+  main = "ALSEA - Precio histórico",
+  xlab = "Fecha",
+  ylab = "Precio (MXN)"
+)
+```
+
 ## Rendimientos
+El rendimiento permite medir el cambio porcentual del precio de la acción entre dos periodos consecutivos. En este análisis se calculan tanto el rendimiento simple como el rendimiento logarítmico para distinguir claramente ambas medidas.
+
+El rendimiento simple se define como:
+
+$$R_t = \frac{P_t}{P_{t-1}} - 1$$
+
+mientras que el rendimiento logarítmico se calcula como:
+
+$$r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)$$
+
+Para el análisis de riesgo se utilizará principalmente el rendimiento logarítmico, ya que es la medida que se ha trabajado en clase y permite sumar rendimientos a través del tiempo de manera consistente.
+
+```{r calculo-rendimientos, include=FALSE}
+serie_analisis <- precios_alsea |>
+  dplyr::filter(Date >= as.Date("2004-04-20"))
+
+prices <- xts(
+  serie_analisis$Price,
+  order.by = serie_analisis$Date
+)
+
+srets <- dailyReturn(
+  prices,
+  type = "arithmetic"
+)[-1]
+
+logrets <- dailyReturn(
+  prices,
+  type = "log"
+)[-1]
+```
+
+```{r grafica-rendimientos}
+plot(
+  logrets,
+  main = "ALSEA - Rendimiento logarítmico diario",
+  ylab = "Rendimiento",
+  xlab = ""
+)
+
+abline(h = 0)
+```
+La serie de rendimientos muestra que la mayoría de los cambios diarios se concentra alrededor de cero, aunque existen periodos en los que la magnitud de las variaciones aumenta considerablemente. Esto indica que la volatilidad de la acción no se mantiene constante a lo largo del tiempo, sino que existen etapas de relativa estabilidad y otras en las que se concentran movimientos mucho más fuertes.
+
+Entre los movimientos diarios más pronunciados destacan varias observaciones durante la crisis financiera de 2008-2009 y, de manera especialmente clara, durante marzo de 2020. El 17 de marzo de 2020 se observa el rendimiento logarítmico negativo más grande de la muestra, seguido por otra caída importante el 18 de marzo. Posteriormente también aparecen rendimientos positivos elevados durante abril de 2020, lo que muestra que los periodos de fuertes caídas pueden estar acompañados por recuperaciones igualmente rápidas.
+
+Estos movimientos extremos permiten identificar posibles episodios de mayor incertidumbre para la acción. Sin embargo, un rendimiento diario aislado no es suficiente para explicar el comportamiento del activo, por lo que en los siguientes apartados se analizarán periodos más amplios y posteriormente se investigarán los eventos económicos, políticos y empresariales que pudieron haber influido en ellos.
+
+```{r movimientos-extremos, include=FALSE}
+rendimientos_tabla <- data.frame(
+  Fecha = index(logrets),
+  Rendimiento = as.numeric(logrets)
+)
+
+rendimientos_negativos <- rendimientos_tabla[
+  order(rendimientos_tabla$Rendimiento),
+]
+
+rendimientos_positivos <- rendimientos_tabla[
+  order(-rendimientos_tabla$Rendimiento),
+]
+```
 
 ## Comportamiento general de la serie
+La trayectoria histórica de ALSEA muestra varias etapas claramente diferenciadas. Durante los primeros años de la serie el precio se mantuvo en niveles relativamente bajos, mientras que a partir de mediados de la década de 2000 comenzó una fase de crecimiento importante que llevó a la acción a niveles mucho más altos durante los años siguientes.
+
+Posteriormente se observan distintos episodios de caídas y recuperaciones. Uno de los primeros movimientos relevantes ocurre alrededor de la crisis financiera de 2008-2009, cuando los rendimientos diarios presentan una mayor dispersión y aparecen algunas de las variaciones más extremas de toda la muestra. Después de ese periodo, el precio inicia una recuperación que se extiende durante varios años y alcanza niveles cercanos a sus máximos históricos hacia la segunda mitad de la década de 2010.
+
+A partir de 2018 se observa nuevamente una etapa de debilitamiento del precio. Esta tendencia se vuelve mucho más pronunciada durante 2020, cuando la serie presenta una de las caídas más fuertes del periodo analizado y los rendimientos muestran niveles extraordinarios de volatilidad. Posteriormente, la acción inicia una recuperación gradual, aunque con nuevas etapas de inestabilidad y correcciones en los años siguientes.
+
+En conjunto, la serie muestra que el comportamiento de ALSEA no ha sido estable a lo largo del tiempo. Existen periodos prolongados de crecimiento, pero también episodios de pérdidas importantes y aumentos repentinos en la volatilidad. Esto sugiere que el precio de la acción responde de manera significativa a cambios en las expectativas y al entorno económico y empresarial, por lo que resulta necesario analizar con mayor detalle los periodos en los que se observan movimientos más pronunciados.
 
 ## Periodos relevantes
 
