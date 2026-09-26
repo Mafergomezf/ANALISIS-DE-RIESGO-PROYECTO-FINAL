@@ -373,7 +373,20 @@ Este resultado muestra que una pérdida se puede ir acumulando durante un period
 
 # Identificación de eventos y explicación de cambios
 
+A partir de la serie histórica del precio y los rendimientos de la acción de Alsea se identificaron distintos periodos en los que se presentaron movimientos importantes. Para cada uno de estos periodos se analizaron acontecimientos económicos, políticos y propios de la empresa que pudieron influir en el comportamiento de la acción.
+
+El objetivo de este análisis es relacionar los cambios observados en el precio con nueva información disponible para los inversionistas. Estos eventos pueden modificar las expectativas sobre las ventas, costos, rentabilidad y crecimiento futuro de la empresa, lo que puede reflejarse en aumentos o caídas en el precio de la acción.
+
+Los periodos seleccionados permiten observar cómo Alsea ha estado expuesta tanto a choques externos, como crisis económicas o cambios en las condiciones macroeconómicas, como a acontecimientos internos relacionados con sus operaciones y resultados financieros.
+
 ## Periodo 1: 2008-2009
+
+Durante el periodo 2008-2009 la acción de Alsea presentó una caída importante. En la ventana seleccionada en nuestro análisis, el precio disminuyó aproximadamente 48.76%, y además el máximo drawdown histórico de la serie alcanzó cerca de -84.47%, con su punto mínimo en marzo de 2009. Esto muestra que fue uno de los periodos de mayor presión para la acción.
+Uno de los principales factores externos fue la crisis financiera internacional de 2008-2009, que provocó una fuerte desaceleración de la economía mexicana. De acuerdo con Banco de México, el PIB de México disminuyó 6.5% en 2009 y el consumo privado cayó 6.1%, lo cual es especialmente relevante para Alsea porque gran parte de sus ingresos depende del gasto de los consumidores en restaurantes y cafeterías. Banco de México Anterior
+La propia Alsea reconoció que durante 2009 existió una desaceleración del consumo, agravada por el brote de influenza A(H1N1). Como consecuencia, las ventas mismas tiendas disminuyeron 3.7%. La empresa también señaló que la crisis económica y la influenza afectaron de forma importante el consumo durante ese año. Alsea
+Los efectos también se observaron en la rentabilidad. Aunque las ventas netas de Alsea aumentaron 10.3% en 2009, el EBITDA disminuyó 3.1%, la utilidad de operación cayó 27.0% y la utilidad neta disminuyó 23.3%. Esto indica que el crecimiento de las ventas no fue suficiente para evitar el deterioro de los márgenes y las utilidades. Alsea
+Otro factor relevante fue la depreciación del peso frente al dólar. El tipo de cambio promedio pasó de $11.13 pesos por dólar en 2008 a $13.49 en 2009. Alsea reportó que aproximadamente 35% de su costo de ventas tenía exposición al tipo de cambio, por lo que la depreciación aumentó el costo de algunos insumos y contribuyó a que el margen bruto disminuyera de 64.3% a 63.1%. Alsea
+Por lo tanto, la caída de la acción durante este periodo puede relacionarse con una combinación de factores: la crisis financiera internacional, la contracción de la economía mexicana, la disminución del consumo, la influenza A(H1N1) y la depreciación del peso. Estos acontecimientos generaron mayor incertidumbre sobre las ventas y la rentabilidad futura de Alsea, por lo que pudieron afectar negativamente las expectativas de los inversionistas y el precio de la acción.
 
 ## Periodo 2: 2015-2017
 
