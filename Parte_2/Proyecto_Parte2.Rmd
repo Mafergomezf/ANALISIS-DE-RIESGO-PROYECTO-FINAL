@@ -390,20 +390,536 @@ Por lo tanto, la caída de la acción durante este periodo puede relacionarse co
 
 ## Periodo 2: 2015-2017
 
+Durante el periodo 2015-2017 la acción de Alsea tuvo un incremento aproximado de 61.33%. A diferencia del Periodo 1, aquí no hay un choque negativo dominante: se trata de una combinación entre un desempeño operativo sólido de la empresa y un entorno macroeconómico moderadamente favorable, con un episodio puntual de volatilidad cambiaria hacia el final del periodo.
+
+En el plano operativo, Alsea mostró un crecimiento sostenido en ventas mismas tiendas durante estos años. Por ejemplo, en el primer trimestre de 2016 la empresa reportó un incremento de 16.2% en ventas netas, impulsado principalmente por un crecimiento de 10.1% en ventas mismas tiendas, lo que se tradujo en un aumento de 21.8% en el flujo operativo (EBITDA) del trimestre. Este tipo de resultados trimestrales, que se repitieron con cifras similares a lo largo del periodo, reforzaron las expectativas positivas de los inversionistas sobre la capacidad de la empresa para seguir creciendo tanto en ventas como en número de unidades.
+
+El periodo también estuvo marcado por un evento político-económico externo relevante: el triunfo electoral de Donald Trump en Estados Unidos, el 8 de noviembre de 2016. Ese día el peso mexicano se depreció más de 8% frente al dólar en cuestión de horas, y en los tres meses posteriores a la elección acumuló una depreciación cercana a 18%, pasando de alrededor de 18.60 a cerca de 20.90 pesos por dólar hacia enero de 2017. La incertidumbre se relacionó con el riesgo de que Estados Unidos impusiera aranceles a productos mexicanos y renegociara o cancelara el TLCAN, lo que en general aumentó el riesgo cambiario para empresas mexicanas con insumos importados, como es el caso de Alsea.
+
+Aun así, la depreciación del peso en este episodio no se tradujo en una caída del precio de la acción, como sí ocurrió en el Periodo 1 (2008-2009) ante la crisis financiera. Esto sugiere que, para los inversionistas, la fortaleza operativa de Alsea —crecimiento de ventas, expansión de unidades y mejora del EBITDA— tuvo un peso mayor en la formación de expectativas que el riesgo cambiario de corto plazo derivado del resultado electoral en Estados Unidos. Este contraste es relevante porque muestra que un mismo tipo de choque (depreciación del peso) puede tener efectos muy distintos sobre el precio de una acción según coincida o no con un deterioro simultáneo de los fundamentales de la empresa.
+
 ## Periodo 3: 2018-2019
+
+En el periodo 2018-2019 la acción de Alsea presentó una caída aproximada de 23.39%, en un contexto en el que se combinaron señales de incertidumbre política interna, una desaceleración de la economía mexicana y un incremento importante en el nivel de endeudamiento de la propia empresa.
+
+Un evento político central de este periodo fue la cancelación del Nuevo Aeropuerto Internacional de México (NAIM) en Texcoco. El proyecto fue sometido a una consulta ciudadana organizada por el entonces presidente electo Andrés Manuel López Obrador a finales de octubre de 2018, cuyo resultado favoreció la cancelación de la obra. La decisión afectó negativamente la confianza de la iniciativa privada y de los inversionistas extranjeros, y se señala frecuentemente como uno de los factores detrás del deterioro de la inversión privada y de la confianza empresarial durante el primer año del nuevo gobierno.
+
+Consistente con este entorno, la economía mexicana registró en 2019 una contracción del Producto Interno Bruto cercana a 0.3-0.4%, explicada en buena medida por la caída de la inversión, tanto pública como privada; la formación bruta de capital fijo privada se redujo cerca de 2.9% en el año, en un contexto de menor certidumbre sobre las reglas para hacer negocios en el país. Para una empresa como Alsea, cuyo negocio depende directamente del gasto de los consumidores en restaurantes, un entorno de menor inversión y mayor cautela empresarial se traduce en un crecimiento más lento de las ventas.
+
+A este entorno macroeconómico se sumó un factor específico de la empresa: a finales de octubre de 2018, Alsea —a través de su filial europea Food Service Project— anunció la adquisición del 100% del Grupo VIPS en España por un monto cercano a 500-575 millones de euros, operación financiada principalmente con deuda. Como consecuencia, la razón de deuda neta a EBITDA de Alsea pasó de alrededor de 2.0 veces a 3.6 veces hacia el cierre del primer trimestre de 2019, muy por encima del rango objetivo de la propia empresa (entre 2.0 y 2.5 veces). Ante este incremento en el apalancamiento, Alsea anunció en mayo de 2019 una reducción en su meta de apertura de nuevas unidades para el año (de 300 a 200 restaurantes) y la venta de algunos activos, con el objetivo de generar efectivo y reducir su nivel de deuda.
+
+En conjunto, estos elementos —la incertidumbre política derivada de la cancelación del NAIM, la contracción de la inversión y del PIB en México, y el aumento del apalancamiento financiero de Alsea tras la compra de Grupo VIPS España— ayudan a explicar por qué el precio de la acción se debilitó en este periodo, incluso sin que existiera todavía una crisis económica de la magnitud de la de 2008-2009 o de la pandemia de 2020.
 
 ## Periodo 4: Febrero-mayo 2020
 
+La ventana febrero-mayo de 2020 concentra la caída más abrupta de todo el periodo analizado después del Periodo 1, con una disminución aproximada de 59.12% en el precio de la acción de Alsea. El origen de este choque es externo y afecta prácticamente a la totalidad de los mercados financieros del mundo: la pandemia de COVID-19.
+
+La Organización Mundial de la Salud declaró la pandemia el 11 de marzo de 2020. En México, el gobierno federal anunció, a partir del 23 de marzo de 2020, la Jornada Nacional de Sana Distancia, que incluyó la suspensión de actividades no esenciales —entre ellas la operación de restaurantes para consumo en el establecimiento— desde esa fecha hasta el 31 de mayo de 2020. Ese mismo mes de marzo, el peso mexicano alcanzó un mínimo histórico de alrededor de 25.36 pesos por dólar el 23 de marzo de 2020, coincidiendo con el colapso en los precios internacionales del petróleo y con una fuerte aversión al riesgo en los mercados globales.
+
+El efecto de estas medidas se refleja con claridad en los resultados financieros de Alsea. En el primer trimestre de 2020 (enero-marzo), que ya incluye los primeros días de la contingencia, las ventas de la empresa cayeron 15.6% respecto al mismo periodo de 2019, para ubicarse en 10,212 millones de pesos. La afectación se intensificó en el segundo trimestre del año (abril-junio), en el que las ventas se desplomaron 64.4%, hasta 5,151 millones de pesos, con una caída de 44% en ventas mismas tiendas y una pérdida neta trimestral superior a los 2,500 millones de pesos. La compañía señaló que un número importante de sus restaurantes permaneció cerrado durante buena parte del periodo, operando únicamente a través de entregas a domicilio en las marcas que contaban con esa capacidad, como Domino's Pizza y Starbucks.
+
+Este periodo ilustra de manera muy directa la idea central del proyecto: el precio de un activo puede modificarse de forma extrema ante un choque que ni la empresa ni los inversionistas podían anticipar ni controlar. A diferencia del Periodo 1 (crisis financiera) o del Periodo 3 (deterioro gradual del entorno de inversión), aquí el detonante no es financiero ni político en sentido estricto, sino un evento sanitario que obligó a suspender por decreto una parte central de la operación de la empresa (la venta dentro del restaurante), lo cual explica por qué la caída fue más rápida y de mayor magnitud relativa que las observadas en los otros periodos amplios seleccionados.
+
 ## Periodo 5: 2020-2023
+
+Entre junio de 2020 y diciembre de 2023 la acción de Alsea tuvo el incremento más alto de todos los periodos analizados, de aproximadamente 234.69%. Este periodo corresponde a la recuperación después del choque más severo de toda la muestra (el de la pandemia, analizado en el Periodo 4), por lo que es esperable que buena parte del rendimiento observado refleje el regreso del precio a niveles más cercanos a los previos a la pandemia; sin embargo, también hay elementos propios de la empresa que explican que esta recuperación haya sido tan pronunciada.
+
+A partir de la segunda mitad de 2020, y de forma más clara durante 2021, la reapertura gradual de la economía —conforme avanzó la vacunación contra COVID-19 en México y en los demás países donde opera Alsea— permitió una recuperación progresiva del tráfico en los restaurantes. Durante 2021 el EBITDA de la empresa aumentó 78% respecto a 2020, hasta 12,311 millones de pesos, apoyado también en el fortalecimiento del canal de entregas a domicilio (delivery), que llegó a representar alrededor de 20% de las ventas consolidadas hacia finales de ese año, frente a una participación mucho menor antes de la pandemia.
+
+La recuperación se consolidó en 2022, año en el que Alsea reportó ventas consolidadas récord de 68,831 millones de pesos (+28.9% respecto a 2021) y un EBITDA también récord de alrededor de 14,000 millones de pesos. La utilidad neta del año prácticamente se duplicó (+100.9%) respecto a 2021, hasta ubicarse en niveles históricos para la empresa. En 2023 la tendencia continuó, con un EBITDA de 15,960 millones de pesos (+13.6% respecto a 2022) y una expansión del margen EBITDA de 20.4% a 21.3%, apoyada en la recuperación del consumo en la mayoría de los países donde opera Alsea y en el buen desempeño de marcas como Starbucks en Europa.
+
+Adicionalmente, la empresa aprovechó la mejora en sus resultados para reforzar su estructura financiera: en enero de 2022 refinanció parte de su deuda europea mediante la colocación de bonos por 300 millones de euros, lo que le permitió extender los plazos de vencimiento de sus pasivos en un contexto de tasas de interés todavía relativamente bajas a nivel internacional.
+
+En conjunto, este periodo funciona como el reflejo del Periodo 4: así como un choque externo (la pandemia) puede provocar una caída extrema en el precio de un activo, la disipación gradual de ese mismo choque, combinada con una gestión operativa efectiva de la empresa (control de gastos, fortalecimiento del canal digital, mejora del apalancamiento), puede generar una recuperación igualmente pronunciada. Esto refuerza la idea de que el precio de las acciones no solo reacciona ante malas noticias, sino también ante la acumulación de nueva información positiva conforme se despeja la incertidumbre.
 
 # Relación con el entorno económico
 
+Hasta ahora analizamos periodos específicos y los eventos que pasaron en cada uno. En esta parte vamos a comparar, año por año, el rendimiento de ALSEA con el crecimiento del PIB de México, para ver si la acción se mueve igual que la economía o si tiene un comportamiento distinto.
+
 ## Rendimiento anual de ALSEA y crecimiento del PIB
+
+El rendimiento anual lo calculamos comparando el precio de cierre de cada año con el precio de cierre del año anterior:
+
+$$R_{anual,t}=\frac{P_{cierre,t}}{P_{cierre,t-1}}-1$$
+
+Aquí usamos el rendimiento simple y no el logarítmico, porque lo vamos a comparar con el crecimiento del PIB, que también está en variación porcentual simple.
+
+Como la tarea pide usar la información más histórica posible, en esta sección usamos toda la serie de FactSet (desde septiembre de 2000) y no solo la que empieza en 2004. El primer año completo que tenemos es 2001, así que 2000 no lo incluimos. Tampoco incluimos 2026, porque solo tenemos el primer semestre y todavía no hay dato anual del PIB. Los años 2001 a 2003 salen de la parte de la serie donde había precios repetidos, así que esos tres años hay que tomarlos con más cuidado.
+
+Para el PIB usamos la tasa de crecimiento real anual. Los datos de 2001 a 2020 los tomamos de una tabla histórica de Banco de México que usa datos del INEGI, y los de 2021 a 2025 son cifras del INEGI publicadas por México, ¿cómo vamos? Como son dos fuentes distintas, puede haber diferencias de algunas décimas con la serie más reciente del INEGI, pero eso no cambia si un año fue de crecimiento o de caída.
+
+```{r rendimiento_anual_pib}
+fmt <- function(x, d = 1) formatC(x, format = "f", digits = d)
+
+# Rendimiento anual de ALSEA con la serie completa disponible
+precio_completo <- xts(
+  precios_alsea$Price,
+  order.by = precios_alsea$Date
+)
+
+rend_anual <- yearlyReturn(
+  precio_completo,
+  type = "arithmetic"
+) * 100
+
+rend_anual_df <- data.frame(
+  Anio = as.numeric(format(index(rend_anual), "%Y")),
+  ALSEA = as.numeric(rend_anual)
+)
+
+# 2000 y 2026 son años incompletos
+rend_anual_df <- rend_anual_df[
+  rend_anual_df$Anio >= 2001 & rend_anual_df$Anio <= 2025,
+]
+
+# Crecimiento real anual del PIB de México (%)
+# 2001-2020: Banco de México con datos del INEGI (series originales)
+# 2021-2025: INEGI, año base 2018 (México, ¿cómo vamos?)
+pib_mexico <- data.frame(
+  Anio = 2001:2025,
+  PIB = c(
+    -0.4, 0.0, 1.4, 3.9, 2.3, 4.5, 2.3, 1.1, -5.3, 5.1,
+     3.7, 3.6, 1.4, 2.8, 3.3, 2.6, 2.1, 2.2, -0.1, -8.2,
+     6.3, 3.7, 3.1, 1.1, 0.8
+  )
+)
+
+tabla_anual <- merge(rend_anual_df, pib_mexico, by = "Anio")
+
+knitr::kable(
+  tabla_anual,
+  digits = 2,
+  col.names = c("Año", "Rendimiento anual ALSEA (%)", "Crecimiento del PIB (%)")
+)
+```
+
+En la siguiente gráfica juntamos las dos series. Las barras son el rendimiento anual de ALSEA (eje izquierdo) y la línea es el crecimiento del PIB (eje derecho). Pusimos los dos ejes centrados en cero para poder ver más fácil en qué años las dos van en la misma dirección.
+
+```{r grafica_alsea_pib, fig.width = 10, fig.height = 5.5}
+op <- par(mar = c(5, 4.5, 4, 4.5))
+
+lim_alsea <- max(abs(tabla_anual$ALSEA)) * 1.15
+
+bp <- barplot(
+  tabla_anual$ALSEA,
+  names.arg = tabla_anual$Anio,
+  col = ifelse(tabla_anual$ALSEA >= 0, "steelblue", "tomato"),
+  border = NA,
+  las = 2,
+  ylim = c(-lim_alsea, lim_alsea),
+  ylab = "Rendimiento anual de ALSEA (%)",
+  main = "ALSEA: rendimiento anual vs. crecimiento del PIB de México"
+)
+
+abline(h = 0)
+
+rango_x <- par("usr")[1:2]
+lim_pib <- max(abs(tabla_anual$PIB)) * 1.15
+
+par(new = TRUE)
+
+plot(
+  as.numeric(bp),
+  tabla_anual$PIB,
+  type = "b",
+  pch = 19,
+  lwd = 2,
+  axes = FALSE,
+  xlab = "",
+  ylab = "",
+  xlim = rango_x,
+  xaxs = "i",
+  ylim = c(-lim_pib, lim_pib)
+)
+
+axis(4)
+mtext("Crecimiento real del PIB (%)", side = 4, line = 3)
+
+legend(
+  "bottomleft",
+  legend = c("ALSEA (eje izquierdo)", "PIB (eje derecho)"),
+  pch = c(15, 19),
+  lty = c(NA, 1),
+  col = c("steelblue", "black"),
+  pt.cex = c(2, 1),
+  bty = "n"
+)
+
+par(op)
+```
+
+Además de la gráfica, calculamos algunas medidas para ver qué tan relacionadas están las dos series: la correlación en el mismo año, la correlación entre el rendimiento de un año y el PIB del año siguiente (para ver si la acción se adelanta a la economía), en cuántos años las dos series tuvieron el mismo signo y la pendiente de una regresión simple del rendimiento de ALSEA contra el PIB.
+
+```{r relacion_alsea_pib}
+n_anios <- nrow(tabla_anual)
+
+cor_mismo_anio <- cor(tabla_anual$ALSEA, tabla_anual$PIB)
+
+cor_adelanto <- cor(
+  tabla_anual$ALSEA[-n_anios],
+  tabla_anual$PIB[-1]
+)
+
+mismo_signo <- sum(
+  (tabla_anual$ALSEA >= 0) == (tabla_anual$PIB >= 0)
+)
+
+modelo_pib <- lm(ALSEA ~ PIB, data = tabla_anual)
+pendiente_pib <- coef(modelo_pib)[2]
+
+sd_alsea <- sd(tabla_anual$ALSEA)
+sd_pib <- sd(tabla_anual$PIB)
+
+resumen_relacion <- data.frame(
+  Medida = c(
+    "Correlación (mismo año)",
+    "Correlación (ALSEA en t vs. PIB en t+1)",
+    "Años con el mismo signo",
+    "Pendiente de la regresión ALSEA ~ PIB",
+    "Desviación estándar anual ALSEA (%)",
+    "Desviación estándar anual PIB (%)"
+  ),
+  Valor = c(
+    fmt(cor_mismo_anio, 2),
+    fmt(cor_adelanto, 2),
+    paste(mismo_signo, "de", n_anios),
+    fmt(pendiente_pib, 2),
+    fmt(sd_alsea, 1),
+    fmt(sd_pib, 1)
+  )
+)
+
+knitr::kable(resumen_relacion)
+```
+
+```{r dispersion_alsea_pib, fig.width = 7, fig.height = 5.5}
+plot(
+  tabla_anual$PIB,
+  tabla_anual$ALSEA,
+  pch = 19,
+  col = "darkred",
+  xlab = "Crecimiento real del PIB (%)",
+  ylab = "Rendimiento anual de ALSEA (%)",
+  main = "Relación entre el PIB y el rendimiento anual de ALSEA"
+)
+
+abline(h = 0, v = 0, col = "gray")
+abline(modelo_pib, lty = 2)
+
+text(
+  tabla_anual$PIB,
+  tabla_anual$ALSEA,
+  labels = tabla_anual$Anio,
+  pos = 3,
+  cex = 0.7
+)
+```
 
 ## Interpretación de la relación con el ciclo económico
 
+En la gráfica y en la tabla se ve que sí hay relación entre ALSEA y la economía, pero no es perfecta. La correlación entre el rendimiento de ALSEA y el crecimiento del PIB en el mismo año es de 0.38, que es positiva pero moderada, y en 17 de los 25 años las dos series tuvieron el mismo signo, o sea, subieron o bajaron juntas. La pendiente de la regresión es de 6.27, lo que quiere decir que, en promedio, por cada punto porcentual que crece el PIB, el rendimiento de ALSEA es alrededor de 6.27 puntos porcentuales más alto, aunque los puntos de la gráfica de dispersión están bastante separados de la línea. Lo que esperábamos era una relación positiva, porque Alsea vende en restaurantes y cafeterías y eso depende de cuánto gastan las familias. Cuando la economía está mal, salir a comer es de lo primero que la gente deja de hacer, y cuando la economía mejora es de lo primero que regresa.
+
+Donde más se nota la relación es en la pandemia. En 2020 el PIB cayó 8.2% y, solo entre febrero y mayo, el precio de la acción cayó alrededor de 59.12%. Después, cuando la economía se recuperó (creció 6.3% en 2021, 3.7% en 2022 y 3.1% en 2023), la acción subió alrededor de 234.69% entre junio de 2020 y diciembre de 2023. En este caso el mismo evento afectó a la economía y a la empresa al mismo tiempo, porque los restaurantes fueron de los negocios que tuvieron que cerrar. Aun así, en los datos anuales una parte de esto no se ve tan claro, porque la caída y el inicio de la recuperación pasaron dentro del mismo 2020.
+
+En la crisis de 2008-2009 pasó algo diferente: la acción se movió antes que el PIB. El precio empezó a caer desde su máximo del 13 de abril de 2007, cuando estaba en alrededor de $20.07, y en 2008 el PIB todavía creció 1.1%. Cuando el PIB cayó 5.3% en 2009, la acción ya había llegado a su mínimo el 11 de marzo de 2009 (alrededor de $3.12) y empezó a subir aunque la economía seguía mal. Esto pasa porque el precio de una acción no depende solo de lo que está pasando hoy, sino de lo que los inversionistas creen que va a pasar con las utilidades de la empresa. Aun así, esto no pasa en todos los años: la correlación entre el rendimiento de ALSEA y el PIB del año siguiente es de 0.23, más baja que la del mismo año (0.38), así que en general la acción se mueve más con la economía del mismo año que adelantándose a ella. Lo de 2008-2009 fue un caso muy claro, pero no una regla.
+
+También hay años donde la acción se mueve distinto a la economía por cosas de la propia empresa. En 2018 y 2019 el PIB creció 2.2% y −0.1%, o sea, la economía se frenó pero no tuvo una crisis como en 2009 o 2020. Aun así, entre 2018 y 2019 el precio de ALSEA cayó alrededor de 23.39%. Como vimos en el Periodo 3, en esos años hubo incertidumbre política y además Alsea se endeudó bastante para comprar Grupo VIPS España. Esto es un riesgo propio de la empresa y no tiene que ver con el PIB.
+
+Otra diferencia es qué tanto se mueve cada serie. El PIB estuvo entre −8.2% y 6.3% en todo el periodo, con una desviación estándar de 3.1 puntos porcentuales, mientras que la desviación estándar de los rendimientos anuales de ALSEA es de 50.7 puntos porcentuales, es decir, alrededor de 16 veces más. O sea, la acción exagera mucho los movimientos de la economía, y esto también coincide con la pendiente de 6.27 que obtuvimos en la regresión. Creemos que esto pasa por varias razones: muchos costos de un restaurante son fijos (renta, sueldos, equipo), entonces si bajan las ventas las utilidades bajan todavía más; la empresa tiene deuda, y eso hace que la utilidad neta cambie más; y parte de sus insumos se pagan en dólares, así que cuando el peso se deprecia, que normalmente pasa en las crisis, sus costos suben justo cuando venden menos.
+
+También hay que tomar en cuenta que Alsea no solo opera en México. En el primer trimestre de 2026, México fue alrededor del 56% de sus ventas y el resto vino de Europa y Sudamérica. Por eso una parte de sus resultados depende de la economía de otros países y de otras monedas, y el PIB de México no alcanza a explicar todos los movimientos de la acción.
+
+Relacionándolo con lo que vimos en clase, la parte del rendimiento que se mueve con la economía es riesgo sistemático, porque afecta a muchas empresas al mismo tiempo y no se puede quitar diversificando. La parte que no tiene que ver con la economía, como la deuda de 2018-2019, es riesgo no sistemático, porque es propio de la empresa, y ese sí se podría reducir si se combina ALSEA con otras acciones.
+
 # Análisis de los periodos más recientes
+
+Para esta parte tomamos como "último año" de julio de 2025 a junio de 2026, que son los últimos doce meses de nuestros datos. Primero calculamos cómo se comportó la acción en esos meses y lo comparamos con toda la serie.
+
+```{r ultimo_anio}
+inicio_reciente <- as.Date("2025-07-01")
+fin_reciente <- as.Date("2026-06-30")
+
+precio_reciente <- window(precio, start = inicio_reciente, end = fin_reciente)
+rend_reciente <- window(log_rend, start = inicio_reciente, end = fin_reciente)
+
+p_rec <- as.numeric(precio_reciente)
+
+cambio_reciente <- (p_rec[length(p_rec)] / p_rec[1] - 1) * 100
+vol_reciente <- sd(as.numeric(rend_reciente)) * sqrt(252) * 100
+vol_historica <- sd(as.numeric(log_rend)) * sqrt(252) * 100
+dd_serie_rec <- p_rec / cummax(p_rec) - 1
+dd_reciente <- min(dd_serie_rec) * 100
+pos_min_dd <- which.min(dd_serie_rec)
+fecha_pico_dd <- index(precio_reciente)[which.max(p_rec[1:pos_min_dd])]
+fecha_valle_dd <- index(precio_reciente)[pos_min_dd]
+
+fecha_max_rec <- index(precio_reciente)[which.max(p_rec)]
+fecha_min_rec <- index(precio_reciente)[which.min(p_rec)]
+
+resumen_reciente <- data.frame(
+  Medida = c(
+    "Precio inicial (MXN)",
+    "Precio final (MXN)",
+    "Cambio en el periodo (%)",
+    "Precio máximo (MXN) y fecha",
+    "Precio mínimo (MXN) y fecha",
+    "Máximo drawdown dentro del periodo (%)",
+    "Volatilidad anualizada del periodo (%)",
+    "Volatilidad anualizada histórica desde 2004 (%)"
+  ),
+  Valor = c(
+    fmt(p_rec[1], 2),
+    fmt(p_rec[length(p_rec)], 2),
+    fmt(cambio_reciente, 2),
+    paste(fmt(max(p_rec), 2), "-", format(fecha_max_rec, "%d/%m/%Y")),
+    paste(fmt(min(p_rec), 2), "-", format(fecha_min_rec, "%d/%m/%Y")),
+    fmt(dd_reciente, 2),
+    fmt(vol_reciente, 2),
+    fmt(vol_historica, 2)
+  )
+)
+
+knitr::kable(resumen_reciente)
+```
+
+La volatilidad anualizada la calculamos como la desviación estándar de los rendimientos logarítmicos diarios multiplicada por $\sqrt{252}$, que son más o menos los días hábiles de un año.
+
+En la tabla se ve cómo le fue a la acción en el último año. Según información de mercado, a mediados de marzo de 2026 la acción estaba cerca de 59 pesos y llevaba una subida de alrededor de 9.5% en el año, pero a inicios de julio ya estaba en alrededor de 44.7 pesos, cerca de su precio más bajo de las últimas 52 semanas. Entonces la caída más fuerte fue entre marzo y junio de 2026. A diferencia de 2008 o 2020, aquí no hubo una sola crisis grande, sino varias noticias que fueron bajando el precio poco a poco.
+
+## Eventos relevantes del último año
+
+En este último año no pasó algo tan fuerte como la crisis de 2008 o la pandemia. Lo que encontramos fue una mezcla de noticias de la economía, de tasas de interés, de comercio con Estados Unidos y de la propia empresa.
+
+**La economía y el consumo se frenaron.** La economía de México creció solo 0.8% en 2025, y fue el cuarto año seguido en que creció menos que el año anterior. En el tercer trimestre de 2025 el PIB bajó respecto al trimestre anterior, sobre todo por los aranceles de Estados Unidos a la industria automotriz. Luego, en el primer trimestre de 2026, el INEGI reportó que el PIB cayó 0.6% contra el trimestre anterior, y esta vez también bajaron los servicios. Los analistas dijeron que esto se debió a que las familias gastaron menos y hubo menos inversión. Para Alsea esta es probablemente la noticia más importante, porque sus ventas dependen de que la gente salga a comer.
+
+**Las tasas de interés bajaron.** Banxico siguió bajando la tasa de interés. En diciembre de 2025 la dejó en 7.00%, después de doce recortes seguidos desde el 11% de junio de 2024. En febrero de 2026 hizo una pausa, en marzo la bajó a 6.75% (algo que los analistas no esperaban) y en mayo la bajó a 6.50% y dijo que ahí terminaban los recortes. En junio la dejó igual. En teoría, que bajen las tasas es bueno para Alsea, porque su deuda le cuesta menos y la gente puede gastar más. Pero Banxico bajó las tasas justamente porque la economía estaba débil, y también dijo que había riesgos de que subiera la inflación por los aranceles, los costos, el conflicto en Medio Oriente y un posible peso más débil. O sea, la misma decisión tenía una parte buena (deuda más barata) y una parte mala (la economía estaba mal).
+
+**Comercio con Estados Unidos y decisiones del gobierno.** Durante todo el año siguió la incertidumbre por los aranceles de Estados Unidos y por la revisión del T-MEC, que toca en 2026. Alsea no exporta, pero esto afecta el empleo, la inversión y el tipo de cambio en México, y eso termina afectando cuánto dinero tiene la gente para gastar. Además, a inicios de 2026 subió el IEPS a refrescos y bebidas azucaradas y entraron aranceles a productos de países que no tienen tratado comercial con México, lo que también presiona los precios.
+
+**Resultados de Alsea.** En los reportes trimestrales se ve que Alsea siguió creciendo en México, pero tuvo problemas en otras regiones y en sus utilidades:
+
+- En el **tercer trimestre de 2025** (22 de octubre), la utilidad neta fue de 367 millones de pesos, cuando un año antes había tenido pérdida. Aun así, la utilidad por acción quedó por debajo de lo que esperaban los analistas.
+- En el **cuarto trimestre de 2025** (25 de febrero de 2026), las ventas en México subieron 7.9% y la utilidad neta subió 32%, con una deuda neta de 2.4 veces el EBITDA. Pero las ventas totales solo subieron 0.5% por el tipo de cambio y porque en Sudamérica le fue mal (el EBITDA de esa región cayó 22.9%). En todo 2025 el margen EBITDA bajó 0.9 puntos porcentuales.
+- En el **Alsea Day** (marzo de 2026), la empresa dijo que para 2026 esperaba que sus ventas crecieran entre 5% y 7%, menos que el 9% de 2025, y que las ventas mismas tiendas crecieran entre 4% y 6%. Al mercado le pareció una meta más baja de lo que esperaba, aunque ese día la acción cerró con una pequeña subida y en ese momento llevaba alrededor de 9.5% de subida en el año.
+- En el **primer trimestre de 2026** (28 de abril), las ventas solo subieron 1.4% (5.8% si no se toma en cuenta el tipo de cambio), las ventas en Sudamérica bajaron 10.7% y la utilidad neta cayó 65.7%, a 115 millones de pesos, mucho menos de lo que esperaban los analistas. Una parte de esto fue porque pagó más por su deuda. La misma empresa dijo que el consumo estaba difícil y que las ventas se frenaron hacia marzo.
+
+**El tipo de cambio.** Que el peso se apreciara tuvo dos efectos para Alsea. Por un lado, bajó el costo de los insumos que paga en dólares y eso ayudó a sus márgenes en México. Pero por otro lado, las ventas de Europa y Sudamérica valen menos cuando se pasan a pesos. Entonces el mismo movimiento del tipo de cambio le ayudó en una parte y le afectó en otra.
+
+**El Mundial 2026.** Desde el 11 de junio de 2026 México fue una de las sedes del Mundial. Para una empresa de restaurantes esto podía significar más clientes, sobre todo en marcas como Vips, aunque esto pasó ya al final de nuestro periodo.
+
+## ¿Cómo se reflejaron estos eventos en el precio?
+
+Para ver si estos eventos se notaron en la acción, hicimos una gráfica del precio del último año con las fechas de los eventos marcadas. También calculamos el rendimiento logarítmico acumulado desde el día del evento hasta cinco días hábiles después. Para saber si ese movimiento fue grande o normal, lo comparamos con el movimiento "típico" de seis días en ese mismo año, que es la desviación estándar diaria del periodo multiplicada por $\sqrt{6}$.
+
+```{r eventos_recientes}
+eventos <- data.frame(
+  Fecha = as.Date(c(
+    "2025-10-22", "2025-11-21", "2025-12-18", "2026-02-25",
+    "2026-03-19", "2026-03-26", "2026-04-28", "2026-04-30",
+    "2026-05-07", "2026-06-11"
+  )),
+  Evento = c(
+    "Resultados 3T25 de Alsea",
+    "INEGI confirma contracción del PIB en 3T25",
+    "Banxico recorta la tasa a 7.00%",
+    "Resultados 4T25 y año 2025 de Alsea",
+    "Alsea Day: guía 2026",
+    "Banxico recorta la tasa a 6.75% (sorpresa)",
+    "Resultados 1T26 de Alsea",
+    "Estimación oportuna: PIB 1T26 cae 0.8%",
+    "Banxico recorta a 6.50% y cierra el ciclo",
+    "Inicio del Mundial 2026"
+  ),
+  Tipo = c(
+    "Empresa", "Economía", "Banxico", "Empresa", "Empresa",
+    "Banxico", "Empresa", "Economía", "Banxico", "Otro"
+  )
+)
+
+reaccion_evento <- function(fecha, dias = 5) {
+  fechas <- index(log_rend)
+  pos <- which(fechas >= fecha)[1]
+  if (is.na(pos)) return(NA)
+  fin <- min(pos + dias, length(fechas))
+  sum(as.numeric(log_rend[pos:fin])) * 100
+}
+
+eventos$Reaccion <- sapply(
+  seq_len(nrow(eventos)),
+  function(i) reaccion_evento(eventos$Fecha[i])
+)
+
+mov_tipico <- sd(as.numeric(rend_reciente)) * sqrt(6) * 100
+
+eventos$Mayor_a_lo_tipico <- ifelse(
+  abs(eventos$Reaccion) > mov_tipico,
+  "Sí",
+  "No"
+)
+
+knitr::kable(
+  data.frame(
+    No = seq_len(nrow(eventos)),
+    Fecha = format(eventos$Fecha, "%d/%m/%Y"),
+    Evento = eventos$Evento,
+    Tipo = eventos$Tipo,
+    Reaccion = round(eventos$Reaccion, 2),
+    Mayor = eventos$Mayor_a_lo_tipico
+  ),
+  col.names = c(
+    "No.", "Fecha", "Evento", "Tipo",
+    "Rendimiento log. acumulado t a t+5 (%)",
+    "¿Mayor a lo típico?"
+  )
+)
+```
+
+```{r grafica_ultimo_anio, fig.width = 10, fig.height = 5}
+plot(
+  index(precio_reciente),
+  p_rec,
+  type = "l",
+  col = "red",
+  lwd = 2,
+  main = "ALSEA - Precio del último año (julio 2025 - junio 2026)",
+  ylab = "Precio (MXN)",
+  xlab = ""
+)
+
+abline(v = eventos$Fecha, lty = 3, col = "gray40")
+
+text(
+  eventos$Fecha,
+  max(p_rec),
+  labels = seq_len(nrow(eventos)),
+  pos = 3,
+  cex = 0.8,
+  xpd = TRUE
+)
+```
+
+Los números en la gráfica son los mismos de la tabla. Con la tabla podemos comparar qué tanto se movió la acción después de cada evento contra lo que normalmente se mueve en seis días.
+
+Algo que tomamos en cuenta al ver los resultados es que el precio no se mueve por el evento en sí, sino por lo que el mercado no sabía. Casi todos los recortes de Banxico ya se esperaban, entonces ya estaban considerados en el precio antes de que se anunciaran. Si en alguna de esas fechas la acción se movió mucho, lo más probable es que haya sido por otras noticias de esos días. En cambio, cuando Alsea reportó en el primer trimestre de 2026 una utilidad mucho más baja de lo que se esperaba, eso sí fue información nueva y los inversionistas tuvieron que cambiar lo que pensaban de la empresa. Por eso también es interesante el recorte de marzo de 2026, porque ese sí no se esperaba.
+
+Tampoco podemos decir que todo el movimiento de esos seis días se debe solo al evento, porque en esos días también pasan otras cosas. Además, hay noticias que no tienen una sola fecha, como que el consumo se esté frenando, porque eso se va sabiendo poco a poco con los datos de cada mes y con los reportes de las empresas. Por eso creemos que la caída de la acción en 2026 no fue por una sola noticia, sino que se fue acumulando conforme se confirmaba que la gente estaba gastando menos.
+
+También vimos que bajar las tasas no fue suficiente para que subiera el precio. Aunque Banxico bajó la tasa varias veces, y eso le ayuda a Alsea con su deuda, el mercado se fijó más en que el consumo estaba débil y en los resultados de la empresa. Esto es lo contrario de lo que pasó en el Periodo 2: en 2016 los buenos resultados de Alsea pesaron más que la caída del peso, y en 2026 el consumo débil y las utilidades bajas pesaron más que la baja en las tasas.
+
+Aunque ya está fuera de nuestro periodo, lo que pasó después confirma esto. El 21 de julio de 2026 Alsea reportó el segundo trimestre: sus ventas bajaron 0.9%, el EBITDA bajó 6.2% y la utilidad neta bajó alrededor de 48%. Además, bajó lo que esperaba crecer en 2026 y dijo que el consumo se había frenado. O sea, la caída del precio desde marzo ya estaba reflejando algo que la empresa confirmó semanas después.
+
+Con esto vemos que aunque no haya una crisis, la acción sigue expuesta a muchos riesgos: el riesgo económico (el consumo se frenó), el riesgo de mercado (tasas de interés y tipo de cambio), el riesgo político y comercial (aranceles y el T-MEC) y el riesgo propio de la empresa (resultados peores de lo esperado y problemas en Sudamérica). Y ninguno de estos lo podían controlar los inversionistas.
 
 # Conclusión
 
+En esta segunda parte del proyecto vimos que el precio de ALSEA no ha tenido un comportamiento estable. Hay periodos largos donde sube y otros donde cae muy rápido. La mayoría de los rendimientos diarios están cerca de cero, pero los días con movimientos muy grandes se juntan en pocos momentos, sobre todo en 2008-2009 y en marzo de 2020. El máximo drawdown de −84.47% entre el 13 de abril de 2007 y el 11 de marzo de 2009 lo muestra muy bien: alguien que compró en el máximo de 2007 llegó a perder casi todo lo que invirtió en menos de dos años. Pero también pasó lo contrario, porque entre junio de 2020 y diciembre de 2023 la acción subió alrededor de 234.69%. Por eso entendemos que el riesgo no es solo la posibilidad de perder, sino que el resultado puede ser muy distinto a lo esperado, para bien o para mal.
+
+Cuando investigamos los eventos de cada periodo, vimos que no todos afectan igual. Los que más afectaron fueron los choques externos que golpearon a todos al mismo tiempo, como la crisis de 2008 y la pandemia, porque afectaron la economía, el tipo de cambio y la operación de Alsea. Otros fueron eventos políticos o económicos, como la elección de Trump en 2016 o la cancelación del NAIM en 2018, y tuvieron efectos más moderados. Y otros fueron cosas de la propia empresa, como la deuda por la compra de VIPS España o las utilidades bajas de 2026. También nos dimos cuenta de que un mismo tipo de evento puede tener efectos distintos: en 2009 el peso se depreció al mismo tiempo que bajaba el consumo y la acción cayó mucho, pero en 2016 el peso se depreció cuando Alsea tenía buenos resultados y la acción siguió subiendo. Entonces no basta con saber qué pasó para saber cómo va a reaccionar el precio.
+
+Al compararla con el PIB, vimos que ALSEA sí está relacionada con la economía, lo cual tiene sentido porque vende algo que la gente deja de comprar cuando le va mal. Pero la relación no es perfecta. La acción se mueve mucho más que el PIB (su desviación estándar anual es de 50.7% contra 3.1% del PIB), a veces se adelanta, como en 2008-2009, porque el precio depende de lo que se espera y no solo de lo que pasa hoy, y a veces se mueve distinto por cosas de la empresa, como en 2018-2019, o por lo que pasa en otros países donde opera. Entonces la economía explica una parte del riesgo de la acción, pero no todo.
+
+Lo más importante que aprendimos es que el precio cambia cuando llega información nueva que cambia lo que esperan los inversionistas, y esa información es justo la que no se puede saber antes. Nadie sabía en 2007 que iba a venir una crisis financiera mundial, ni en 2019 que una pandemia iba a obligar a cerrar restaurantes. Incluso en el último año, sin una crisis, lo que más movió el precio no fueron cosas que ya se sabían, como los recortes de Banxico, sino las sorpresas, como los resultados peores de lo esperado o los datos que mostraron que el consumo estaba más débil. Si los eventos se pudieran predecir, ya estarían en el precio; lo que mueve el precio es lo que nadie esperaba.
+
+Esto lo relacionamos con lo que vimos en clase sobre el riesgo, que es la incertidumbre sobre lo que va a pasar. En ALSEA esa incertidumbre viene de dos lados. Una parte es riesgo sistemático, que viene de la economía, la política y los mercados, afecta a muchas empresas al mismo tiempo y no se puede eliminar diversificando. La otra parte es riesgo no sistemático, que viene de las decisiones y resultados de Alsea, y ese sí se puede reducir combinando la acción con otras. También vimos que las caídas grandes pasan más seguido y más juntas de lo que uno pensaría si los rendimientos se comportaran de forma "normal".
+
+Como no se pueden controlar ni predecir los eventos que afectan al precio, lo que puede hacer un inversionista no es adivinar qué va a pasar, sino medir qué tanto está expuesto y decidir cuánto riesgo quiere tomar. Por eso en las siguientes partes del proyecto vamos a necesitar herramientas para medir el riesgo: con este análisis entendimos de dónde viene, pero para manejarlo hay que poder medirlo.
+
 # Referencias
+
+**Datos**
+
+FactSet. Precios históricos diarios de Alsea, S.A.B. de C.V. (ALSEA.MX), septiembre de 2000 a junio de 2026. Consultado mediante FactSet.
+
+**Periodo 1 (2008-2009)**
+
+Banco de México. *Informe Anual 2009*.
+
+Alsea, S.A.B. de C.V. *Informe Anual 2009*.
+
+**Periodo 2 (2015-2017)**
+
+Forbes México. (28 de abril de 2016). Ventas de Alsea aumentan 16.2% en primer trimestre. https://www.forbes.com.mx/ventas-alsea-aumentan-16-2-primer-trimestre/
+
+Univisión Noticias. El peso mexicano ya iba en caída (y Trump le da un empujón). https://www.univision.com/noticias/dinero/el-peso-mexicano-ya-iba-en-caida-y-trump-le-da-un-empujon
+
+**Periodo 3 (2018-2019)**
+
+Latin America Daily Briefing. (30 de octubre de 2018). Mexico airport showdown.
+
+Proceso. (3 de septiembre de 2019). Con AMLO, desconfianza empresarial, nulo crecimiento e inversión diluida: analistas de la IP. https://www.proceso.com.mx/reportajes/2019/9/3/con-amlo-desconfianza-empresarial-nulo-crecimiento-inversion-diluida-analistas-de-la-ip-230438.html
+
+Expansión. (13 de mayo de 2019). Menos aperturas y desinversiones, la estrategia de Alsea para bajar su deuda. https://expansion.mx/empresas/2019/05/13/menos-aperturas-y-desinversiones-la-estrategia-de-alsea-para-bajar-su-deuda
+
+**Periodo 4 (febrero-mayo 2020)**
+
+Wikipedia. Confinamiento por la pandemia de COVID-19 en México.
+
+Wikipedia. Devaluación del peso mexicano.
+
+Expansión. (22 de junio de 2021). Alsea: la resiliencia y la recuperación después de la crisis. https://expansion.mx/empresas/2021/06/22/alsea-recuperacion-despues-crisis-coronavirus
+
+Milenio. (24 de julio de 2020). Alsea, operadora de Vips, cerrará más de 100 restaurantes por covid-19.
+
+El Universal. (24 de julio de 2020). Alsea contempla el cierre de 100 restaurantes ante impacto por Covid-19.
+
+**Periodo 5 (2020-2023)**
+
+Expansión. (27 de febrero de 2023). Alsea duplica sus ganancias en 2022 por una recuperación del consumo. https://expansion.mx/empresas/2023/02/27/alsea-duplica-ganancias-2022-por-recuperacion-consumo
+
+Alsea, S.A.B. de C.V. Informe del Director General e Informe Trimestral 2023. https://www.alsea.net
+
+**Relación con el entorno económico**
+
+Banco de México. Crecimiento histórico del Producto Interno Bruto (tabla del Informe Trimestral octubre-diciembre 2020, con datos del INEGI). https://www.banxico.org.mx/TablasWeb/informes-trimestrales/octubre-diciembre-2020/99B59D58-4537-4A19-A036-81D90F013EF1.html
+
+México, ¿cómo vamos? (febrero de 2026). La economía crece 0.8% en 2025 vs. 2024, el PIB per cápita en niveles de 2017. https://mexicocomovamos.mx/publicaciones/2026/02/la-economia-crece-0-8-en-2025-vs-2024-el-pib-per-capita-en-niveles-de-2017/
+
+INEGI. (2026). Boletín de indicador 93/26: Producto Interno Bruto (PIB) trimestral, cuarto trimestre de 2025. https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2026/pibt/pib_Pconst2026_02.pdf
+
+**Análisis de los periodos más recientes**
+
+Alsea, S.A.B. de C.V. (22 de octubre de 2025). Reporte trimestral 3T 2025. https://www.alsea.com.mx/uploads/es/documents/reports_quarterly/alsea_resultados_3T25.pdf
+
+Expansión. (22 de octubre de 2025). Alsea multiplica por cuatro sus ganancias pese al freno del consumo. https://expansion.mx/empresas/2025/10/22/alsea-multiplica-por-cuatro-sus-ganancias-pese-al-freno-del-consumo
+
+Investing.com México. Resultados de Alsea (ALSEA). https://mx.investing.com/equities/alsea-earnings
+
+Alsea, S.A.B. de C.V. (25 de febrero de 2026). Reporte trimestral 4T 2025 (BMV). https://www.alsea.net/uploads/es/documents/alsea_reporte_trimestral_bmv_sific/reporte_trimestral_4T2025_BMV.pdf
+
+Alsea, S.A.B. de C.V. (2026). Resultados del 4T y año completo 2025. https://www.bmv.com.mx/docs-pub/eventemi/eventemi_1536686_1.pdf
+
+Axis Negocios. (marzo de 2026). Alsea prioriza rentabilidad y tráfico sobre expansión acelerada en 2026. https://www.axisnegocios.com/breves.phtml?id=147035
+
+Yahoo Noticias. (marzo de 2026). Alsea gana luego de presentar su estrategia. https://es-us.noticias.yahoo.com/alsea-gana-presentar-estrategia-025705249.html
+
+Alsea, S.A.B. de C.V. (28 de abril de 2026). Reporte trimestral 1T 2026. https://www.alsea.net/uploads/es/documents/reports_quarterly/260428_RESULTADOS_ALSEA_1T.pdf
+
+El Universal. (abril de 2026). Cae 65.7% utilidad neta de Alsea en primer trimestre; reconoce entorno retador para el consumo. https://www.eluniversal.com.mx/cartera/cae-657-utilidad-neta-de-alsea-en-primer-trimestre-reconoce-entorno-retador-para-consumo/
+
+enAlimentos. (mayo de 2026). Alsea anuncia sus resultados financieros del primer trimestre de 2026. https://enalimentos.lat/noticias/12547-alsea-anuncia-sus-resultados-financieros-del-primer-trimestre-de-2026.html
+
+Investing.com México. (julio de 2026). Alsea recorta guía 2026 tras caída de utilidades en Q2. https://mx.investing.com/news/transcripts/alsea-recorta-guia-2026-tras-caida-de-utilidades-en-q2-93CH-3694479
+
+Merca2.0. (julio de 2026). Alsea confirma que el consumo se desaceleró y baja su guía de crecimiento para 2026. https://www.merca20.com/alsea-confirma-que-el-consumo-se-desacelero-y-baja-su-guia-de-crecimiento-para-2026/
+
+Trading Economics. (noviembre de 2025). El PIB de México se contrae según lo esperado (tercer trimestre de 2025). https://es.tradingeconomics.com/mexico/gdp-growth/news/521708
+
+El Financiero. (30 de abril de 2026). PIB de México 'sufre' en primer trimestre de 2026: se contrae 0.8% por caída de agricultura y manufactura. https://www.elfinanciero.com.mx/economia/2026/04/30/pib-de-mexico-sufre-en-primer-trimestre-de-2026-se-contrae-08-por-caida-de-agricultura-y-manufactura/
+
+El CEO. (mayo de 2026). Inegi confirma contracción económica: PIB de México cae 0.6% al inicio de 2026. https://elceo.com/economia/inegi-confirma-contraccion-economica-pib-mexico-primer-trimestre-2026/
+
+El Financiero. (19 de diciembre de 2025). Banxico recorta tasa de interés y anticipa cautela para 2026. https://www.elfinanciero.com.mx/economia/2025/12/19/banxico-recorta-tasa-de-interes-y-anticipa-cautela-para-2026/
+
+Bloomberg Línea. (2026). Banxico pausa su ciclo de bajas y mantiene en 7% la tasa de interés. https://www.bloomberglinea.com/latinoamerica/mexico/banxico-pausa-su-ciclo-de-bajas-y-mantiene-en-7-la-tasa-de-interes/
+
+Investing.com México. Anuncio de la decisión de política monetaria de Banco de México (historial de decisiones y pronósticos). https://mx.investing.com/economic-calendar/mexican-interest-rate-decision-423
+
+Banco de México. (7 de mayo de 2026). Anuncio de política monetaria. https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/%7B8A05C722-0A97-4527-2166-0CE802CE6838%7D.pdf
+
+Forbes México. (mayo de 2026). Banxico recorta tasa a 6.50% y pone fin a ciclo de recortes. https://forbes.com.mx/banxico-recorta-por-segunda-vez-la-tasa-de-interes-en-25-puntos-hasta-el-6-5/
+
+Excélsior. (25 de junio de 2026). Banxico 'mete el freno' a recortes; mantiene tasa de interés en 6.50% en junio. https://www.excelsior.com.mx/finanzas/banxico-mantiene-tasa-interes-junio-2026
+
+Investing.com México. Alsea (ALSEA): cotización y rango de 52 semanas. https://mx.investing.com/equities/alsea-consensus-estimates
+
+Incomex. (30 de enero de 2026). PIB de México creció 0.5% en 2025 y rompe racha de dos trimestres a la baja: Inegi. https://incomex.org.mx/index.php/2026/01/30/pib-mexico-crecio-05-2025-rompe-racha-dos-trimestres-baja-inegi/
