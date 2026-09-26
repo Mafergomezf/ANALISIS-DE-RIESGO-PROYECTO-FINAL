@@ -76,7 +76,7 @@ cobertura <- data.frame(
 cobertura
 ```
 
-La base tiene **6,487 observaciones diarias** entre el **13 de septiembre de 2000 y el 30 de junio de 2026**. Aunque Alsea empezó a cotizar desde 1999, en el archivo de FactSet que tenemos la información disponible empieza en septiembre de 2000, por eso no estamos usando datos anteriores que realmente no aparecen en la base.
+La base tiene **6,487 observaciones diarias** entre el **13 de septiembre de 2000 y el 30 de junio de 2026**. Aunque Alsea empezó a cotizar desde 1999, en el archivo de FactSet que tenemos la información disponible empieza en septiembre de 2000. Buscamos una serie histórica confiable que cubriera desde la salida a bolsa hasta esa fecha, pero no encontramos una fuente diaria consistente para ese tramo. Por eso preferimos no estimar datos ni mezclar fuentes distintas y dejar explícita esta limitación.
 
 También encontramos que en los primeros años hay varios precios repetidos y días donde no aparece volumen ni rendimiento. Por eso revisamos con más detalle la parte inicial de la serie antes de calcular los rendimientos.
 
@@ -166,7 +166,7 @@ Calculamos los dos para no mezclar conceptos, pero para el análisis usamos prin
 plot(
   log_rend,
   main = "ALSEA - Rendimiento logarítmico diario",
-  ylab = "Rendimiento",
+  ylab = "Rendimiento logarítmico",
   xlab = "",
   col = "purple"
 )
@@ -382,10 +382,10 @@ Los periodos seleccionados permiten observar cómo Alsea ha estado expuesta tant
 ## Periodo 1: 2008-2009
 
 Durante el periodo 2008-2009 la acción de Alsea presentó una caída importante. En la ventana seleccionada en nuestro análisis, el precio disminuyó aproximadamente 48.76%, y además el máximo drawdown histórico de la serie alcanzó cerca de -84.47%, con su punto mínimo en marzo de 2009. Esto muestra que fue uno de los periodos de mayor presión para la acción.
-Uno de los principales factores externos fue la crisis financiera internacional de 2008-2009, que provocó una fuerte desaceleración de la economía mexicana. De acuerdo con Banco de México, el PIB de México disminuyó 6.5% en 2009 y el consumo privado cayó 6.1%, lo cual es especialmente relevante para Alsea porque gran parte de sus ingresos depende del gasto de los consumidores en restaurantes y cafeterías. Banco de México Anterior
-La propia Alsea reconoció que durante 2009 existió una desaceleración del consumo, agravada por el brote de influenza A(H1N1). Como consecuencia, las ventas mismas tiendas disminuyeron 3.7%. La empresa también señaló que la crisis económica y la influenza afectaron de forma importante el consumo durante ese año. Alsea
-Los efectos también se observaron en la rentabilidad. Aunque las ventas netas de Alsea aumentaron 10.3% en 2009, el EBITDA disminuyó 3.1%, la utilidad de operación cayó 27.0% y la utilidad neta disminuyó 23.3%. Esto indica que el crecimiento de las ventas no fue suficiente para evitar el deterioro de los márgenes y las utilidades. Alsea
-Otro factor relevante fue la depreciación del peso frente al dólar. El tipo de cambio promedio pasó de $11.13 pesos por dólar en 2008 a $13.49 en 2009. Alsea reportó que aproximadamente 35% de su costo de ventas tenía exposición al tipo de cambio, por lo que la depreciación aumentó el costo de algunos insumos y contribuyó a que el margen bruto disminuyera de 64.3% a 63.1%. Alsea
+Uno de los principales factores externos fue la crisis financiera internacional de 2008-2009, que provocó una fuerte desaceleración de la economía mexicana. De acuerdo con Banco de México, el PIB de México disminuyó 6.5% en 2009 y el consumo privado cayó 6.1%, lo cual es especialmente relevante para Alsea porque gran parte de sus ingresos depende del gasto de los consumidores en restaurantes y cafeterías.
+La propia Alsea reconoció que durante 2009 existió una desaceleración del consumo, agravada por el brote de influenza A(H1N1). Como consecuencia, las ventas mismas tiendas disminuyeron 3.7%. La empresa también señaló que la crisis económica y la influenza afectaron de forma importante el consumo durante ese año.
+Los efectos también se observaron en la rentabilidad. Aunque las ventas netas de Alsea aumentaron 10.3% en 2009, el EBITDA disminuyó 3.1%, la utilidad de operación cayó 27.0% y la utilidad neta disminuyó 23.3%. Esto indica que el crecimiento de las ventas no fue suficiente para evitar el deterioro de los márgenes y las utilidades.
+Otro factor relevante fue la depreciación del peso frente al dólar. El tipo de cambio promedio pasó de $11.13 pesos por dólar en 2008 a $13.49 en 2009. Alsea reportó que aproximadamente 35% de su costo de ventas tenía exposición al tipo de cambio, por lo que la depreciación aumentó el costo de algunos insumos y contribuyó a que el margen bruto disminuyera de 64.3% a 63.1%.
 Por lo tanto, la caída de la acción durante este periodo puede relacionarse con una combinación de factores: la crisis financiera internacional, la contracción de la economía mexicana, la disminución del consumo, la influenza A(H1N1) y la depreciación del peso. Estos acontecimientos generaron mayor incertidumbre sobre las ventas y la rentabilidad futura de Alsea, por lo que pudieron afectar negativamente las expectativas de los inversionistas y el precio de la acción.
 
 ## Periodo 2: 2015-2017
@@ -617,7 +617,7 @@ text(
 
 ## Interpretación de la relación con el ciclo económico
 
-En la gráfica y en la tabla se ve que sí hay relación entre ALSEA y la economía, pero no es perfecta. La correlación entre el rendimiento de ALSEA y el crecimiento del PIB en el mismo año es de 0.38, que es positiva pero moderada, y en 17 de los 25 años las dos series tuvieron el mismo signo, o sea, subieron o bajaron juntas. La pendiente de la regresión es de 6.27, lo que quiere decir que, en promedio, por cada punto porcentual que crece el PIB, el rendimiento de ALSEA es alrededor de 6.27 puntos porcentuales más alto, aunque los puntos de la gráfica de dispersión están bastante separados de la línea. Lo que esperábamos era una relación positiva, porque Alsea vende en restaurantes y cafeterías y eso depende de cuánto gastan las familias. Cuando la economía está mal, salir a comer es de lo primero que la gente deja de hacer, y cuando la economía mejora es de lo primero que regresa.
+En la gráfica y en la tabla se ve que sí hay relación entre ALSEA y la economía, pero no es perfecta. La correlación entre el rendimiento de ALSEA y el crecimiento del PIB en el mismo año es de 0.38, que es positiva pero moderada, y en 17 de los 25 años las dos series tuvieron el mismo signo, o sea, subieron o bajaron juntas. La pendiente de la regresión es de 6.27, lo que quiere decir que, en esta muestra, un punto porcentual adicional de crecimiento del PIB se asocia con aproximadamente 6.27 puntos porcentuales adicionales en el rendimiento anual de ALSEA, aunque los puntos de la gráfica de dispersión están bastante separados de la línea. Lo que esperábamos era una relación positiva, porque Alsea vende en restaurantes y cafeterías y eso depende de cuánto gastan las familias. Cuando la economía está mal, salir a comer es de lo primero que la gente deja de hacer, y cuando la economía mejora es de lo primero que regresa.
 
 Donde más se nota la relación es en la pandemia. En 2020 el PIB cayó 8.2% y, solo entre febrero y mayo, el precio de la acción cayó alrededor de 59.12%. Después, cuando la economía se recuperó (creció 6.3% en 2021, 3.7% en 2022 y 3.1% en 2023), la acción subió alrededor de 234.69% entre junio de 2020 y diciembre de 2023. En este caso el mismo evento afectó a la economía y a la empresa al mismo tiempo, porque los restaurantes fueron de los negocios que tuvieron que cerrar. Aun así, en los datos anuales una parte de esto no se ve tan claro, porque la caída y el inicio de la recuperación pasaron dentro del mismo 2020.
 
@@ -625,7 +625,7 @@ En la crisis de 2008-2009 pasó algo diferente: la acción se movió antes que e
 
 También hay años donde la acción se mueve distinto a la economía por cosas de la propia empresa. En 2018 y 2019 el PIB creció 2.2% y −0.1%, o sea, la economía se frenó pero no tuvo una crisis como en 2009 o 2020. Aun así, entre 2018 y 2019 el precio de ALSEA cayó alrededor de 23.39%. Como vimos en el Periodo 3, en esos años hubo incertidumbre política y además Alsea se endeudó bastante para comprar Grupo VIPS España. Esto es un riesgo propio de la empresa y no tiene que ver con el PIB.
 
-Otra diferencia es qué tanto se mueve cada serie. El PIB estuvo entre −8.2% y 6.3% en todo el periodo, con una desviación estándar de 3.1 puntos porcentuales, mientras que la desviación estándar de los rendimientos anuales de ALSEA es de 50.7 puntos porcentuales, es decir, alrededor de 16 veces más. O sea, la acción exagera mucho los movimientos de la economía, y esto también coincide con la pendiente de 6.27 que obtuvimos en la regresión. Creemos que esto pasa por varias razones: muchos costos de un restaurante son fijos (renta, sueldos, equipo), entonces si bajan las ventas las utilidades bajan todavía más; la empresa tiene deuda, y eso hace que la utilidad neta cambie más; y parte de sus insumos se pagan en dólares, así que cuando el peso se deprecia, que normalmente pasa en las crisis, sus costos suben justo cuando venden menos.
+Otra diferencia es qué tanto se mueve cada serie. El PIB estuvo entre −8.2% y 6.3% en todo el periodo, con una desviación estándar de 3.1 puntos porcentuales, mientras que la desviación estándar de los rendimientos anuales de ALSEA es de 50.7 puntos porcentuales, es decir, alrededor de 16 veces más. O sea, la acción presenta variaciones de una magnitud mucho mayor que las del PIB, y esto también coincide con la pendiente de 6.27 que obtuvimos en la regresión. Creemos que esto pasa por varias razones: muchos costos de un restaurante son fijos (renta, sueldos, equipo), entonces si bajan las ventas las utilidades bajan todavía más; la empresa tiene deuda, y eso hace que la utilidad neta cambie más; y parte de sus insumos se pagan en dólares, así que cuando el peso se deprecia, que normalmente pasa en las crisis, sus costos suben justo cuando venden menos.
 
 También hay que tomar en cuenta que Alsea no solo opera en México. En el primer trimestre de 2026, México fue alrededor del 56% de sus ventas y el resto vino de Europa y Sudamérica. Por eso una parte de sus resultados depende de la economía de otros países y de otras monedas, y el PIB de México no alcanza a explicar todos los movimientos de la acción.
 
@@ -806,7 +806,7 @@ Tampoco podemos decir que todo el movimiento de esos seis días se debe solo al 
 
 También vimos que bajar las tasas no fue suficiente para que subiera el precio. Aunque Banxico bajó la tasa varias veces, y eso le ayuda a Alsea con su deuda, el mercado se fijó más en que el consumo estaba débil y en los resultados de la empresa. Esto es lo contrario de lo que pasó en el Periodo 2: en 2016 los buenos resultados de Alsea pesaron más que la caída del peso, y en 2026 el consumo débil y las utilidades bajas pesaron más que la baja en las tasas.
 
-Aunque ya está fuera de nuestro periodo, lo que pasó después confirma esto. El 21 de julio de 2026 Alsea reportó el segundo trimestre: sus ventas bajaron 0.9%, el EBITDA bajó 6.2% y la utilidad neta bajó alrededor de 48%. Además, bajó lo que esperaba crecer en 2026 y dijo que el consumo se había frenado. O sea, la caída del precio desde marzo ya estaba reflejando algo que la empresa confirmó semanas después.
+Aunque ya está fuera de nuestro periodo, lo que pasó después es consistente con esta interpretación. El 21 de julio de 2026 Alsea reportó el segundo trimestre: sus ventas bajaron 0.9%, el EBITDA bajó 6.2% y la utilidad neta bajó alrededor de 48%. Además, bajó lo que esperaba crecer en 2026 y dijo que el consumo se había frenado. O sea, la caída del precio desde marzo fue consistente con un deterioro que la empresa reportó semanas después.
 
 Con esto vemos que aunque no haya una crisis, la acción sigue expuesta a muchos riesgos: el riesgo económico (el consumo se frenó), el riesgo de mercado (tasas de interés y tipo de cambio), el riesgo político y comercial (aranceles y el T-MEC) y el riesgo propio de la empresa (resultados peores de lo esperado y problemas en Sudamérica). Y ninguno de estos lo podían controlar los inversionistas.
 
@@ -852,9 +852,9 @@ Expansión. (13 de mayo de 2019). Menos aperturas y desinversiones, la estrategi
 
 **Periodo 4 (febrero-mayo 2020)**
 
-Wikipedia. Confinamiento por la pandemia de COVID-19 en México.
+Secretaría de Salud. (24 de marzo de 2020). *Sana Distancia COVID-19*. https://www.gob.mx/salud/documentos/sana-distancia
 
-Wikipedia. Devaluación del peso mexicano.
+Banco de México. *Tipo de cambio nominal y DXY*. https://www.banxico.org.mx/TablasWeb/informes-trimestrales/enero-marzo-2023/E8D6B197-8337-4176-A3ED-3435E3252641.html
 
 Expansión. (22 de junio de 2021). Alsea: la resiliencia y la recuperación después de la crisis. https://expansion.mx/empresas/2021/06/22/alsea-recuperacion-despues-crisis-coronavirus
 
