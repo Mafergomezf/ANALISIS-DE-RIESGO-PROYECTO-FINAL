@@ -1,0 +1,185 @@
+---
+title: "Proyecto Final - Parte 3"
+subtitle: "Alsea, S.A.B. de C.V. (ALSEA.MX)"
+author:
+  - "Nicole Getzabel Flores Godínez"
+  - "Andrea Gutiérrez Rentería"
+  - "Isaac Emiliano Meza López"
+  - "María Fernanda Gómez Flores"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+# Introducción
+
+En las dos primeras entregas analizamos el comportamiento histórico del precio de Alsea, identificando los periodos en los que tuvo cambios importantes y relacionándolos con distintos eventos económicos, políticos y de la propia empresa. En esta tercera entrega buscamos ir un paso más allá, analizando si el comportamiento de los rendimientos de Alsea cumple con los supuestos estadísticos que se utilizan en los modelos financieros.
+
+Para esto, trabajamos con el modelo de Movimiento Browniano Geométrico (GBM), que se utiliza para modelar cómo puede cambiar el precio de un activo financiero a lo largo del tiempo. Este modelo supone que los rendimientos logarítmicos siguen una distribución normal y que su media y volatilidad se mantienen constantes. Estos supuestos son importantes porque se utilizan para estimar el comportamiento futuro de los precios y calcular medidas de riesgo, como el Valor en Riesgo (VaR).
+
+El análisis se divide en cinco partes. Primero, calculamos los rendimientos logarítmicos de Alsea y estimamos su media y volatilidad para todo el periodo y para cada año, con el objetivo de observar cómo han cambiado estos valores con el tiempo. Después, aplicamos las pruebas estadísticas de Jarque-Bera y t para evaluar si los rendimientos siguen una distribución normal y si su media es significativamente diferente de cero.
+
+Posteriormente, utilizamos los parámetros obtenidos para simular posibles trayectorias del precio de Alsea mediante el modelo GBM. Realizamos simulaciones con parámetros diarios para horizontes de 10, 20 y 40 días, y con parámetros anualizados para periodos de 3, 6, 9 y 12 meses. En ambos casos, incluimos intervalos de confianza para observar los posibles rangos de precios que plantea el modelo. Por último, analizamos qué tan adecuado es asumir que los rendimientos siguen una distribución normal y qué implicaciones puede tener esto al evaluar el riesgo de la acción.
+
+Con este análisis buscamos no solo obtener resultados estadísticos y realizar simulaciones, sino también entender qué nos dicen sobre el comportamiento de Alsea y qué tan bien se ajusta el modelo GBM a sus datos históricos. De esta manera, podemos identificar las limitaciones del modelo y comprender por qué sus resultados deben interpretarse considerando la incertidumbre y los riesgos que existen en el mercado real.
+
+# Cálculo de rendimientos y volatilidad
+
+```{r}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(quantmod)
+library(xts)
+library(TTR)
+library(dplyr)
+```
+
+## Descarga de datos
+
+```{r}
+clave <-  "ALSEA.MX"
+getSymbols(clave,from = "2000-01-01", to = "2025-12-31")
+precio <-  Ad(get(clave))
+names(precio) <- "Precio" 
+head(precio)
+tail(precio)
+```
+## Rendimiento logarítmico diario
+
+Calculamos el rendimiento logarítmico diario de la misma forma en que lo hicimos en la Parte 2, porque es el rendimiento que vamos a usar en todo el análisis estadístico y en la construcción del modelo GBM:
+
+$$r_t=\ln\left(\frac{P_t}{P_{t-1}}\right)$$
+
+```{r log_rend, echo=TRUE}
+log_rend <- dailyReturn(precio, type = "log")[-1]
+
+log_rend_tabla <- data.frame(
+  Fecha = index(log_rend),
+  Rendimiento = as.numeric(log_rend)
+)
+
+head(log_rend_tabla)
+tail(log_rend_tabla)
+```
+
+## Estimaciones utilizando toda la información disponible
+
+Para esta parte utilizamos los datos de 2021 a 2025, manteniendo el mismo periodo que en el resto del documento para que los resultados sean comparables. A partir de los rendimientos diarios, calculamos la media y la volatilidad, tanto diaria como anualizada.
+La media nos permite conocer el rendimiento promedio de la acción, mientras que la volatilidad nos ayuda a medir qué tanto varían sus rendimientos. Esto es importante porque una volatilidad más alta indica que los rendimientos presentan mayores fluctuaciones.
+Para obtener los valores anuales, utilizamos 252 días hábiles, que es la cantidad que normalmente se considera para un año bursátil
+
+
+```{r rend_2021_2025, echo=TRUE}
+rend_2021_2025 <- log_rend_tabla[
+  log_rend_tabla$Fecha >= as.Date("2021-01-01") &
+  log_rend_tabla$Fecha <= as.Date("2025-12-31"),
+]
+
+mu_diario <- mean(rend_2021_2025$Rendimiento)
+sigma_diario <- sd(rend_2021_2025$Rendimiento)
+
+dias_habiles_anio <- 252
+
+mu_anual <- mu_diario * dias_habiles_anio
+sigma_anual <- sigma_diario * sqrt(dias_habiles_anio)
+
+estimaciones_totales <- data.frame(
+  Rendimiento_promedio_diario = mu_diario,
+  Volatilidad_diaria = sigma_diario,
+  Rendimiento_promedio_anual = mu_anual,
+  Volatilidad_anual = sigma_anual
+)
+
+estimaciones_totales
+```
+
+Las fórmulas que utilizamos son:
+
+$$
+\hat{\mu}_{diario}=\frac{1}{n}\sum_{t=1}^{n}r_t
+
+\qquad\qquad 
+
+\hat{\sigma}_{diario}=
+\sqrt{\frac{1}{n-1}\sum_{t=1}^{n}(r_t-\hat{\mu}_{diario})^2}
+$$
+Para anualizar los resultados:
+
+$$
+\hat{\mu}_{anual}=\hat{\mu}_{diario}\times252
+
+\qquad\qquad
+
+\hat{\sigma}_{anual}=\hat{\sigma}_{diario}\times\sqrt{252}
+$$
+La media se anualiza multiplicándola por 252, mientras que para la volatilidad utilizamos la raíz cuLa anualización de la media es lineal porque los rendimientos logarítmicos son aditivos en el tiempo (la suma de rendimientos diarios da el rendimiento del periodo). La volatilidad, en cambio, se anualiza con la raíz cuadrada del número de periodos porque la varianza de una suma de rendimientos independientes es la suma de las varianzas, y la desviación estándar es la raíz cuadrada de la varianza.
+
+## Estimaciones año por año
+
+Además de analizar todo el periodo en conjunto, calculamos la media y la volatilidad para cada año, de 2021 a 2025. La idea es comparar los resultados y observar si el comportamiento de los rendimientos ha sido similar o si existen diferencias importantes entre los años.
+
+Esto nos ayuda a identificar si la volatilidad se ha mantenido relativamente estable o si ha aumentado o disminuido en ciertos periodos. También podemos observar cómo cambia el rendimiento promedio anualizado, aunque este puede variar bastante de un año a otro.
+
+```{r rend_por_anio, echo=TRUE}
+rend_2021_2025$Anio <- format(rend_2021_2025$Fecha, "%Y")
+
+anios <- sort(unique(rend_2021_2025$Anio))
+
+resumen_anual <- data.frame(
+  Anio = character(),
+  Rendimiento_promedio_diario = numeric(),
+  Volatilidad_diaria = numeric(),
+  Rendimiento_promedio_anual = numeric(),
+  Volatilidad_anual = numeric(),
+  stringsAsFactors = FALSE
+)
+
+for (a in anios) {
+
+  rend_anio <- rend_2021_2025$Rendimiento[
+    rend_2021_2025$Anio == a
+  ]
+
+  mu_d <- mean(rend_anio)
+  sigma_d <- sd(rend_anio)
+
+  mu_a <- mu_d * dias_habiles_anio
+  sigma_a <- sigma_d * sqrt(dias_habiles_anio)
+
+  resumen_anual <- rbind(
+    resumen_anual,
+    data.frame(
+      Anio = a,
+      Rendimiento_promedio_diario = mu_d,
+      Volatilidad_diaria = sigma_d,
+      Rendimiento_promedio_anual = mu_a,
+      Volatilidad_anual = sigma_a
+    )
+  )
+}
+
+resumen_anual
+```
+```{r grafica_volatilidad_anual}
+plot(
+  resumen_anual$Anio,
+  resumen_anual$Volatilidad_anual,
+  type = "b",
+  pch = 19,
+  main = "ALSEA - Volatilidad anualizada por año (2021-2025)",
+  xlab = "",
+  ylab = "Volatilidad anual",
+  col = "darkblue"
+)
+```
+
+Al comparar los cinco años, vemos que la volatilidad anual se mantiene relativamente estable, con valores que van de 25.25% en 2023 a 33.82% en 2025. Aunque hay diferencias entre los años, no se observan cambios demasiado grandes, ya que la variación es de aproximadamente 8.6 puntos porcentuales. Esto nos indica que la volatilidad cambia con el tiempo, pero se mantiene alrededor de un nivel cercano al 30%. A diferencia de los periodos que analizamos en la segunda entrega, como la crisis de 2008-2009 o la pandemia de 2020, en estos cinco años no se observa un aumento tan marcado de la volatilidad.
+
+Por otro lado, el rendimiento promedio presenta cambios mucho más importantes. En 2021 fue de 38.09%, en 2022 bajó a -3.13% y en 2023 aumentó a 56.16%. Después, en 2024 cayó a -37.44%, para recuperarse a 22.96% en 2025. Estos resultados muestran que el rendimiento de Alsea ha sido bastante variable, alternando entre años positivos y negativos.
+
+Esto se relaciona con lo que analizamos en la segunda entrega, donde identificamos una etapa de recuperación después de la pandemia y un comportamiento menos favorable en el periodo más reciente. En particular, 2024 destaca por tener el rendimiento promedio más bajo de los cinco años, lo que nos ayuda a identificar en qué año se presentó el deterioro más importante. En general, estos resultados muestran que, aunque la volatilidad no presenta cambios tan grandes entre años, los rendimientos sí pueden variar considerablemente, algo importante para evaluar el riesgo de invertir en Alsea.
