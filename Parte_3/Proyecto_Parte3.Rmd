@@ -62,7 +62,7 @@ real.
 
 # Cálculo de rendimientos y volatilidad
 
-```{r}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
