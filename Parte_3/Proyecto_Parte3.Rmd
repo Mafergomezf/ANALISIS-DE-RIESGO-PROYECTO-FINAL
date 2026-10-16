@@ -255,7 +255,10 @@ los cinco años, lo que nos ayuda a identificar en qué año se presentó el
 deterioro más importante. En general, estos resultados muestran que,
 aunque la volatilidad no presenta cambios tan grandes entre años, los
 rendimientos sí pueden variar considerablemente, algo importante para
-evaluar el riesgo de invertir en Alsea.
+evaluar el riesgo de invertir en Alsea. A partir de estas estimaciones
+no observamos un cambio estructural evidente en la volatilidad durante
+el periodo, aunque este análisis es descriptivo y no constituye una
+prueba formal de cambio estructural.
 
 ### Actualización con información disponible de 2026
 
@@ -964,11 +967,11 @@ legend("topleft",legend = c("Precio esperado", "Intervalo al 95%"),col = c("dark
 
 Al utilizar los parámetros anualizados de Alsea, podemos observar que el
 precio esperado aumenta conforme pasa el tiempo. A los 3 meses se estima
-un precio de \$55.89, mientras que a los 12 meses aumenta a \$64.96.
+un precio de \$55.72, mientras que a los 12 meses aumenta a \$64.72.
 
 También observamos que la incertidumbre aumenta con el tiempo, ya que a
-los 3 meses el intervalo va de \$40.91 a \$74.59, mientras que a los 12
-meses va de \$34.00 a \$112.99.
+los 3 meses el intervalo va de \$40.79 a \$74.34, mientras que a los 12
+meses va de \$33.88 a \$112.55.
 
 Esto nos indica que, aunque el modelo proyecta un aumento en el precio
 de la acción, las estimaciones a mayor plazo tienen más riesgo e
@@ -989,7 +992,9 @@ Según el modelo GBM, el precio de las acciones sigue una distribución
 lognormal, mientras que el logaritmo del precio futuro sigue una
 distribución normal para un horizonte determinado. Esto tiene sentido
 porque los precios no pueden ser negativos, pero sí pueden aumentar
-considerablemente.
+considerablemente. Esto corresponde al supuesto teórico del GBM y no
+significa que la distribución histórica observada de los precios de
+Alsea sea perfectamente lognormal.
 
 ### ¿Qué implicaciones tiene asumir normalidad en la modelación del riesgo?
 
@@ -1010,8 +1015,8 @@ del mercado.
 ### ¿Qué riesgos puede introducir el supuesto de normalidad en la toma de decisiones financieras?
 
 El principal riesgo es confiar demasiado en las estimaciones del modelo.
-Por ejemplo, a los 12 meses obtuvimos un precio esperado de \$64.96,
-pero el intervalo al 95% va desde \$34.00 hasta \$112.99. Esto demuestra
+Por ejemplo, a los 12 meses obtuvimos un precio esperado de \$64.72,
+pero el intervalo al 95% va desde \$33.88 hasta \$112.55. Esto demuestra
 que existe mucha incertidumbre y que no debemos tomar decisiones de
 inversión considerando solamente el precio esperado.
 
