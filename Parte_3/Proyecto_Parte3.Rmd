@@ -11,18 +11,54 @@ output:
     toc: true
     toc_float: true
     number_sections: true
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
+
 # Introducción
 
-En las dos primeras entregas analizamos el comportamiento histórico del precio de Alsea, identificando los periodos en los que tuvo cambios importantes y relacionándolos con distintos eventos económicos, políticos y de la propia empresa. En esta tercera entrega buscamos ir un paso más allá, analizando si el comportamiento de los rendimientos de Alsea cumple con los supuestos estadísticos que se utilizan en los modelos financieros.
+En las dos primeras entregas analizamos el comportamiento histórico del
+precio de Alsea, identificando los periodos en los que tuvo cambios
+importantes y relacionándolos con distintos eventos económicos,
+políticos y de la propia empresa. En esta tercera entrega buscamos ir un
+paso más allá, analizando si el comportamiento de los rendimientos de
+Alsea cumple con los supuestos estadísticos que se utilizan en los
+modelos financieros.
 
-Para esto, trabajamos con el modelo de Movimiento Browniano Geométrico (GBM), que se utiliza para modelar cómo puede cambiar el precio de un activo financiero a lo largo del tiempo. Este modelo supone que los rendimientos logarítmicos siguen una distribución normal y que su media y volatilidad se mantienen constantes. Estos supuestos son importantes porque se utilizan para estimar el comportamiento futuro de los precios y calcular medidas de riesgo, como el Valor en Riesgo (VaR).
+Para esto, trabajamos con el modelo de Movimiento Browniano Geométrico
+(GBM), que se utiliza para modelar cómo puede cambiar el precio de un
+activo financiero a lo largo del tiempo. Este modelo supone que los
+rendimientos logarítmicos siguen una distribución normal y que su media
+y volatilidad se mantienen constantes. Estos supuestos son importantes
+porque se utilizan para estimar el comportamiento futuro de los precios
+y calcular medidas de riesgo, como el Valor en Riesgo (VaR).
 
-El análisis se divide en cinco partes. Primero, calculamos los rendimientos logarítmicos de Alsea y estimamos su media y volatilidad para todo el periodo y para cada año, con el objetivo de observar cómo han cambiado estos valores con el tiempo. Después, aplicamos las pruebas estadísticas de Jarque-Bera y t para evaluar si los rendimientos siguen una distribución normal y si su media es significativamente diferente de cero.
+El análisis se divide en cinco partes. Primero, calculamos los
+rendimientos logarítmicos de Alsea y estimamos su media y volatilidad
+para todo el periodo y para cada año, con el objetivo de observar cómo
+han cambiado estos valores con el tiempo. Después, aplicamos las pruebas
+estadísticas de Jarque-Bera y t para evaluar si los rendimientos siguen
+una distribución normal y si su media es significativamente diferente de
+cero.
 
-Posteriormente, utilizamos los parámetros obtenidos para simular posibles trayectorias del precio de Alsea mediante el modelo GBM. Realizamos simulaciones con parámetros diarios para horizontes de 10, 20 y 40 días, y con parámetros anualizados para periodos de 3, 6, 9 y 12 meses. En ambos casos, incluimos intervalos de confianza para observar los posibles rangos de precios que plantea el modelo. Por último, analizamos qué tan adecuado es asumir que los rendimientos siguen una distribución normal y qué implicaciones puede tener esto al evaluar el riesgo de la acción.
+Posteriormente, utilizamos los parámetros obtenidos para simular
+posibles trayectorias del precio de Alsea mediante el modelo GBM.
+Realizamos simulaciones con parámetros diarios para horizontes de 10, 20
+y 40 días, y con parámetros anualizados para periodos de 3, 6, 9 y 12
+meses. En ambos casos, incluimos intervalos de confianza para observar
+los posibles rangos de precios que plantea el modelo. Por último,
+analizamos qué tan adecuado es asumir que los rendimientos siguen una
+distribución normal y qué implicaciones puede tener esto al evaluar el
+riesgo de la acción.
 
-Con este análisis buscamos no solo obtener resultados estadísticos y realizar simulaciones, sino también entender qué nos dicen sobre el comportamiento de Alsea y qué tan bien se ajusta el modelo GBM a sus datos históricos. De esta manera, podemos identificar las limitaciones del modelo y comprender por qué sus resultados deben interpretarse considerando la incertidumbre y los riesgos que existen en el mercado real.
+Con este análisis buscamos no solo obtener resultados estadísticos y
+realizar simulaciones, sino también entender qué nos dicen sobre el
+comportamiento de Alsea y qué tan bien se ajusta el modelo GBM a sus
+datos históricos. De esta manera, podemos identificar las limitaciones
+del modelo y comprender por qué sus resultados deben interpretarse
+considerando la incertidumbre y los riesgos que existen en el mercado
+real.
 
 # Cálculo de rendimientos y volatilidad
 
@@ -43,15 +79,18 @@ library(dplyr)
 
 ```{r}
 clave <-  "ALSEA.MX"
-getSymbols(clave,from = "2000-01-01", to = "2025-12-31")
+getSymbols(clave,from = "2000-01-01", to = "2026-10-15")
 precio <-  Ad(get(clave))
 names(precio) <- "Precio" 
 head(precio)
 tail(precio)
 ```
+
 ## Rendimiento logarítmico diario
 
-Calculamos el rendimiento logarítmico diario de la misma forma en que lo hicimos en la Parte 2, porque es el rendimiento que vamos a usar en todo el análisis estadístico y en la construcción del modelo GBM:
+Calculamos el rendimiento logarítmico diario de la misma forma en que lo
+hicimos en la Parte 2, porque es el rendimiento que vamos a usar en todo
+el análisis estadístico y en la construcción del modelo GBM:
 
 $$r_t=\ln\left(\frac{P_t}{P_{t-1}}\right)$$
 
@@ -69,10 +108,18 @@ tail(log_rend_tabla)
 
 ## Estimaciones utilizando toda la información disponible
 
-Para esta parte utilizamos los datos de 2021 a 2025, manteniendo el mismo periodo que en el resto del documento para que los resultados sean comparables. A partir de los rendimientos diarios, calculamos la media y la volatilidad, tanto diaria como anualizada.
-La media nos permite conocer el rendimiento promedio de la acción, mientras que la volatilidad nos ayuda a medir qué tanto varían sus rendimientos. Esto es importante porque una volatilidad más alta indica que los rendimientos presentan mayores fluctuaciones.
-Para obtener los valores anuales, utilizamos 252 días hábiles, que es la cantidad que normalmente se considera para un año bursátil
-
+Para esta parte utilizamos los datos de 2021 a 2025, manteniendo el
+mismo periodo que en el resto del documento para que los resultados sean
+comparables. Además, al final de esta sección incorporamos una actualización
+con la información disponible de 2026, con el fin de complementar el análisis
+con el comportamiento observado durante el año en curso. A partir de los rendimientos diarios, calculamos la media y
+la volatilidad, tanto diaria como anualizada. La media nos permite
+conocer el rendimiento promedio de la acción, mientras que la
+volatilidad nos ayuda a medir qué tanto varían sus rendimientos. Esto es
+importante porque una volatilidad más alta indica que los rendimientos
+presentan mayores fluctuaciones. Para obtener los valores anuales,
+utilizamos 252 días hábiles, que es la cantidad que normalmente se
+considera para un año bursátil.
 
 ```{r rend_2021_2025, echo=TRUE}
 rend_2021_2025 <- log_rend_tabla[
@@ -100,30 +147,35 @@ estimaciones_totales
 
 Las fórmulas que utilizamos son:
 
-$$
-\hat{\mu}_{diario}=\frac{1}{n}\sum_{t=1}^{n}r_t
+$$\hat{\mu}_{diario}=\frac{1}{n}\sum_{t=1}^{n}r_t$$
 
-\qquad\qquad 
+$$\hat{\sigma}_{diario}=\sqrt{\frac{1}{n-1}\sum_{t=1}^{n}(r_t-\hat{\mu}_{diario})^2}$$
 
-\hat{\sigma}_{diario}=
-\sqrt{\frac{1}{n-1}\sum_{t=1}^{n}(r_t-\hat{\mu}_{diario})^2}
-$$
 Para anualizar los resultados:
 
-$$
-\hat{\mu}_{anual}=\hat{\mu}_{diario}\times252
+$$\hat{\mu}_{anual}=\hat{\mu}_{diario}\times252$$
 
-\qquad\qquad
+$$\hat{\sigma}_{anual}=\hat{\sigma}_{diario}\times\sqrt{252}$$
 
-\hat{\sigma}_{anual}=\hat{\sigma}_{diario}\times\sqrt{252}
-$$
-La media se anualiza multiplicándola por 252, mientras que para la volatilidad utilizamos la raíz cuLa anualización de la media es lineal porque los rendimientos logarítmicos son aditivos en el tiempo (la suma de rendimientos diarios da el rendimiento del periodo). La volatilidad, en cambio, se anualiza con la raíz cuadrada del número de periodos porque la varianza de una suma de rendimientos independientes es la suma de las varianzas, y la desviación estándar es la raíz cuadrada de la varianza.
+La media se anualiza multiplicándola por 252, mientras que para la volatilidad
+utilizamos la raíz cuadrada de 252. La anualización de la media es lineal porque los
+rendimientos logarítmicos son aditivos en el tiempo (la suma de
+rendimientos diarios da el rendimiento del periodo). La volatilidad, en
+cambio, se anualiza con la raíz cuadrada del número de periodos porque
+la varianza de una suma de rendimientos independientes es la suma de las
+varianzas, y la desviación estándar es la raíz cuadrada de la varianza.
 
 ## Estimaciones año por año
 
-Además de analizar todo el periodo en conjunto, calculamos la media y la volatilidad para cada año, de 2021 a 2025. La idea es comparar los resultados y observar si el comportamiento de los rendimientos ha sido similar o si existen diferencias importantes entre los años.
+Además de analizar todo el periodo en conjunto, calculamos la media y la
+volatilidad para cada año, de 2021 a 2025. La idea es comparar los
+resultados y observar si el comportamiento de los rendimientos ha sido
+similar o si existen diferencias importantes entre los años.
 
-Esto nos ayuda a identificar si la volatilidad se ha mantenido relativamente estable o si ha aumentado o disminuido en ciertos periodos. También podemos observar cómo cambia el rendimiento promedio anualizado, aunque este puede variar bastante de un año a otro.
+Esto nos ayuda a identificar si la volatilidad se ha mantenido
+relativamente estable o si ha aumentado o disminuido en ciertos
+periodos. También podemos observar cómo cambia el rendimiento promedio
+anualizado, aunque este puede variar bastante de un año a otro.
 
 ```{r rend_por_anio, echo=TRUE}
 rend_2021_2025$Anio <- format(rend_2021_2025$Fecha, "%Y")
@@ -165,6 +217,7 @@ for (a in anios) {
 
 resumen_anual
 ```
+
 ```{r grafica_volatilidad_anual}
 plot(
   resumen_anual$Anio,
@@ -178,8 +231,801 @@ plot(
 )
 ```
 
-Al comparar los cinco años, vemos que la volatilidad anual se mantiene relativamente estable, con valores que van de 25.25% en 2023 a 33.82% en 2025. Aunque hay diferencias entre los años, no se observan cambios demasiado grandes, ya que la variación es de aproximadamente 8.6 puntos porcentuales. Esto nos indica que la volatilidad cambia con el tiempo, pero se mantiene alrededor de un nivel cercano al 30%. A diferencia de los periodos que analizamos en la segunda entrega, como la crisis de 2008-2009 o la pandemia de 2020, en estos cinco años no se observa un aumento tan marcado de la volatilidad.
+Al comparar los cinco años, vemos que la volatilidad anual se mantiene
+relativamente estable, con valores que van de 25.25% en 2023 a 33.82% en
+2025. Aunque hay diferencias entre los años, no se observan cambios
+demasiado grandes, ya que la variación es de aproximadamente 8.6 puntos
+porcentuales. Esto nos indica que la volatilidad cambia con el tiempo,
+pero se mantiene alrededor de un nivel cercano al 30%. A diferencia de
+los periodos que analizamos en la segunda entrega, como la crisis de
+2008-2009 o la pandemia de 2020, en estos cinco años no se observa un
+aumento tan marcado de la volatilidad.
 
-Por otro lado, el rendimiento promedio presenta cambios mucho más importantes. En 2021 fue de 38.09%, en 2022 bajó a -3.13% y en 2023 aumentó a 56.16%. Después, en 2024 cayó a -37.44%, para recuperarse a 22.96% en 2025. Estos resultados muestran que el rendimiento de Alsea ha sido bastante variable, alternando entre años positivos y negativos.
+Por otro lado, el rendimiento promedio presenta cambios mucho más
+importantes. En 2021 fue de 38.09%, en 2022 bajó a -3.13% y en 2023
+aumentó a 56.16%. Después, en 2024 cayó a -37.44%, para recuperarse a
+22.96% en 2025. Estos resultados muestran que el rendimiento de Alsea ha
+sido bastante variable, alternando entre años positivos y negativos.
 
-Esto se relaciona con lo que analizamos en la segunda entrega, donde identificamos una etapa de recuperación después de la pandemia y un comportamiento menos favorable en el periodo más reciente. En particular, 2024 destaca por tener el rendimiento promedio más bajo de los cinco años, lo que nos ayuda a identificar en qué año se presentó el deterioro más importante. En general, estos resultados muestran que, aunque la volatilidad no presenta cambios tan grandes entre años, los rendimientos sí pueden variar considerablemente, algo importante para evaluar el riesgo de invertir en Alsea.
+Esto se relaciona con lo que analizamos en la segunda entrega, donde
+identificamos una etapa de recuperación después de la pandemia y un
+comportamiento menos favorable en el periodo más reciente. En
+particular, 2024 destaca por tener el rendimiento promedio más bajo de
+los cinco años, lo que nos ayuda a identificar en qué año se presentó el
+deterioro más importante. En general, estos resultados muestran que,
+aunque la volatilidad no presenta cambios tan grandes entre años, los
+rendimientos sí pueden variar considerablemente, algo importante para
+evaluar el riesgo de invertir en Alsea.
+
+### Actualización con información disponible de 2026
+
+Adicionalmente, incorporamos la información disponible de 2026 mediante una actualización separada. Debido a que 2026 todavía no es un año completo, estos resultados se presentan de forma complementaria y no se comparan directamente con los años completos anteriores.
+
+```{r actualizacion_2026, echo=TRUE}
+rend_2021_2026 <- log_rend_tabla[
+  log_rend_tabla$Fecha >= as.Date("2021-01-01") &
+  log_rend_tabla$Fecha <= as.Date("2026-10-15"),
+]
+
+mu_diario_2021_2026 <- mean(rend_2021_2026$Rendimiento, na.rm = TRUE)
+sigma_diario_2021_2026 <- sd(rend_2021_2026$Rendimiento, na.rm = TRUE)
+
+estimaciones_2021_2026 <- data.frame(
+  Rendimiento_promedio_diario = mu_diario_2021_2026,
+  Volatilidad_diaria = sigma_diario_2021_2026,
+  Rendimiento_promedio_anual = mu_diario_2021_2026 * dias_habiles_anio,
+  Volatilidad_anual = sigma_diario_2021_2026 * sqrt(dias_habiles_anio)
+)
+
+rend_2026 <- rend_2021_2026[format(rend_2021_2026$Fecha, "%Y") == "2026", ]
+
+resumen_2026 <- data.frame(
+  Anio = "2026 (parcial)",
+  Rendimiento_promedio_diario = mean(rend_2026$Rendimiento, na.rm = TRUE),
+  Volatilidad_diaria = sd(rend_2026$Rendimiento, na.rm = TRUE),
+  Rendimiento_promedio_anual = mean(rend_2026$Rendimiento, na.rm = TRUE) * dias_habiles_anio,
+  Volatilidad_anual = sd(rend_2026$Rendimiento, na.rm = TRUE) * sqrt(dias_habiles_anio)
+)
+
+estimaciones_2021_2026
+resumen_2026
+```
+
+# Pruebas estadísticas
+
+En esta sección evaluamos si los datos de Alsea cumplen los supuestos
+del modelo GBM. Para que los resultados sean comparables con la sección
+anterior, utilizamos el mismo periodo, de 2021 al último día de
+cotización de 2025.
+
+## Pruebas de normalidad (Jarque-Bera)
+
+La prueba de Jarque-Bera compara la asimetría y la curtosis de una serie
+con las de una distribución normal, que tiene asimetría igual a 0 y
+curtosis igual a 3. El estadístico es:
+
+$$JB=\frac{n}{6}\left(S^2+\frac{(K-3)^2}{4}\right)$$
+
+donde $n$ es el número de observaciones, $S$ es la asimetría y $K$ es la
+curtosis. Bajo la hipótesis nula, $JB$ sigue una distribución $\chi^2$
+con 2 grados de libertad. Las hipótesis son:
+
+$$H_0: \text{la serie sigue una distribución normal} \qquad H_1: \text{la serie no sigue una distribución normal}$$
+
+Si el p-valor es menor a 0.05, rechazamos la normalidad con un nivel de
+significancia del 5%.
+
+Aplicamos la prueba a tres series: los rendimientos logarítmicos, el
+precio y el logaritmo natural del precio.
+
+```{r paquetes_pruebas, echo=TRUE}
+library(tseries)
+library(moments)
+```
+
+```{r series_pruebas, echo=TRUE}
+precio_tabla <- data.frame(
+  Fecha = index(precio),
+  Precio = as.numeric(precio)
+)
+
+precio_2021_2025 <- precio_tabla[
+  precio_tabla$Fecha >= as.Date("2021-01-01") &
+  precio_tabla$Fecha <= as.Date("2025-12-31"),
+]
+
+precio_2021_2025 <- precio_2021_2025[!is.na(precio_2021_2025$Precio), ]
+
+precio_2021_2025$Log_precio <- log(precio_2021_2025$Precio)
+
+series <- list(
+  "Rendimientos logarítmicos" = rend_2021_2025$Rendimiento,
+  "Precio" = precio_2021_2025$Precio,
+  "Logaritmo del precio" = precio_2021_2025$Log_precio
+)
+```
+
+```{r jarque_bera, echo=TRUE}
+resultados_jb <- data.frame(
+  Serie = character(),
+  Observaciones = numeric(),
+  Asimetria = numeric(),
+  Curtosis = numeric(),
+  Exceso_curtosis = numeric(),
+  Estadistico_JB = numeric(),
+  p_valor = numeric(),
+  Conclusion = character(),
+  stringsAsFactors = FALSE
+)
+
+for (s in names(series)) {
+
+  valores <- as.numeric(na.omit(series[[s]]))
+
+  prueba_jb <- jarque.bera.test(valores)
+
+  asim <- skewness(valores)
+  curt <- kurtosis(valores)
+
+  conclusion <- ifelse(
+    prueba_jb$p.value < 0.05,
+    "Se rechaza normalidad",
+    "No se rechaza normalidad"
+  )
+
+  resultados_jb <- rbind(
+    resultados_jb,
+    data.frame(
+      Serie = s,
+      Observaciones = length(valores),
+      Asimetria = asim,
+      Curtosis = curt,
+      Exceso_curtosis = curt - 3,
+      Estadistico_JB = as.numeric(prueba_jb$statistic),
+      p_valor = prueba_jb$p.value,
+      Conclusion = conclusion
+    )
+  )
+}
+
+resultados_jb
+```
+
+Para complementar la prueba, comparamos el histograma de cada serie con
+la curva de una distribución normal que tiene la misma media y
+desviación estándar.
+
+```{r histogramas_normalidad, fig.width=10, fig.height=4}
+par(mfrow = c(1, 3))
+
+for (s in names(series)) {
+
+  valores <- as.numeric(na.omit(series[[s]]))
+  m <- mean(valores)
+  d <- sd(valores)
+
+  hist(
+    valores,
+    breaks = 50,
+    freq = FALSE,
+    main = s,
+    xlab = "",
+    col = "lightgray",
+    border = "white"
+  )
+
+  curve(dnorm(x, mean = m, sd = d), add = TRUE, col = "darkblue", lwd = 2)
+}
+
+par(mfrow = c(1, 1))
+```
+
+```{r qq_rendimientos}
+qqnorm(
+  rend_2021_2025$Rendimiento,
+  main = "ALSEA - Gráfica Q-Q de los rendimientos logarítmicos",
+  pch = 20,
+  col = "gray40"
+)
+qqline(rend_2021_2025$Rendimiento, col = "darkblue", lwd = 2)
+```
+
+### Interpretación de las pruebas de normalidad
+
+**Rendimientos logarítmicos.** Los rendimientos tienen una asimetría de
+`r round(resultados_jb$Asimetria[1], 3)` y una curtosis de
+`r round(resultados_jb$Curtosis[1], 3)`, lo que equivale a un exceso de
+curtosis de `r round(resultados_jb$Exceso_curtosis[1], 3)`. El
+estadístico de Jarque-Bera es
+`r round(resultados_jb$Estadistico_JB[1], 2)`, con un p-valor de
+`r format.pval(resultados_jb$p_valor[1], digits = 3)`, por lo que
+`r ifelse(resultados_jb$p_valor[1] < 0.05, "rechazamos la hipótesis de normalidad al 5%", "no tenemos evidencia suficiente para rechazar la normalidad al 5%")`.
+
+Una curtosis mayor a 3 indica que la distribución es **leptocúrtica**:
+tiene más observaciones cerca de la media y, sobre todo, **colas más
+pesadas** que la normal. En la gráfica Q-Q esto se ve porque los puntos
+de los extremos se alejan de la línea recta. En términos financieros,
+los días con movimientos muy grandes, tanto caídas como subidas, ocurren
+con más frecuencia de lo que predice la distribución normal. La
+asimetría
+`r ifelse(resultados_jb$Asimetria[1] < 0, "negativa indica que la cola izquierda es más larga, es decir, que las caídas extremas tienden a ser más fuertes que las subidas extremas", "positiva indica que la cola derecha es más larga, es decir, que las subidas extremas tienden a ser más fuertes que las caídas extremas")`.
+
+Esto es importante para medir el riesgo: si suponemos normalidad, el
+modelo va a **subestimar la probabilidad de pérdidas grandes**, y
+medidas como el VaR calculado con la normal pueden ser menores que el
+riesgo real de la acción.
+
+**Precio y logaritmo del precio.** Para el precio, la asimetría es
+`r round(resultados_jb$Asimetria[2], 3)` y la curtosis
+`r round(resultados_jb$Curtosis[2], 3)`, con un p-valor de
+`r format.pval(resultados_jb$p_valor[2], digits = 3)`. Para el logaritmo
+del precio, la asimetría es `r round(resultados_jb$Asimetria[3], 3)` y
+la curtosis `r round(resultados_jb$Curtosis[3], 3)`, con un p-valor de
+`r format.pval(resultados_jb$p_valor[3], digits = 3)`.
+
+Estos resultados deben interpretarse con cuidado. La prueba de
+Jarque-Bera supone que las observaciones son independientes y vienen de
+la misma distribución, pero el precio no cumple esto: el precio de hoy
+depende directamente del precio de ayer y su nivel cambia con el tiempo
+(la serie no es estacionaria). Por eso, el histograma del precio refleja
+más bien **la trayectoria que siguió Alsea** en estos cinco años (los
+niveles en los que se mantuvo más tiempo) que una distribución de
+probabilidad.
+
+Además, el modelo GBM no dice que la serie histórica de precios deba ser
+normal. Lo que dice es que, para un horizonte fijo $T$, el logaritmo del
+precio futuro $\ln S_T$ sigue una distribución normal entre todos los
+escenarios posibles, y que el precio $S_T$ sigue una distribución
+lognormal. Por lo tanto, la prueba relevante para evaluar el supuesto
+del GBM es la de los **rendimientos logarítmicos**, no la de los niveles
+de precio.
+
+## Prueba de media igual a cero
+
+Para saber si el rendimiento promedio diario es estadísticamente
+distinto de cero, aplicamos una prueba t con las siguientes hipótesis:
+
+$$H_0: \mu_r = 0 \qquad H_1: \mu_r \neq 0$$
+
+El estadístico de prueba es:
+
+$$t=\frac{\bar{r}}{s/\sqrt{n}}$$
+
+donde $\bar{r}$ es el rendimiento promedio diario, $s$ es la desviación
+estándar diaria y $n$ es el número de observaciones.
+
+```{r prueba_t, echo=TRUE}
+n_rend <- length(rend_2021_2025$Rendimiento)
+
+prueba_t <- t.test(rend_2021_2025$Rendimiento, mu = 0)
+
+resultado_t <- data.frame(
+  Media_diaria = mu_diario,
+  Error_estandar = sigma_diario / sqrt(n_rend),
+  Estadistico_t = as.numeric(prueba_t$statistic),
+  Grados_libertad = as.numeric(prueba_t$parameter),
+  p_valor = prueba_t$p.value,
+  IC95_inferior = prueba_t$conf.int[1],
+  IC95_superior = prueba_t$conf.int[2]
+)
+
+resultado_t
+
+# Rendimiento anual mínimo que se necesitaría para que la media fuera significativa
+umbral_anual <- qt(0.975, n_rend - 1) * sigma_diario / sqrt(n_rend) * dias_habiles_anio
+umbral_anual
+```
+
+El estadístico t es `r round(resultado_t$Estadistico_t, 3)`, con un
+p-valor de `r round(resultado_t$p_valor, 4)`. Por lo tanto,
+`r ifelse(resultado_t$p_valor < 0.05, "rechazamos la hipótesis nula: el rendimiento promedio diario de Alsea es estadísticamente distinto de cero al 5%", "no rechazamos la hipótesis nula: no hay evidencia estadística de que el rendimiento promedio diario de Alsea sea distinto de cero al 5%")`.
+El intervalo de confianza al 95% para la media diaria va de
+`r round(100 * resultado_t$IC95_inferior, 4)`% a
+`r round(100 * resultado_t$IC95_superior, 4)`%.
+
+Este resultado se explica por la diferencia de tamaño entre la media y
+la volatilidad. La media diaria es de apenas
+`r round(100 * mu_diario, 4)`%, mientras que la volatilidad diaria es de
+`r round(100 * sigma_diario, 2)`%. Con los `r n_rend` días de datos que
+tenemos, la media anualizada tendría que ser mayor a aproximadamente
+`r round(100 * umbral_anual, 2)`% en valor absoluto para ser
+estadísticamente significativa. Esto también explica por qué en la
+sección anterior los rendimientos anuales cambiaron tanto de un año a
+otro: con una volatilidad tan alta, la media de un solo año se estima
+con muy poca precisión.
+
+## Interpretación: eficiencia de mercado y consistencia con la teoría
+
+La hipótesis de mercados eficientes en su forma débil dice que los
+precios ya reflejan toda la información de los precios pasados, por lo
+que no debería ser posible predecir los rendimientos de mañana con los
+rendimientos de hoy. Para complementar la prueba t, aplicamos la prueba
+de Ljung-Box, que evalúa si existe autocorrelación en los primeros 10
+rezagos de una serie. La aplicamos a los rendimientos y a los
+rendimientos al cuadrado.
+
+```{r ljung_box, echo=TRUE}
+lb_rend <- Box.test(rend_2021_2025$Rendimiento, lag = 10, type = "Ljung-Box")
+lb_rend2 <- Box.test(rend_2021_2025$Rendimiento^2, lag = 10, type = "Ljung-Box")
+
+resultados_lb <- data.frame(
+  Serie = c("Rendimientos", "Rendimientos al cuadrado"),
+  Estadistico_Q = c(as.numeric(lb_rend$statistic), as.numeric(lb_rend2$statistic)),
+  p_valor = c(lb_rend$p.value, lb_rend2$p.value)
+)
+
+resultados_lb
+```
+
+```{r acf_rendimientos, fig.width=10, fig.height=4}
+par(mfrow = c(1, 2))
+acf(rend_2021_2025$Rendimiento, lag.max = 20, main = "ACF de los rendimientos")
+acf(rend_2021_2025$Rendimiento^2, lag.max = 20, main = "ACF de los rendimientos al cuadrado")
+par(mfrow = c(1, 1))
+```
+
+**Eficiencia de mercado.** El resultado de la prueba t es consistente
+con la idea de que no hay un rendimiento diario sistemático que un
+inversionista pueda aprovechar. Sin embargo, una media igual a cero por
+sí sola no demuestra que el mercado sea eficiente, ya que un mercado
+eficiente también puede tener una media positiva como compensación por
+el riesgo. La prueba más directa es la de autocorrelación. Para los
+rendimientos, el p-valor de Ljung-Box es `r round(lb_rend$p.value, 4)`,
+por lo que
+`r ifelse(lb_rend$p.value < 0.05, "existe autocorrelación significativa: los rendimientos pasados tienen cierta relación con los futuros, lo que no es del todo consistente con la eficiencia débil (aunque en la práctica esta relación suele ser pequeña y difícil de aprovechar después de costos de transacción)", "no encontramos autocorrelación significativa: los rendimientos pasados no ayudan a predecir los futuros, lo que es consistente con la eficiencia de mercado en su forma débil")`.
+
+**Consistencia con la teoría.** Los resultados confirman parcialmente
+los supuestos del GBM:
+
+- **Rendimientos impredecibles:**
+  `r ifelse(lb_rend$p.value < 0.05, "no se cumple del todo, porque detectamos autocorrelación en los rendimientos.", "se cumple, porque no detectamos autocorrelación en los rendimientos.")`
+- **Rendimientos normales:**
+  `r ifelse(resultados_jb$p_valor[1] < 0.05, "no se cumple. La prueba de Jarque-Bera rechaza la normalidad y la curtosis muestra colas más pesadas que la normal.", "se cumple, ya que la prueba de Jarque-Bera no rechaza la normalidad.")`
+- **Volatilidad constante:** para los rendimientos al cuadrado, el
+  p-valor de Ljung-Box es `r format.pval(lb_rend2$p.value, digits = 3)`.
+  `r ifelse(lb_rend2$p.value < 0.05, "Como hay autocorrelación en los rendimientos al cuadrado, los días de alta volatilidad tienden a seguirse de otros días de alta volatilidad (agrupamiento de volatilidad). Esto contradice el supuesto de volatilidad constante y coincide con lo que vimos en la sección anterior, donde la volatilidad anual cambió de un año a otro.", "No encontramos evidencia de agrupamiento de volatilidad, lo que es consistente con el supuesto de volatilidad constante.")`
+
+En resumen, el GBM describe razonablemente el comportamiento promedio de
+Alsea, pero no captura las colas pesadas de sus rendimientos. Esto no
+significa que el modelo no sirva, sino que sus resultados deben verse
+como una aproximación que probablemente subestima la probabilidad de
+movimientos extremos.
+
+# Estimación del modelo con parámetros diarios
+
+## Ecuación del modelo
+
+El modelo de Movimiento Browniano Geométrico describe el cambio del
+precio con la siguiente ecuación diferencial estocástica:
+
+$$dS_t=\mu S_t\,dt+\sigma S_t\,dW_t$$
+
+donde $\mu$ es la tendencia (drift), $\sigma$ es la volatilidad y $dW_t$
+es el incremento de un movimiento browniano, con $dW_t \sim N(0, dt)$.
+Aplicando el lema de Itô a $\ln S_t$ obtenemos la solución exacta del
+modelo:
+
+$$S_T=S_0\exp\left[\left(\mu-\frac{\sigma^2}{2}\right)T+\sigma\sqrt{T}\,Z\right] \qquad Z\sim N(0,1)$$
+
+Como usamos parámetros diarios, $T$ se mide en días. Un punto importante
+es que la media de los rendimientos logarítmicos no estima $\mu$, sino
+$\mu-\sigma^2/2$, debido a la corrección de Itô. Por eso, el drift del
+modelo se obtiene como:
+
+$$\hat{\mu}=\bar{r}+\frac{\hat{\sigma}^2}{2}$$
+
+```{r parametros_gbm_diario, echo=TRUE}
+precio_hasta_2025 <- na.omit(precio[index(precio) <= as.Date("2025-12-31")])
+
+S0 <- as.numeric(tail(precio_hasta_2025, 1))
+fecha_S0 <- index(tail(precio_hasta_2025, 1))
+
+mu_gbm <- mu_diario + sigma_diario^2 / 2
+
+parametros_gbm <- data.frame(
+  Fecha_S0 = fecha_S0,
+  S0 = S0,
+  Media_log_diaria = mu_diario,
+  Volatilidad_diaria = sigma_diario,
+  Drift_GBM_diario = mu_gbm
+)
+
+parametros_gbm
+```
+
+Usamos como valor inicial el último precio de cotización de 2025, $S_0=$
+`r round(S0, 2)` pesos, del `r format(fecha_S0, "%d/%m/%Y")`.
+Sustituyendo los parámetros estimados, la ecuación del modelo para Alsea
+queda:
+
+$$dS_t=`r round(mu_gbm, 6)`\,S_t\,dt+`r round(sigma_diario, 6)`\,S_t\,dW_t$$
+
+y su solución:
+
+$$S_T=`r round(S0, 2)`\exp\left[`r round(mu_diario, 6)`\,T+`r round(sigma_diario, 6)`\sqrt{T}\,Z\right]$$
+
+## Precio esperado e intervalos de confianza
+
+Como $\ln S_T$ sigue una distribución normal, podemos calcular el precio
+esperado y el intervalo al 95% de forma exacta:
+
+$$E[S_T]=S_0e^{\mu T}$$
+
+$$IC_{95\%}=\left[S_0\exp\left(\left(\mu-\frac{\sigma^2}{2}\right)T-1.96\,\sigma\sqrt{T}\right),\;S_0\exp\left(\left(\mu-\frac{\sigma^2}{2}\right)T+1.96\,\sigma\sqrt{T}\right)\right]$$
+
+En sentido estricto, este es un intervalo de probabilidad para el precio
+futuro: indica el rango donde el modelo espera que se encuentre el
+precio en el 95% de los escenarios. También calculamos la probabilidad
+de que el precio termine por debajo de $S_0$:
+
+$$P(S_T<S_0)=\Phi\left(\frac{-\left(\mu-\frac{\sigma^2}{2}\right)T}{\sigma\sqrt{T}}\right)$$
+
+```{r gbm_teorico, echo=TRUE}
+horizontes <- c(10, 20, 40)
+
+resultados_teoricos <- data.frame(
+  Horizonte_dias = numeric(),
+  Precio_esperado = numeric(),
+  Mediana = numeric(),
+  IC95_inferior = numeric(),
+  IC95_superior = numeric(),
+  Amplitud = numeric(),
+  Amplitud_pct_S0 = numeric(),
+  Prob_menor_S0 = numeric()
+)
+
+for (h in horizontes) {
+
+  media_log <- mu_diario * h
+  sd_log <- sigma_diario * sqrt(h)
+
+  esperado <- S0 * exp(mu_gbm * h)
+  mediana <- S0 * exp(media_log)
+
+  li <- S0 * exp(media_log - qnorm(0.975) * sd_log)
+  ls <- S0 * exp(media_log + qnorm(0.975) * sd_log)
+
+  prob_menor <- pnorm(-media_log / sd_log)
+
+  resultados_teoricos <- rbind(
+    resultados_teoricos,
+    data.frame(
+      Horizonte_dias = h,
+      Precio_esperado = esperado,
+      Mediana = mediana,
+      IC95_inferior = li,
+      IC95_superior = ls,
+      Amplitud = ls - li,
+      Amplitud_pct_S0 = (ls - li) / S0,
+      Prob_menor_S0 = prob_menor
+    )
+  )
+}
+
+resultados_teoricos
+```
+
+## Procedimiento de simulación
+
+Para comprobar los resultados anteriores, simulamos trayectorias del
+precio con el método de Monte Carlo. El procedimiento es el siguiente:
+
+1.  Fijamos una semilla (`set.seed`) para que los resultados se puedan
+    reproducir.
+2.  Generamos 10,000 trayectorias de 40 días, todas empezando en $S_0$.
+3.  En cada día $t$ generamos un número aleatorio $Z_t \sim N(0,1)$ y
+    calculamos el precio del día siguiente con la solución exacta del
+    GBM para un paso de un día ($\Delta t=1$):
+    $$S_{t+1}=S_t\exp\left[\left(\mu-\frac{\sigma^2}{2}\right)+\sigma Z_t\right]$$
+4.  Tomamos los precios simulados en los días 10, 20 y 40. Con ellos
+    calculamos el precio promedio y los percentiles 2.5% y 97.5%, que
+    forman el intervalo al 95%.
+5.  Comparamos los resultados simulados con los teóricos.
+
+```{r gbm_simulacion, echo=TRUE}
+set.seed(123)
+
+n_sim <- 10000
+n_dias <- max(horizontes)
+
+trayectorias <- matrix(NA, nrow = n_sim, ncol = n_dias + 1)
+trayectorias[, 1] <- S0
+
+for (t in 1:n_dias) {
+  Z <- rnorm(n_sim)
+  trayectorias[, t + 1] <- trayectorias[, t] *
+    exp((mu_gbm - sigma_diario^2 / 2) + sigma_diario * Z)
+}
+
+resultados_simulados <- data.frame(
+  Horizonte_dias = numeric(),
+  Precio_esperado_teorico = numeric(),
+  Precio_esperado_simulado = numeric(),
+  IC95_inf_teorico = numeric(),
+  IC95_inf_simulado = numeric(),
+  IC95_sup_teorico = numeric(),
+  IC95_sup_simulado = numeric()
+)
+
+for (i in 1:length(horizontes)) {
+
+  h <- horizontes[i]
+  St <- trayectorias[, h + 1]
+
+  resultados_simulados <- rbind(
+    resultados_simulados,
+    data.frame(
+      Horizonte_dias = h,
+      Precio_esperado_teorico = resultados_teoricos$Precio_esperado[i],
+      Precio_esperado_simulado = mean(St),
+      IC95_inf_teorico = resultados_teoricos$IC95_inferior[i],
+      IC95_inf_simulado = as.numeric(quantile(St, 0.025)),
+      IC95_sup_teorico = resultados_teoricos$IC95_superior[i],
+      IC95_sup_simulado = as.numeric(quantile(St, 0.975))
+    )
+  )
+}
+
+resultados_simulados
+```
+
+```{r grafica_trayectorias, fig.width=9, fig.height=5}
+dias <- 0:n_dias
+
+esperado_dia <- S0 * exp(mu_gbm * dias)
+li_dia <- S0 * exp(mu_diario * dias - qnorm(0.975) * sigma_diario * sqrt(dias))
+ls_dia <- S0 * exp(mu_diario * dias + qnorm(0.975) * sigma_diario * sqrt(dias))
+
+matplot(
+  dias,
+  t(trayectorias[1:100, ]),
+  type = "l",
+  lty = 1,
+  col = "gray80",
+  main = "ALSEA - 100 trayectorias simuladas con GBM (parámetros diarios)",
+  xlab = "Días",
+  ylab = "Precio (MXN)",
+  ylim = range(c(li_dia, ls_dia, trayectorias[1:100, ]))
+)
+
+lines(dias, esperado_dia, col = "darkblue", lwd = 2)
+lines(dias, li_dia, col = "red", lwd = 2, lty = 2)
+lines(dias, ls_dia, col = "red", lwd = 2, lty = 2)
+abline(v = horizontes, lty = 3, col = "gray40")
+
+legend(
+  "topleft",
+  legend = c("Precio esperado", "Intervalo al 95%"),
+  col = c("darkblue", "red"),
+  lty = c(1, 2),
+  lwd = 2,
+  bty = "n"
+)
+```
+
+```{r histogramas_simulacion, fig.width=10, fig.height=4}
+par(mfrow = c(1, 3))
+
+for (i in 1:length(horizontes)) {
+
+  h <- horizontes[i]
+  St <- trayectorias[, h + 1]
+
+  hist(
+    St,
+    breaks = 50,
+    main = paste("Precio simulado a", h, "días"),
+    xlab = "Precio (MXN)",
+    col = "lightgray",
+    border = "white"
+  )
+
+  abline(v = S0, col = "black", lwd = 2)
+  abline(v = resultados_teoricos$Precio_esperado[i], col = "darkblue", lwd = 2)
+  abline(v = c(resultados_teoricos$IC95_inferior[i], resultados_teoricos$IC95_superior[i]), col = "red", lwd = 2, lty = 2)
+}
+
+par(mfrow = c(1, 1))
+```
+
+Los resultados de la simulación son muy cercanos a los teóricos, lo que
+confirma que el procedimiento es correcto. Las pequeñas diferencias se
+deben al error de muestreo de Monte Carlo y disminuirían si aumentamos
+el número de simulaciones.
+
+## Interpretación: incertidumbre en cada horizonte
+
+A partir de un precio inicial de `r round(S0, 2)` pesos, el modelo
+estima los siguientes precios esperados:
+
+- **10 días:** `r round(resultados_teoricos$Precio_esperado[1], 2)`
+  pesos, con un intervalo al 95% de
+  `r round(resultados_teoricos$IC95_inferior[1], 2)` a
+  `r round(resultados_teoricos$IC95_superior[1], 2)` pesos (amplitud de
+  `r round(100 * resultados_teoricos$Amplitud_pct_S0[1], 1)`% del precio
+  inicial).
+- **20 días:** `r round(resultados_teoricos$Precio_esperado[2], 2)`
+  pesos, con un intervalo de
+  `r round(resultados_teoricos$IC95_inferior[2], 2)` a
+  `r round(resultados_teoricos$IC95_superior[2], 2)` pesos (amplitud de
+  `r round(100 * resultados_teoricos$Amplitud_pct_S0[2], 1)`%).
+- **40 días:** `r round(resultados_teoricos$Precio_esperado[3], 2)`
+  pesos, con un intervalo de
+  `r round(resultados_teoricos$IC95_inferior[3], 2)` a
+  `r round(resultados_teoricos$IC95_superior[3], 2)` pesos (amplitud de
+  `r round(100 * resultados_teoricos$Amplitud_pct_S0[3], 1)`%).
+
+**El precio esperado casi no cambia, pero la incertidumbre sí.** Como el
+drift diario es muy pequeño comparado con la volatilidad, el precio
+esperado a 40 días es apenas
+`r round(100 * (resultados_teoricos$Precio_esperado[3] / S0 - 1), 2)`%
+distinto del precio inicial. En cambio, el ancho del intervalo crece
+considerablemente. Esto se debe a que la desviación estándar del
+rendimiento acumulado crece con la raíz del tiempo, $\sigma\sqrt{T}$: al
+cuadruplicar el horizonte de 10 a 40 días, la amplitud del intervalo
+aproximadamente se duplica (pasa de
+`r round(resultados_teoricos$Amplitud[1], 2)` a
+`r round(resultados_teoricos$Amplitud[3], 2)` pesos, una razón de
+`r round(resultados_teoricos$Amplitud[3] / resultados_teoricos$Amplitud[1], 2)`).
+Es decir, la incertidumbre aumenta con el horizonte, pero cada vez a un
+ritmo menor.
+
+**Los intervalos no son simétricos.** En los tres horizontes, la
+distancia entre el precio esperado y el límite superior es mayor que la
+distancia al límite inferior. Esto ocurre porque el precio sigue una
+distribución lognormal: no puede ser negativo, pero sí puede subir sin
+un límite superior. Por la misma razón, la mediana es menor que el
+precio esperado, ya que unos pocos escenarios muy favorables elevan el
+promedio.
+
+**El riesgo de terminar abajo del precio inicial es alto.** La
+probabilidad de que el precio esté por debajo de $S_0$ es de
+`r round(100 * resultados_teoricos$Prob_menor_S0[1], 1)`% a 10 días,
+`r round(100 * resultados_teoricos$Prob_menor_S0[2], 1)`% a 20 días y
+`r round(100 * resultados_teoricos$Prob_menor_S0[3], 1)`% a 40 días.
+Estas probabilidades están cerca del 50%, lo que confirma que, en
+horizontes cortos, el movimiento del precio está dominado por la
+volatilidad y no por la tendencia.
+
+**Limitaciones.** Estos intervalos suponen que los rendimientos son
+normales y que la volatilidad es constante. Sin embargo, en la sección
+anterior encontramos que los rendimientos de Alsea tienen colas más
+pesadas que la normal. Por lo tanto, es probable que el modelo subestime
+la probabilidad de que el precio termine fuera del intervalo,
+especialmente por caídas fuertes. En la práctica, los intervalos reales
+al 95% podrían ser más amplios que los que estima el GBM.
+
+# Estimación del modelo con parámetros anuales
+
+Para trabajar con parámetros anualizados utilizamos:
+
+$$\hat{\mu}_{GBM,anual}=\hat{\mu}_{log,anual}+\frac{1}{2}\hat{\sigma}_{anual}^2$$
+
+Y para un horizonte $T$ expresado en años:
+
+$$S_T=S_0\exp\left[\left(\hat{\mu}_{GBM,anual}-\frac{\hat{\sigma}_{anual}^2}{2}\right)T+\hat{\sigma}_{anual}\sqrt{T}Z\right]$$
+
+con $T=3/12, 6/12, 9/12$ y $12/12$.
+
+**Parámetros anuales**
+
+```{r}
+mu_gbm_anual <- mu_anual + sigma_anual^2 / 2
+
+parametros_anuales <- data.frame(
+  Precio_inicial = S0,
+  Media_log_anual = mu_anual,
+  Volatilidad_anual = sigma_anual,
+  Drift_GBM_anual = mu_gbm_anual
+)
+
+parametros_anuales
+```
+
+**Estimación para 3, 6, 9 y 12 meses**
+
+```{r}
+meses <- c(3, 6, 9, 12)
+T <- meses / 12
+
+precio_esperado <- S0 * exp(mu_gbm_anual * T)
+
+limite_inferior <- S0 * exp(
+  mu_anual * T - 1.96 * sigma_anual * sqrt(T)
+)
+
+limite_superior <- S0 * exp(
+  mu_anual * T + 1.96 * sigma_anual * sqrt(T)
+)
+
+resultados_anuales <- data.frame(
+  Meses = meses,
+  Precio_esperado = round(precio_esperado, 2),
+  IC95_inferior = round(limite_inferior, 2),
+  IC95_superior = round(limite_superior, 2),
+  Amplitud = round(limite_superior - limite_inferior, 2)
+)
+
+resultados_anuales
+
+```
+
+```{r}
+
+plot(meses, precio_esperado,type = "b", pch = 19,col = "darkblue", ylim = range(c(limite_inferior, limite_superior)), main = "ALSEA - Estimación del precio a 12 meses", xlab = "Meses", ylab = "Precio (MXN)"
+)
+
+lines(meses, limite_inferior, col = "red", lty = 2)
+lines(meses, limite_superior, col = "red", lty = 2)
+
+legend("topleft",legend = c("Precio esperado", "Intervalo al 95%"),col = c("darkblue", "red"),lty = c(1, 2), bty = "n")
+
+```
+
+Al utilizar los parámetros anualizados de Alsea, podemos observar que el
+precio esperado aumenta conforme pasa el tiempo. A los 3 meses se estima
+un precio de \$55.89, mientras que a los 12 meses aumenta a \$64.96.
+
+También observamos que la incertidumbre aumenta con el tiempo, ya que a
+los 3 meses el intervalo va de \$40.91 a \$74.59, mientras que a los 12
+meses va de \$34.00 a \$112.99.
+
+Esto nos indica que, aunque el modelo proyecta un aumento en el precio
+de la acción, las estimaciones a mayor plazo tienen más riesgo e
+incertidumbre.
+
+# Discusión teórica
+
+###  ¿Los rendimientos siguen una distribución normal?
+
+De acuerdo con el análisis de Jarque-Bera, los rendimientos de Alsea no
+se ajustan completamente a una distribución normal, ya que presentan
+colas más pesadas. Esto significa que pueden ocurrir movimientos
+extremos con mayor frecuencia de lo que supone una distribución normal.
+
+### ¿El precio es normal o lognormal?
+
+Según el modelo GBM, el precio de las acciones sigue una distribución
+lognormal, mientras que el logaritmo del precio futuro sigue una
+distribución normal para un horizonte determinado. Esto tiene sentido
+porque los precios no pueden ser negativos, pero sí pueden aumentar
+considerablemente.
+
+### ¿Qué implicaciones tiene asumir normalidad en la modelación del riesgo?
+
+Asumir normalidad facilita los cálculos y permite estimar precios
+futuros e intervalos de probabilidad. Sin embargo, también puede
+provocar que subestimemos el riesgo de movimientos extremos,
+especialmente cuando los rendimientos presentan colas pesadas.
+
+###  ¿Qué diferencias se observan entre los supuestos teóricos del GBM y los datos reales?
+
+El GBM supone que los rendimientos logarítmicos son normales y que la
+volatilidad es constante. Sin embargo, en los datos de Alsea observamos
+que existen movimientos extremos y que la volatilidad cambia entre los
+años analizados. Por lo tanto, el modelo es útil para realizar
+estimaciones, pero no representa perfectamente el comportamiento real
+del mercado.
+
+### ¿Qué riesgos puede introducir el supuesto de normalidad en la toma de decisiones financieras?
+
+El principal riesgo es confiar demasiado en las estimaciones del modelo.
+Por ejemplo, a los 12 meses obtuvimos un precio esperado de \$64.96,
+pero el intervalo al 95% va desde \$34.00 hasta \$112.99. Esto demuestra
+que existe mucha incertidumbre y que no debemos tomar decisiones de
+inversión considerando solamente el precio esperado.
+
+
+# Conclusión
+
+En esta tercera entrega analizamos con mayor profundidad el comportamiento de los rendimientos de Alsea y comparamos los datos reales con los supuestos del modelo de Movimiento Browniano Geométrico. A partir de los resultados observamos que, aunque el GBM es útil para representar de manera sencilla la evolución del precio y generar posibles escenarios futuros, sus supuestos no se cumplen completamente en los datos reales de la acción.
+
+Al analizar los rendimientos observamos que la volatilidad se mantiene en niveles relativamente cercanos entre los años, aunque existen diferencias. En cambio, los rendimientos anualizados cambian bastante de un año a otro, incluso alternando entre años positivos y negativos. Esto muestra que el comportamiento de la acción puede cambiar considerablemente aun cuando la volatilidad no presente cambios igual de grandes.
+
+Las pruebas estadísticas también mostraron diferencias entre la teoría y los datos. La prueba de Jarque-Bera indicó que los rendimientos logarítmicos no siguen perfectamente una distribución normal y presentan colas más pesadas. Esto es importante porque significa que los movimientos extremos pueden ocurrir con mayor frecuencia de la que asumiría una distribución normal. Por otro lado, la prueba sobre la media diaria mostró que el rendimiento promedio es pequeño en comparación con la volatilidad, por lo que en horizontes cortos existe mucha incertidumbre alrededor del movimiento del precio.
+
+Al utilizar el GBM para realizar las simulaciones observamos que el precio esperado cambia de forma relativamente moderada, pero los posibles resultados se vuelven mucho más dispersos conforme aumenta el horizonte. Esto se observa en los intervalos estimados, que se amplían conforme aumenta el tiempo. Por lo tanto, mientras más largo es el horizonte, mayor es la incertidumbre sobre el precio futuro.
+
+En general, consideramos que el GBM es una herramienta útil para entender la relación entre rendimiento, volatilidad y tiempo, además de permitir generar escenarios de manera sencilla. Sin embargo, los resultados también muestran que no debe tomarse como una representación exacta del comportamiento del mercado. En el caso de Alsea, la falta de normalidad en los rendimientos, la presencia de movimientos extremos y los cambios en la volatilidad muestran que el riesgo real puede ser mayor al que representa el modelo.
+
+Lo más importante que nos deja este análisis es que un modelo puede ser útil aunque no represente perfectamente la realidad, siempre que entendamos sus supuestos y limitaciones. Para analizar el riesgo no basta con observar un precio esperado, sino que también es necesario considerar la dispersión de los posibles resultados y la posibilidad de que ocurran eventos extremos. En este sentido, el GBM funciona como una referencia para estudiar el comportamiento del precio, pero las decisiones financieras deben considerar que la incertidumbre real del mercado puede ser mayor que la que el modelo supone.
