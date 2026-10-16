@@ -94,7 +94,7 @@ el análisis estadístico y en la construcción del modelo GBM:
 
 $$r_t=\ln\left(\frac{P_t}{P_{t-1}}\right)$$
 
-```{r log_rend, echo=TRUE}
+```{r log_rend, echo=FALSE}
 log_rend <- dailyReturn(precio, type = "log")[-1]
 
 log_rend_tabla <- data.frame(
@@ -121,7 +121,7 @@ presentan mayores fluctuaciones. Para obtener los valores anuales,
 utilizamos 252 días hábiles, que es la cantidad que normalmente se
 considera para un año bursátil.
 
-```{r rend_2021_2025, echo=TRUE}
+```{r rend_2021_2025, echo=FALSE}
 rend_2021_2025 <- log_rend_tabla[
   log_rend_tabla$Fecha >= as.Date("2021-01-01") &
   log_rend_tabla$Fecha <= as.Date("2025-12-31"),
@@ -177,7 +177,7 @@ relativamente estable o si ha aumentado o disminuido en ciertos
 periodos. También podemos observar cómo cambia el rendimiento promedio
 anualizado, aunque este puede variar bastante de un año a otro.
 
-```{r rend_por_anio, echo=TRUE}
+```{r rend_por_anio, echo=FALSE}
 rend_2021_2025$Anio <- format(rend_2021_2025$Fecha, "%Y")
 
 anios <- sort(unique(rend_2021_2025$Anio))
@@ -264,7 +264,7 @@ prueba formal de cambio estructural.
 
 Adicionalmente, incorporamos la información disponible de 2026 mediante una actualización separada. Debido a que 2026 todavía no es un año completo, estos resultados se presentan de forma complementaria y no se comparan directamente con los años completos anteriores.
 
-```{r actualizacion_2026, echo=TRUE}
+```{r actualizacion_2026, echo=FALSE}
 rend_2021_2026 <- log_rend_tabla[
   log_rend_tabla$Fecha >= as.Date("2021-01-01") &
   log_rend_tabla$Fecha <= as.Date("2026-10-15"),
@@ -321,12 +321,12 @@ significancia del 5%.
 Aplicamos la prueba a tres series: los rendimientos logarítmicos, el
 precio y el logaritmo natural del precio.
 
-```{r paquetes_pruebas, echo=TRUE}
+```{r paquetes_pruebas, echo=FALSE}
 library(tseries)
 library(moments)
 ```
 
-```{r series_pruebas, echo=TRUE}
+```{r series_pruebas, echo=FALSE}
 precio_tabla <- data.frame(
   Fecha = index(precio),
   Precio = as.numeric(precio)
@@ -348,7 +348,7 @@ series <- list(
 )
 ```
 
-```{r jarque_bera, echo=TRUE}
+```{r jarque_bera, echo=FALSE}
 resultados_jb <- data.frame(
   Serie = character(),
   Observaciones = numeric(),
@@ -497,7 +497,7 @@ $$t=\frac{\bar{r}}{s/\sqrt{n}}$$
 donde $\bar{r}$ es el rendimiento promedio diario, $s$ es la desviación
 estándar diaria y $n$ es el número de observaciones.
 
-```{r prueba_t, echo=TRUE}
+```{r prueba_t, echo=FALSE}
 n_rend <- length(rend_2021_2025$Rendimiento)
 
 prueba_t <- t.test(rend_2021_2025$Rendimiento, mu = 0)
@@ -547,7 +547,7 @@ de Ljung-Box, que evalúa si existe autocorrelación en los primeros 10
 rezagos de una serie. La aplicamos a los rendimientos y a los
 rendimientos al cuadrado.
 
-```{r ljung_box, echo=TRUE}
+```{r ljung_box, echo=FALSE}
 lb_rend <- Box.test(rend_2021_2025$Rendimiento, lag = 10, type = "Ljung-Box")
 lb_rend2 <- Box.test(rend_2021_2025$Rendimiento^2, lag = 10, type = "Ljung-Box")
 
@@ -617,7 +617,7 @@ modelo se obtiene como:
 
 $$\hat{\mu}=\bar{r}+\frac{\hat{\sigma}^2}{2}$$
 
-```{r parametros_gbm_diario, echo=TRUE}
+```{r parametros_gbm_diario, echo=FALSE}
 precio_hasta_2025 <- na.omit(precio[index(precio) <= as.Date("2025-12-31")])
 
 S0 <- as.numeric(tail(precio_hasta_2025, 1))
@@ -663,7 +663,7 @@ de que el precio termine por debajo de $S_0$:
 
 $$P(S_T<S_0)=\Phi\left(\frac{-\left(\mu-\frac{\sigma^2}{2}\right)T}{\sigma\sqrt{T}}\right)$$
 
-```{r gbm_teorico, echo=TRUE}
+```{r gbm_teorico, echo=FALSE}
 horizontes <- c(10, 20, 40)
 
 resultados_teoricos <- data.frame(
@@ -725,7 +725,7 @@ precio con el método de Monte Carlo. El procedimiento es el siguiente:
     forman el intervalo al 95%.
 5.  Comparamos los resultados simulados con los teóricos.
 
-```{r gbm_simulacion, echo=TRUE}
+```{r gbm_simulacion, echo=FALSE}
 set.seed(123)
 
 n_sim <- 10000
