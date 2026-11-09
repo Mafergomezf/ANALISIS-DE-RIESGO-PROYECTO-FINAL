@@ -1,0 +1,1277 @@
+---
+title: "Proyecto Final - Parte 4"
+subtitle: "Alsea, S.A.B. de C.V. (ALSEA.MX)"
+author:
+  - "Nicole Getzabel Flores Godínez"
+  - "Andrea Gutiérrez Rentería"
+  - "Isaac Emiliano Meza López"
+  - "María Fernanda Gómez Flores"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Introducción
+
+En las entregas anteriores analizamos el comportamiento histórico del
+precio y de los rendimientos de Alsea, además de estudiar la normalidad,
+la volatilidad y la simulación del precio mediante el Movimiento
+Browniano Geométrico. En la tercera entrega observamos que la volatilidad
+no necesariamente permanece constante y que los rendimientos presentan
+periodos con movimientos de diferente magnitud. Por esta razón, en esta
+cuarta entrega nos enfocamos en modelos que permiten estimar la
+volatilidad de manera dinámica.
+
+El objetivo es comparar diferentes formas de estimar la varianza y la
+volatilidad diaria de Alsea. Trabajamos con promedios móviles, EWMA, Data
+Driven EWMA y modelos ARCH/GARCH. En todos los casos utilizamos
+información desde enero de 2021 hasta el 30 de septiembre de 2026 para
+la estimación y selección de los modelos. Posteriormente evaluamos su
+capacidad predictiva en un periodo fuera de muestra, del 5 al 30 de
+octubre de 2026.
+
+Para seleccionar los parámetros no utilizamos únicamente una decisión
+visual. En los promedios móviles comparamos distintas ventanas con
+medidas de error; en EWMA estimamos el parámetro de decaimiento mediante
+verosimilitud; en Data Driven EWMA obtenemos el alpha que minimiza el
+error del modelo; y para ARCH/GARCH seguimos el procedimiento utilizado
+en clase, comenzando por la ecuación de la media con un modelo ARMA,
+realizando una prueba ARCH-LM y comparando diferentes órdenes de la
+familia ARCH/GARCH mediante verosimilitud, AIC, BIC y parsimonia.
+
+Finalmente, comparamos las estimaciones de todos los modelos con una
+medida de volatilidad realizada basada en el valor absoluto del
+rendimiento diario. Esto nos permite analizar qué modelo responde mejor
+a periodos de alta volatilidad, cuál reacciona más rápido ante cambios
+en el mercado, cuál presenta estimaciones más estables y cuáles tienden
+a sobreestimar o subestimar el riesgo.
+
+# Estimación de modelos
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(quantmod)
+library(xts)
+library(dplyr)
+library(TTR)
+library(rugarch)
+library(forecast)
+library(zoo)
+```
+
+## Datos y rendimientos
+
+Descargamos los precios ajustados de Alsea y calculamos los rendimientos
+logarítmicos diarios, de la misma forma que en la entrega anterior:
+
+$$r_t=\ln\left(\frac{P_t}{P_{t-1}}\right)$$
+
+Para evitar utilizar información futura en la estimación, separamos los
+datos en dos periodos. El periodo de estimación termina el 30 de
+septiembre de 2026 y el periodo de evaluación comprende las sesiones
+entre el 5 y el 30 de octubre de 2026.
+
+```{r datos}
+clave <- "ALSEA.MX"
+getSymbols(clave, from = "2021-01-01", to = "2026-10-31")
+
+precio <- Ad(get(clave))
+names(precio) <- "Precio"
+
+rendimientos <- na.omit(dailyReturn(precio, type = "log"))
+names(rendimientos) <- "Rendimientos"
+
+rendimientos_estimacion <- rendimientos[
+  index(rendimientos) <= as.Date("2026-09-30")
+]
+
+rendimientos_completos <- rendimientos[
+  index(rendimientos) <= as.Date("2026-10-30")
+]
+
+rendimientos_octubre <- rendimientos_completos[
+  index(rendimientos_completos) >= as.Date("2026-10-05") &
+  index(rendimientos_completos) <= as.Date("2026-10-30")
+]
+
+n_estimacion <- NROW(rendimientos_estimacion)
+n_octubre <- NROW(rendimientos_octubre)
+
+periodos <- data.frame(
+  Periodo = c("Estimación", "Evaluación fuera de muestra"),
+  Inicio = c(
+    as.character(first(index(rendimientos_estimacion))),
+    as.character(first(index(rendimientos_octubre)))
+  ),
+  Fin = c(
+    as.character(last(index(rendimientos_estimacion))),
+    as.character(last(index(rendimientos_octubre)))
+  ),
+  Observaciones = c(n_estimacion, n_octubre)
+)
+
+periodos
+```
+
+Dentro del periodo de estimación hacemos además una división 70/30. El
+primer 70% se utiliza para seleccionar las estructuras y parámetros y el
+30% restante funciona como una validación previa. Después de seleccionar
+cada modelo, sus parámetros finales se estiman con toda la información
+disponible hasta el 30 de septiembre. Octubre no participa en ninguna
+selección ni estimación de parámetros.
+
+```{r corte}
+Tn <- NROW(rendimientos_estimacion)
+corte <- floor(Tn * 0.7)
+
+r_estimacion <- as.numeric(rendimientos_estimacion)
+fechas_estimacion <- index(rendimientos_estimacion)
+
+r_train <- r_estimacion[1:corte]
+r_test <- r_estimacion[(corte + 1):Tn]
+
+Trn <- length(r_train)
+Ten <- length(r_test)
+
+corte_tabla <- data.frame(
+  Muestra = c("Primer 70%", "Último 30%"),
+  Observaciones = c(Trn, Ten),
+  Inicio = c(
+    as.character(fechas_estimacion[1]),
+    as.character(fechas_estimacion[corte + 1])
+  ),
+  Fin = c(
+    as.character(fechas_estimacion[corte]),
+    as.character(fechas_estimacion[Tn])
+  )
+)
+
+corte_tabla
+```
+
+## Promedios móviles
+
+El promedio móvil estima la varianza utilizando los últimos $m$
+rendimientos al cuadrado:
+
+$$\hat\sigma_t^2(m)=\frac{1}{m}\sum_{i=1}^{^}r_{t-i}^2$$
+
+La elección de $m$ es importante porque una ventana pequeña reacciona
+rápidamente a los movimientos recientes, pero también puede ser más
+ruidosa. Una ventana más grande produce una estimación más estable, pero
+puede tardar más en reconocer cambios en el nivel de volatilidad.
+
+Probamos las ventanas de 5, 10, 20 y 40 sesiones. Para elegir el valor de
+$m$ comparamos los pronósticos de cada ventana en el último 30% del
+periodo de estimación utilizando RMSE, MAE y QLIKE sobre la varianza.
+
+```{r funciones_ma}
+vol_ma <- function(r, m) {
+  n <- length(r)
+  sigma2 <- rep(NA, n)
+  
+  for (t in (m + 1):n) {
+    sigma2[t] <- mean(r[(t - m):(t - 1)]^2)
+  }
+  
+  sqrt(sigma2)
+}
+
+perdidas_varianza <- function(real, estimada) {
+  ok <- is.finite(real) & is.finite(estimada) & real > 0 & estimada > 0
+  real <- real[ok]
+  estimada <- estimada[ok]
+  
+  data.frame(
+    RMSE = sqrt(mean((real - estimada)^2)),
+    MAE = mean(abs(real - estimada)),
+    QLIKE = mean(real / estimada - log(real / estimada) - 1)
+  )
+}
+```
+
+```{r seleccion_ma}
+ventanas <- c(5, 10, 20, 40)
+
+tabla_ma <- data.frame()
+
+for (m in ventanas) {
+  sigma_ma <- vol_ma(r_estimacion, m)
+  var_estimada <- sigma_ma^2
+  var_real <- r_estimacion^2
+  
+  indices_test <- (corte + 1):Tn
+  perdidas <- perdidas_varianza(
+    var_real[indices_test],
+    var_estimada[indices_test]
+  )
+  
+  tabla_ma <- rbind(
+    tabla_ma,
+    data.frame(
+      m = m,
+      RMSE = perdidas$RMSE,
+      MAE = perdidas$MAE,
+      QLIKE = perdidas$QLIKE
+    )
+  )
+}
+
+tabla_ma$Rango_RMSE <- rank(tabla_ma$RMSE)
+tabla_ma$Rango_MAE <- rank(tabla_ma$MAE)
+tabla_ma$Rango_QLIKE <- rank(tabla_ma$QLIKE)
+tabla_ma$Rango_promedio <- rowMeans(
+  tabla_ma[, c("Rango_RMSE", "Rango_MAE", "Rango_QLIKE")]
+)
+
+m_optimo <- tabla_ma$m[which.min(tabla_ma$Rango_promedio)]
+
+tabla_ma
+m_optimo
+```
+
+Seleccionamos **M`r m_optimo`** porque presenta el mejor rango promedio
+entre las tres medidas de error. De esta manera, la elección no depende
+de una sola observación ni únicamente de qué curva se ve más suave, sino
+de su capacidad para anticipar la varianza en datos que no participaron
+en el cálculo de cada pronóstico.
+
+Para observar cómo cambia la estimación conforme aumenta la ventana,
+comparamos las cuatro trayectorias durante el periodo de estimación.
+
+```{r grafica_ma, fig.width=9, fig.height=5}
+sigma_ma_5 <- vol_ma(r_estimacion, 5)
+sigma_ma_10 <- vol_ma(r_estimacion, 10)
+sigma_ma_20 <- vol_ma(r_estimacion, 20)
+sigma_ma_40 <- vol_ma(r_estimacion, 40)
+
+plot(
+  fechas_estimacion,
+  sigma_ma_5,
+  type = "l",
+  col = "gray60",
+  main = "ALSEA - Volatilidad estimada con promedios móviles",
+  xlab = "Fecha",
+  ylab = "Volatilidad diaria"
+)
+lines(fechas_estimacion, sigma_ma_10, col = "steelblue")
+lines(fechas_estimacion, sigma_ma_20, col = "darkgreen")
+lines(fechas_estimacion, sigma_ma_40, col = "darkred")
+
+legend(
+  "topright",
+  legend = c("M5", "M10", "M20", "M40"),
+  col = c("gray60", "steelblue", "darkgreen", "darkred"),
+  lty = 1,
+  bty = "n"
+)
+```
+
+En la gráfica se observa el intercambio entre sensibilidad y estabilidad.
+Las ventanas cortas presentan cambios más fuertes cuando aparece un
+rendimiento extremo, mientras que las ventanas largas suavizan esos
+movimientos. Sin embargo, esa estabilidad también implica que un choque
+permanece durante más tiempo dentro de la ventana y que el modelo puede
+reaccionar con retraso cuando el nivel de riesgo cambia.
+
+## Modelo EWMA
+
+El modelo EWMA asigna mayor peso a la información reciente y reduce de
+forma gradual la importancia de los rendimientos anteriores. La
+recursión utilizada en clase es:
+
+$$\hat\sigma_1^2=r_1^2$$
+
+$$\hat\sigma_t^2=(1-\lambda)r_{t-1}^2+\lambda\hat\sigma_{t-1}^2$$
+
+Cuando $\lambda$ es alto, el modelo tiene mayor memoria y la volatilidad
+cambia más lentamente. Cuando es menor, los rendimientos recientes
+tienen más peso y la estimación responde más rápido.
+
+Para seleccionar $\lambda$ utilizamos la verosimilitud normal sin
+constantes, siguiendo el procedimiento visto en clase:
+
+$$\ell(\lambda)=\sum_t\left[-\ln(\hat\sigma_t^2)-\frac{r_t^2}{\hat\sigma_t^2}\right]$$
+
+```{r funciones_ewma}
+ewma_var <- function(r, lambda) {
+  sigma2 <- numeric(length(r))
+  sigma2[1] <- r[1]^2
+  
+  for (t in 2:length(r)) {
+    sigma2[t] <- (1 - lambda) * r[t - 1]^2 +
+      lambda * sigma2[t - 1]
+  }
+  
+  sigma2
+}
+
+ewma_loglik <- function(r, lambda) {
+  sigma2 <- ewma_var(r, lambda)
+  sigma2[sigma2 <= 0] <- .Machine$double.eps
+  sum(-log(sigma2) - r^2 / sigma2)
+}
+```
+
+```{r seleccion_ewma}
+opt_lambda_train <- optimize(
+  function(lambda) ewma_loglik(r_train, lambda),
+  interval = c(0.80, 0.999),
+  maximum = TRUE
+)
+
+lambda_train <- opt_lambda_train$maximum
+
+opt_lambda_full <- optimize(
+  function(lambda) ewma_loglik(r_estimacion, lambda),
+  interval = c(0.80, 0.999),
+  maximum = TRUE
+)
+
+lambda_optimo <- opt_lambda_full$maximum
+lambda_riskmetrics <- 0.94
+
+tabla_lambda <- data.frame(
+  Especificacion = c(
+    "Estimado con primer 70%",
+    "Estimado con toda la muestra hasta septiembre",
+    "RiskMetrics"
+  ),
+  Lambda = c(lambda_train, lambda_optimo, lambda_riskmetrics),
+  Vida_media = c(
+    log(0.5) / log(lambda_train),
+    log(0.5) / log(lambda_optimo),
+    log(0.5) / log(lambda_riskmetrics)
+  )
+)
+
+tabla_lambda
+```
+
+El valor final estimado es $\hat\lambda=$ `r round(lambda_optimo, 4)`.
+Lo seleccionamos porque maximiza la verosimilitud con los datos de Alsea,
+en lugar de utilizar automáticamente el valor estándar de 0.94. Su vida
+media es de aproximadamente `r round(log(0.5) / log(lambda_optimo), 1)`
+sesiones, lo que indica cuánto tarda en reducirse a la mitad el peso de
+un choque en la estimación de volatilidad.
+
+```{r grafica_ewma, fig.width=9, fig.height=5}
+sigma_ewma_estimacion <- sqrt(ewma_var(r_estimacion, lambda_optimo))
+sigma_ma_optima_estimacion <- vol_ma(r_estimacion, m_optimo)
+
+plot(
+  fechas_estimacion,
+  sigma_ma_optima_estimacion,
+  type = "l",
+  col = "darkblue",
+  main = "ALSEA - Promedio móvil vs EWMA",
+  xlab = "Fecha",
+  ylab = "Volatilidad diaria"
+)
+lines(
+  fechas_estimacion,
+  sigma_ewma_estimacion,
+  col = "darkred"
+)
+
+legend(
+  "topright",
+  legend = c(paste0("Promedio móvil M", m_optimo), "EWMA"),
+  col = c("darkblue", "darkred"),
+  lty = 1,
+  bty = "n"
+)
+```
+
+A diferencia del promedio móvil, EWMA no elimina una observación de forma
+repentina cuando sale de una ventana fija. Su peso disminuye gradualmente.
+Por esta razón, puede producir una trayectoria más continua y evitar
+algunos cambios artificiales que aparecen en los promedios móviles.
+
+## Data Driven EWMA
+
+El Data Driven EWMA trabaja directamente sobre la volatilidad y utiliza
+los valores absolutos de los rendimientos centrados. Primero calculamos:
+
+$$\rho=\operatorname{corr}\left(r_t-\bar r,\operatorname{sign}(r_t-\bar r)\right)$$
+
+$$z_t=\frac{|r_t-\bar r|}{\rho}$$
+
+Después estimamos la volatilidad mediante:
+
+$$\hat\sigma_1=z_1$$
+
+$$\hat\sigma_t=\alpha z_{t-1}+(1-\alpha)\hat\sigma_{t-1}$$
+
+En este modelo $\alpha$ representa el peso asignado a la información
+más reciente. El valor óptimo se obtiene minimizando la suma de errores
+cuadrados entre $z_t$ y la volatilidad estimada.
+
+```{r funciones_ddewma}
+escala_ddewma <- function(r) {
+  media <- mean(r)
+  desviaciones <- r - media
+  rho <- cor(desviaciones, sign(desviaciones))
+  
+  list(
+    media = media,
+    rho = rho
+  )
+}
+
+ddewma_vol <- function(r, alpha, escala) {
+  z <- abs(r - escala$media) / escala$rho
+  sigma <- numeric(length(r))
+  sigma[1] <- z[1]
+  
+  for (t in 2:length(r)) {
+    sigma[t] <- alpha * z[t - 1] +
+      (1 - alpha) * sigma[t - 1]
+  }
+  
+  sigma
+}
+
+ddewma_sse <- function(r, alpha, escala) {
+  z <- abs(r - escala$media) / escala$rho
+  sigma <- ddewma_vol(r, alpha, escala)
+  sum((z - sigma)^2)
+}
+```
+
+```{r seleccion_ddewma}
+escala_train <- escala_ddewma(r_train)
+
+opt_alpha_train <- optimize(
+  function(alpha) ddewma_sse(r_train, alpha, escala_train),
+  interval = c(0.001, 0.999)
+)
+
+alpha_train <- opt_alpha_train$minimum
+
+escala_full <- escala_ddewma(r_estimacion)
+
+opt_alpha_full <- optimize(
+  function(alpha) ddewma_sse(r_estimacion, alpha, escala_full),
+  interval = c(0.001, 0.999)
+)
+
+alpha_optimo <- opt_alpha_full$minimum
+
+tabla_ddewma <- data.frame(
+  Muestra = c("Primer 70%", "Toda la muestra hasta septiembre"),
+  Media = c(escala_train$media, escala_full$media),
+  Rho = c(escala_train$rho, escala_full$rho),
+  Alpha = c(alpha_train, alpha_optimo),
+  Vida_media = c(
+    log(0.5) / log(1 - alpha_train),
+    log(0.5) / log(1 - alpha_optimo)
+  )
+)
+
+tabla_ddewma
+```
+
+El alpha final es $\hat\alpha=$ `r round(alpha_optimo, 4)`. A diferencia
+de $\lambda$ en EWMA, un alpha más grande significa mayor peso sobre la
+observación reciente. Por eso, para comparar directamente ambos modelos
+es útil observar $\alpha$ frente a $1-\lambda$. En Alsea, el peso de la
+observación más reciente es `r round(alpha_optimo, 4)` en DDEWMA y
+`r round(1 - lambda_optimo, 4)` en EWMA.
+
+```{r grafica_ddewma, fig.width=9, fig.height=5}
+sigma_ddewma_estimacion <- ddewma_vol(
+  r_estimacion,
+  alpha_optimo,
+  escala_full
+)
+
+plot(
+  fechas_estimacion,
+  sigma_ewma_estimacion,
+  type = "l",
+  col = "darkblue",
+  main = "ALSEA - EWMA vs Data Driven EWMA",
+  xlab = "Fecha",
+  ylab = "Volatilidad diaria"
+)
+lines(
+  fechas_estimacion,
+  sigma_ddewma_estimacion,
+  col = "darkgreen"
+)
+
+legend(
+  "topright",
+  legend = c("EWMA", "Data Driven EWMA"),
+  col = c("darkblue", "darkgreen"),
+  lty = 1,
+  bty = "n"
+)
+```
+
+El DDEWMA tiene una diferencia importante frente al EWMA tradicional:
+los movimientos extremos entran mediante su valor absoluto y no mediante
+el rendimiento al cuadrado. Por esta razón, puede reaccionar de manera
+diferente ante días con movimientos muy grandes. La comparación fuera
+de muestra nos permitirá evaluar si esa diferencia mejora la estimación
+de riesgo para Alsea.
+
+## Modelo ARCH/GARCH
+
+Para ARCH/GARCH seguimos el procedimiento utilizado en clase. Primero
+modelamos la ecuación de la media mediante un ARMA. Después analizamos
+las innovaciones de esa ecuación y evaluamos si existe evidencia de
+efectos ARCH. Finalmente estimamos seis modelos de la familia
+ARCH/GARCH y seleccionamos el que tenga un mejor equilibrio entre ajuste
+y parsimonia.
+
+### Modelo ARMA para la media
+
+La ecuación general de la media es:
+
+$$r_t=\mu_t+\epsilon_t$$
+
+Para determinar cómo se comporta $\mu_t$ utilizamos `auto.arima` con
+$d=0$, imponiendo estacionariedad y sin componente estacional, de la
+misma manera que en el notebook de clase.
+
+```{r modelo_media}
+modelo_media <- auto.arima(
+  as.numeric(r_train),
+  d = 0,
+  stationary = TRUE,
+  seasonal = FALSE
+)
+
+orden_media <- arimaorder(modelo_media)
+p_media <- orden_media[1]
+q_media <- orden_media[3]
+arma_order <- c(p_media, q_media)
+
+resumen_media <- data.frame(
+  Modelo = paste0("ARMA(", p_media, ",", q_media, ")"),
+  AIC = AIC(modelo_media),
+  BIC = BIC(modelo_media)
+)
+
+resumen_media
+```
+
+El modelo seleccionado para la ecuación de la media es
+**ARMA(`r p_media`,`r q_media`)**. La selección se realiza con
+`auto.arima`, que compara distintas especificaciones estacionarias y
+penaliza modelos innecesariamente complejos. De esta manera, la ecuación
+de la media se define antes de estudiar el comportamiento de la
+innovación $\epsilon_t$.
+
+```{r residuos_media, fig.width=9, fig.height=4}
+residuos_media <- residuals(modelo_media)
+
+plot(
+  residuos_media,
+  type = "l",
+  main = "ALSEA - Innovaciones de la ecuación de la media",
+  ylab = "Epsilon",
+  xlab = "Tiempo",
+  col = "darkblue"
+)
+abline(h = 0, col = "gray50", lty = 2)
+```
+
+### Prueba ARCH-LM
+
+Con las innovaciones de la ecuación de la media evaluamos si existe
+estructura ARCH remanente. La hipótesis nula indica que los cuadrados de
+las innovaciones no presentan dependencia con sus rezagos:
+
+$$H_0:\text{ no existen efectos ARCH}$$
+
+$$H_1:\text{ existe estructura ARCH}$$
+
+Si el p-valor es menor a 0.05 rechazamos $H_0$ y consideramos que existe
+evidencia de heterocedasticidad condicional.
+
+```{r funcion_arch}
+ArchLM <- function(x, lags = 20, demean = FALSE) {
+  
+  x <- na.omit(as.numeric(x))
+  
+  if (demean) {
+    x <- x - mean(x)
+  }
+  
+  mat <- embed(x^2, lags + 1)
+  
+  aux <- lm(
+    mat[, 1] ~ mat[, -1]
+  )
+  
+  R2 <- summary(aux)$r.squared
+  T_aux <- length(residuals(aux))
+  
+  statistic <- T_aux * R2
+  
+  p_value <- pchisq(
+    statistic,
+    df = lags,
+    lower.tail = FALSE
+  )
+  
+  out <- list(
+    statistic = statistic,
+    df = lags,
+    p.value = p_value
+  )
+  
+  return(out)
+}
+```
+
+```{r prueba_arch}
+arch_pre <- ArchLM(residuos_media)
+
+resultado_arch <- data.frame(
+  Estadistico = arch_pre$statistic,
+  Grados_libertad = arch_pre$df,
+  p_valor = arch_pre$p.value,
+  Conclusion = ifelse(
+    arch_pre$p.value < 0.05,
+    "Existe evidencia de estructura ARCH",
+    "No se detecta evidencia suficiente de estructura ARCH"
+  )
+)
+
+resultado_arch
+```
+
+El p-valor obtenido es `r format.pval(arch_pre$p.value, digits = 4)`. Por
+lo tanto, `r ifelse(arch_pre$p.value < 0.05, "rechazamos la hipótesis nula y encontramos evidencia de que la varianza de las innovaciones cambia con el tiempo y depende de observaciones anteriores", "no rechazamos la hipótesis nula con 20 rezagos; esto indica que la prueba no encuentra evidencia suficiente de efectos ARCH, aunque de cualquier forma comparamos los modelos de varianza solicitados para evaluar su desempeño predictivo")`.
+
+### Estimación de modelos candidatos
+
+Estimamos los mismos seis modelos de la familia que se trabajaron en el
+notebook de clase:
+
+```{r candidatos}
+modelos_candidatos <- data.frame(
+  modelo = c(
+    "ARCH(1)",
+    "ARCH(2)",
+    "GARCH(1,1)",
+    "GARCH(1,2)",
+    "GARCH(2,1)",
+    "GARCH(2,2)"
+  ),
+  p = c(1, 2, 1, 1, 2, 2),
+  q = c(0, 0, 1, 2, 1, 2),
+  stringsAsFactors = FALSE
+)
+
+modelos_candidatos
+```
+
+```{r funciones_garch}
+crear_spec <- function(p, q, arma_order) {
+  ugarchspec(
+    variance.model = list(
+      model = "sGARCH",
+      garchOrder = c(p, q)
+    ),
+    mean.model = list(
+      armaOrder = arma_order,
+      include.mean = TRUE
+    ),
+    distribution.model = "norm"
+  )
+}
+
+ajustar_modelo <- function(nombre, p, q) {
+  spec <- crear_spec(
+    p = p,
+    q = q,
+    arma_order = arma_order
+  )
+  
+  fit <- tryCatch(
+    ugarchfit(
+      spec = spec,
+      data = r_estimacion,
+      out.sample = Ten,
+      solver = "hybrid"
+    ),
+    error = function(e) {
+      return(NULL)
+    }
+  )
+  
+  return(fit)
+}
+```
+
+```{r ajuste_garch}
+fit <- list()
+
+for (i in seq_len(nrow(modelos_candidatos))) {
+  nombre <- modelos_candidatos$modelo[i]
+  
+  fit[[nombre]] <- ajustar_modelo(
+    nombre = nombre,
+    p = modelos_candidatos$p[i],
+    q = modelos_candidatos$q[i]
+  )
+}
+```
+
+Para comparar los modelos utilizamos verosimilitud, AIC, BIC y
+persistencia. Los criterios AIC y BIC penalizan la complejidad, por lo
+que ayudan a evitar seleccionar un modelo con más parámetros solamente
+porque obtiene un ajuste ligeramente mejor.
+
+$$AIC=-2\ell+2k$$
+
+$$BIC=-2\ell+\ln(n)k$$
+
+La persistencia se obtiene como la suma de los coeficientes ARCH y
+GARCH. Cuando esta suma es cercana a uno, los choques sobre la
+volatilidad tardan más en desaparecer.
+
+```{r resumen_garch}
+resumen_fit <- function(nombre, fit_modelo) {
+  
+  if (is.null(fit_modelo)) {
+    return(
+      data.frame(
+        Modelo = nombre,
+        Convergencia = FALSE,
+        logLik = NA_real_,
+        k = NA_real_,
+        AIC = NA_real_,
+        BIC = NA_real_,
+        omega = NA_real_,
+        alpha_sum = NA_real_,
+        beta_sum = NA_real_,
+        Persistencia = NA_real_,
+        Varianza_largo_plazo = NA_real_,
+        p_max_varianza = NA_real_
+      )
+    )
+  }
+  
+  cf <- coef(fit_modelo)
+  ll <- as.numeric(likelihood(fit_modelo))
+  k <- length(cf)
+  n <- Trn
+  
+  omega <- if ("omega" %in% names(cf)) unname(cf["omega"]) else NA_real_
+  
+  alpha_names <- grep("^alpha", names(cf), value = TRUE)
+  beta_names <- grep("^beta", names(cf), value = TRUE)
+  
+  alpha_sum <- if (length(alpha_names) > 0) sum(cf[alpha_names]) else 0
+  beta_sum <- if (length(beta_names) > 0) sum(cf[beta_names]) else 0
+  
+  persistencia <- alpha_sum + beta_sum
+  
+  var_largo <- if (
+    is.finite(omega) &&
+    persistencia < 1
+  ) {
+    omega / (1 - persistencia)
+  } else {
+    NA_real_
+  }
+  
+  matcoef <- fit_modelo@fit$matcoef
+  filas_varianza <- grepl("^(alpha|beta)", rownames(matcoef))
+  p_max_varianza <- if (any(filas_varianza)) {
+    max(matcoef[filas_varianza, 4], na.rm = TRUE)
+  } else {
+    NA_real_
+  }
+  
+  data.frame(
+    Modelo = nombre,
+    Convergencia = fit_modelo@fit$convergence == 0,
+    logLik = ll,
+    k = k,
+    AIC = -2 * ll + 2 * k,
+    BIC = -2 * ll + log(n) * k,
+    omega = omega,
+    alpha_sum = alpha_sum,
+    beta_sum = beta_sum,
+    Persistencia = persistencia,
+    Varianza_largo_plazo = var_largo,
+    p_max_varianza = p_max_varianza
+  )
+}
+
+tabla_modelos <- data.frame()
+
+for (nombre in names(fit)) {
+  tabla_modelos <- rbind(
+    tabla_modelos,
+    resumen_fit(nombre, fit[[nombre]])
+  )
+}
+
+tabla_modelos
+```
+
+Para seleccionar el modelo primero revisamos que la estimación converja,
+que la persistencia sea menor a uno y que los coeficientes ARCH/GARCH
+sean estadísticamente significativos al 5%. Entre los modelos que
+cumplen estas condiciones elegimos el menor BIC, porque combina el
+ajuste del modelo con una penalización más fuerte por agregar parámetros
+y por lo tanto favorece la parsimonia. Si ninguna especificación cumple
+todas las condiciones de significancia, conservamos como referencia los
+modelos convergentes y estacionarios y seleccionamos el de menor BIC,
+señalando esta limitación en la interpretación.
+
+```{r seleccion_garch}
+modelos_validos <- tabla_modelos[
+  tabla_modelos$Convergencia &
+  is.finite(tabla_modelos$BIC) &
+  is.finite(tabla_modelos$Persistencia) &
+  tabla_modelos$Persistencia < 1 &
+  is.finite(tabla_modelos$p_max_varianza) &
+  tabla_modelos$p_max_varianza < 0.05,
+]
+
+if (nrow(modelos_validos) == 0) {
+  modelos_validos <- tabla_modelos[
+    tabla_modelos$Convergencia &
+    is.finite(tabla_modelos$BIC) &
+    is.finite(tabla_modelos$Persistencia) &
+    tabla_modelos$Persistencia < 1,
+  ]
+}
+
+if (nrow(modelos_validos) == 0) {
+  modelos_validos <- tabla_modelos[
+    tabla_modelos$Convergencia & is.finite(tabla_modelos$BIC),
+  ]
+}
+
+modelo_garch_elegido <- modelos_validos$Modelo[
+  which.min(modelos_validos$BIC)
+]
+
+fila_elegida <- modelos_candidatos[
+  modelos_candidatos$modelo == modelo_garch_elegido,
+]
+
+p_garch <- fila_elegida$p
+q_garch <- fila_elegida$q
+
+modelo_garch_elegido
+```
+
+El modelo seleccionado es **`r modelo_garch_elegido`**. Su persistencia
+es de `r round(tabla_modelos$Persistencia[tabla_modelos$Modelo == modelo_garch_elegido], 4)` y el mayor p-valor entre sus coeficientes ARCH/GARCH es `r round(tabla_modelos$p_max_varianza[tabla_modelos$Modelo == modelo_garch_elegido], 4)`. La persistencia nos permite interpretar qué tan rápido desaparece el efecto de un choque. Una persistencia más cercana a uno implica que la volatilidad tarda más en regresar a su nivel de largo plazo.
+
+### Reestimación del modelo elegido hasta septiembre de 2026
+
+Una vez seleccionados los órdenes del modelo, mantenemos esa estructura
+y volvemos a estimar sus parámetros utilizando toda la información hasta
+el 30 de septiembre de 2026. Esto permite aprovechar toda la información
+disponible antes de comenzar el periodo fuera de muestra.
+
+```{r garch_final}
+modelo_media_full <- Arima(
+  r_estimacion,
+  order = c(p_media, 0, q_media),
+  include.mean = TRUE,
+  method = "ML"
+)
+
+spec_final <- crear_spec(
+  p = p_garch,
+  q = q_garch,
+  arma_order = arma_order
+)
+
+r_completos <- as.numeric(rendimientos_completos)
+
+n_out_oct <- sum(
+  index(rendimientos_completos) > as.Date("2026-09-30")
+)
+
+fit_final <- ugarchfit(
+  spec = spec_final,
+  data = r_completos,
+  out.sample = n_out_oct,
+  solver = "hybrid"
+)
+
+coef(fit_final)
+```
+
+# Evaluación de modelos
+
+Para evaluar la capacidad predictiva utilizamos las sesiones del 5 al 30
+de octubre de 2026. Ninguno de los parámetros se vuelve a estimar con
+información de octubre. Sin embargo, después de observar el rendimiento
+de una sesión, este sí puede utilizarse para actualizar el pronóstico de
+la sesión siguiente, que es precisamente la forma en que se utilizarían
+estos modelos diariamente.
+
+Como medida de referencia utilizamos la volatilidad realizada indicada
+en la consigna:
+
+$$\sigma_{t,realizada}=\sqrt{r_t^2}=|r_t|$$
+
+Esta medida es muy variable porque utiliza una sola observación por día,
+pero permite comparar todos los modelos con el mismo valor observado.
+
+## Pronósticos diarios de octubre
+
+```{r pronosticos_octubre}
+fechas_completas <- index(rendimientos_completos)
+r_all <- as.numeric(rendimientos_completos)
+
+indices_oct <- which(
+  fechas_completas >= as.Date("2026-10-05") &
+  fechas_completas <= as.Date("2026-10-30")
+)
+
+# Promedio móvil con el m seleccionado
+sigma_ma_all <- vol_ma(r_all, m_optimo)
+
+# EWMA con lambda estimado únicamente hasta septiembre
+sigma2_ewma_all <- ewma_var(r_all, lambda_optimo)
+sigma_ewma_all <- sqrt(sigma2_ewma_all)
+
+# DDEWMA con alpha y escala estimados únicamente hasta septiembre
+sigma_ddewma_all <- ddewma_vol(
+  r_all,
+  alpha_optimo,
+  escala_full
+)
+
+# GARCH: pronósticos rolling de un paso con parámetros fijos
+forecast_garch <- ugarchforecast(
+  fit_final,
+  n.ahead = 1,
+  n.roll = n_out_oct - 1
+)
+
+sigma_garch_out <- as.numeric(sigma(forecast_garch))
+fechas_out <- fechas_completas[
+  fechas_completas > as.Date("2026-09-30")
+]
+
+sigma_garch_xts <- xts(
+  sigma_garch_out,
+  order.by = fechas_out
+)
+
+sigma_garch_oct <- as.numeric(
+  sigma_garch_xts[
+    index(sigma_garch_xts) >= as.Date("2026-10-05") &
+    index(sigma_garch_xts) <= as.Date("2026-10-30")
+  ]
+)
+
+comparacion_octubre <- data.frame(
+  Fecha = fechas_completas[indices_oct],
+  Rendimiento = r_all[indices_oct],
+  Volatilidad_realizada = abs(r_all[indices_oct]),
+  MA = sigma_ma_all[indices_oct],
+  EWMA = sigma_ewma_all[indices_oct],
+  DDEWMA = sigma_ddewma_all[indices_oct],
+  GARCH = sigma_garch_oct
+)
+
+comparacion_octubre
+```
+
+La tabla anterior permite contrastar, para cada sesión, el movimiento
+real observado con la volatilidad que cada modelo había estimado antes
+de conocer ese rendimiento.
+
+## Comparación de errores
+
+Para complementar la tabla diaria calculamos RMSE y MAE sobre la
+volatilidad. También calculamos el sesgo promedio, definido como la
+volatilidad estimada menos la realizada. Un sesgo positivo indica que el
+modelo tiende a sobreestimar la volatilidad, mientras que uno negativo
+indica subestimación.
+
+```{r metricas_octubre}
+metricas_modelo <- function(real, estimada) {
+  ok <- is.finite(real) & is.finite(estimada)
+  real <- real[ok]
+  estimada <- estimada[ok]
+  
+  data.frame(
+    RMSE = sqrt(mean((estimada - real)^2)),
+    MAE = mean(abs(estimada - real)),
+    Sesgo = mean(estimada - real),
+    Estabilidad = mean(abs(diff(estimada)))
+  )
+}
+
+modelos <- c("MA", "EWMA", "DDEWMA", "GARCH")
+
+tabla_metricas <- data.frame()
+
+for (modelo in modelos) {
+  metrica <- metricas_modelo(
+    comparacion_octubre$Volatilidad_realizada,
+    comparacion_octubre[[modelo]]
+  )
+  
+  tabla_metricas <- rbind(
+    tabla_metricas,
+    data.frame(
+      Modelo = modelo,
+      metrica
+    )
+  )
+}
+
+tabla_metricas
+```
+
+```{r grafica_octubre, fig.width=10, fig.height=5}
+plot(
+  comparacion_octubre$Fecha,
+  comparacion_octubre$Volatilidad_realizada,
+  type = "h",
+  lwd = 3,
+  col = "gray70",
+  main = "ALSEA - Volatilidad realizada y estimada en octubre de 2026",
+  xlab = "Fecha",
+  ylab = "Volatilidad diaria"
+)
+
+lines(comparacion_octubre$Fecha, comparacion_octubre$MA,
+      col = "darkblue", lwd = 2)
+lines(comparacion_octubre$Fecha, comparacion_octubre$EWMA,
+      col = "darkred", lwd = 2)
+lines(comparacion_octubre$Fecha, comparacion_octubre$DDEWMA,
+      col = "darkgreen", lwd = 2)
+lines(comparacion_octubre$Fecha, comparacion_octubre$GARCH,
+      col = "purple", lwd = 2)
+
+legend(
+  "topright",
+  legend = c("Realizada |r|", "MA", "EWMA", "DDEWMA", "GARCH"),
+  col = c("gray70", "darkblue", "darkred", "darkgreen", "purple"),
+  lty = c(1, 1, 1, 1, 1),
+  lwd = c(3, 2, 2, 2, 2),
+  bty = "n"
+)
+```
+
+De acuerdo con el RMSE, el modelo con menor error fuera de muestra es
+**`r tabla_metricas$Modelo[which.min(tabla_metricas$RMSE)]`**, mientras
+que por MAE el mejor resultado corresponde a
+**`r tabla_metricas$Modelo[which.min(tabla_metricas$MAE)]`**. Estas
+medidas no necesariamente eligen al mismo modelo porque el RMSE penaliza
+más los errores grandes, mientras que el MAE trata de forma más uniforme
+las diferencias de cada día.
+
+# Análisis e interpretación
+
+## ¿Qué modelo captura mejor los periodos de alta volatilidad?
+
+Para responder esta pregunta identificamos como días de alta volatilidad
+las observaciones de octubre que se encuentran en el 25% superior de la
+volatilidad realizada. Después comparamos el error absoluto promedio de
+cada modelo únicamente en esos días.
+
+```{r alta_volatilidad}
+umbral_alto <- quantile(
+  comparacion_octubre$Volatilidad_realizada,
+  0.75,
+  na.rm = TRUE
+)
+
+alta <- comparacion_octubre$Volatilidad_realizada >= umbral_alto
+
+errores_alta <- data.frame(
+  Modelo = modelos,
+  MAE_alta = sapply(
+    modelos,
+    function(modelo) {
+      mean(abs(
+        comparacion_octubre[[modelo]][alta] -
+        comparacion_octubre$Volatilidad_realizada[alta]
+      ))
+    }
+  )
+)
+
+errores_alta
+
+modelo_alta <- errores_alta$Modelo[
+  which.min(errores_alta$MAE_alta)
+]
+```
+
+El modelo que se acerca más a la volatilidad realizada durante los días
+más extremos es **`r modelo_alta`**. Esto es relevante desde una
+perspectiva financiera porque los errores durante periodos tranquilos y
+los errores durante periodos de estrés no tienen el mismo costo. Un
+modelo que subestima el riesgo precisamente cuando ocurren movimientos
+grandes puede producir límites de exposición o medidas de riesgo
+demasiado optimistas.
+
+## ¿Qué modelo reacciona más rápidamente ante cambios en el mercado?
+
+Para medir la reacción tomamos el día con el rendimiento absoluto más
+grande de octubre. Como el pronóstico de ese mismo día se realiza antes
+de observar el choque, analizamos cuánto aumenta la volatilidad estimada
+para la siguiente sesión.
+
+```{r reaccion}
+pos_shock <- which.max(comparacion_octubre$Volatilidad_realizada)
+
+if (pos_shock < nrow(comparacion_octubre)) {
+  reaccion <- data.frame(
+    Modelo = modelos,
+    Antes = sapply(modelos, function(m) comparacion_octubre[[m]][pos_shock]),
+    Despues = sapply(modelos, function(m) comparacion_octubre[[m]][pos_shock + 1])
+  )
+  
+  reaccion$Cambio_relativo <-
+    (reaccion$Despues - reaccion$Antes) / reaccion$Antes
+  
+  modelo_reaccion <- reaccion$Modelo[
+    which.max(reaccion$Cambio_relativo)
+  ]
+} else {
+  reaccion <- data.frame(
+    Modelo = modelos,
+    Antes = NA,
+    Despues = NA,
+    Cambio_relativo = NA
+  )
+  modelo_reaccion <- NA
+}
+
+reaccion
+```
+
+`r ifelse(is.na(modelo_reaccion), "El mayor choque ocurre en la última sesión del periodo y por eso no es posible observar su efecto en una sesión posterior dentro de la muestra.", paste0("El modelo que presenta el mayor ajuste inmediato después del choque es ", modelo_reaccion, ". Una reacción rápida permite reconocer antes un aumento en el riesgo, aunque también puede generar estimaciones más variables si el movimiento fue solamente transitorio."))`
+
+## ¿Qué modelo presenta mayor estabilidad en sus estimaciones?
+
+Utilizamos el cambio absoluto promedio de la volatilidad estimada entre
+una sesión y la siguiente. Una cifra menor significa que la trayectoria
+del modelo cambia de manera más gradual.
+
+```{r estabilidad}
+modelo_estable <- tabla_metricas$Modelo[
+  which.min(tabla_metricas$Estabilidad)
+]
+
+modelo_estable
+```
+
+El modelo más estable durante octubre es
+**`r modelo_estable`**. Esta estabilidad puede ser útil para la toma de
+decisiones porque evita que las medidas de riesgo cambien demasiado por
+una sola observación. Sin embargo, demasiada estabilidad también puede
+convertirse en rezago si el mercado entra en un nuevo régimen de
+volatilidad.
+
+## ¿Qué modelo sobreestima o subestima la volatilidad?
+
+```{r sesgo}
+tabla_sesgo <- tabla_metricas[, c("Modelo", "Sesgo")]
+tabla_sesgo$Comportamiento <- ifelse(
+  tabla_sesgo$Sesgo > 0,
+  "Sobreestima en promedio",
+  ifelse(
+    tabla_sesgo$Sesgo < 0,
+    "Subestima en promedio",
+    "Sin sesgo promedio"
+  )
+)
+
+tabla_sesgo
+```
+
+La tabla muestra que el sesgo no es igual entre los modelos. Una
+sobreestimación implica una postura más conservadora porque asigna un
+nivel de riesgo superior al observado, aunque también puede llevar a
+reservar más capital del necesario. Una subestimación puede parecer más
+eficiente durante periodos tranquilos, pero representa un riesgo mayor
+si el modelo deja de reconocer movimientos importantes del mercado.
+
+# Conclusión
+
+```{r decision_final}
+tabla_decision <- tabla_metricas
+
+tabla_decision$Rango_RMSE <- rank(tabla_decision$RMSE)
+tabla_decision$Rango_MAE <- rank(tabla_decision$MAE)
+tabla_decision$Rango_promedio <- rowMeans(
+  tabla_decision[, c("Rango_RMSE", "Rango_MAE")]
+)
+
+modelo_decision <- tabla_decision$Modelo[
+  which.min(tabla_decision$Rango_promedio)
+]
+
+modelo_decision
+```
+
+En esta cuarta entrega comparamos diferentes modelos para estimar la
+volatilidad de Alsea utilizando información de 2021 a septiembre de
+2026 y dejando octubre como un periodo completamente fuera de muestra.
+Los resultados muestran que la elección del modelo modifica tanto la
+velocidad con la que se reconoce un cambio en el riesgo como la
+estabilidad de las estimaciones.
+
+Los promedios móviles permiten observar con claridad el efecto de la
+ventana. Una ventana corta reacciona con mayor intensidad a las
+observaciones recientes, mientras que una ventana larga produce una
+trayectoria más estable, aunque puede responder con retraso. El EWMA
+mejora esta dinámica al reducir gradualmente el peso de las observaciones
+anteriores, mientras que el Data Driven EWMA utiliza una medida basada
+en el valor absoluto de los rendimientos y obtiene su parámetro de
+suavizamiento directamente de los datos.
+
+En el caso de ARCH/GARCH, primero modelamos la media con un
+ARMA(`r p_media`,`r q_media`) y después analizamos las innovaciones. De
+los seis modelos de varianza considerados, seleccionamos
+**`r modelo_garch_elegido`** con base en BIC, verosimilitud,
+convergencia, persistencia y parsimonia. Esta familia tiene la ventaja de
+modelar explícitamente la dependencia temporal de la varianza y permite
+que un choque modifique de forma diferente la volatilidad futura según
+los parámetros estimados.
+
+Durante el periodo fuera de muestra, el menor RMSE corresponde a
+**`r tabla_metricas$Modelo[which.min(tabla_metricas$RMSE)]`** y el menor
+MAE a **`r tabla_metricas$Modelo[which.min(tabla_metricas$MAE)]`**. En
+los días de mayor volatilidad, el modelo que mejor se aproxima al riesgo
+realizado es **`r modelo_alta`**, mientras que el modelo con mayor
+estabilidad es **`r modelo_estable`**. Esto muestra que no necesariamente
+existe un modelo que sea superior en todas las características: un
+modelo puede ser más estable, pero reaccionar más lento, mientras que
+otro puede responder mejor a los choques a costa de producir
+estimaciones más variables.
+
+Desde una perspectiva financiera, utilizando conjuntamente RMSE y MAE,
+el modelo que utilizaríamos como referencia principal para Alsea es
+**`r modelo_decision`**. Esta decisión se basa en su desempeño con datos
+que no participaron en la estimación y no únicamente en el ajuste dentro
+de muestra. Aun así, consideramos importante observar también el
+comportamiento de los otros modelos, especialmente en periodos de alta
+volatilidad, porque el costo de subestimar el riesgo durante un episodio
+de estrés puede ser mayor que el costo de una estimación conservadora en
+un periodo estable.
