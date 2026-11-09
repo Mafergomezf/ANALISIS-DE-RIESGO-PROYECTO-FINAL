@@ -18,38 +18,34 @@ editor_options:
 
 # Introducción
 
-En las entregas anteriores analizamos el comportamiento histórico del
-precio y de los rendimientos de Alsea, además de estudiar la normalidad,
-la volatilidad y la simulación del precio mediante el Movimiento
-Browniano Geométrico. En la tercera entrega observamos que la volatilidad
-no necesariamente permanece constante y que los rendimientos presentan
-periodos con movimientos de diferente magnitud. Por esta razón, en esta
-cuarta entrega nos enfocamos en modelos que permiten estimar la
-volatilidad de manera dinámica.
+En esta cuarta entrega analizamos la volatilidad de Alsea mediante
+distintos modelos de varianza. El propósito es estudiar cómo cambia el
+riesgo a través del tiempo y comparar qué tan bien diferentes métodos
+pueden estimar y anticipar esos cambios. Para esto utilizamos los
+rendimientos logarítmicos diarios de la acción y trabajamos con
+información comprendida entre enero de 2021 y septiembre de 2026.
 
-El objetivo es comparar diferentes formas de estimar la varianza y la
-volatilidad diaria de Alsea. Trabajamos con promedios móviles, EWMA, Data
-Driven EWMA y modelos ARCH/GARCH. En todos los casos utilizamos
-información desde enero de 2021 hasta el 30 de septiembre de 2026 para
-la estimación y selección de los modelos. Posteriormente evaluamos su
-capacidad predictiva en un periodo fuera de muestra, del 5 al 30 de
-octubre de 2026.
+El análisis incluye cuatro metodologías. Primero estimamos la
+volatilidad con promedios móviles y comparamos distintas ventanas para
+seleccionar el valor de $m$ con mejor desempeño. Después utilizamos el
+modelo EWMA y estimamos su parámetro de decaimiento $\lambda$. También
+aplicamos el modelo Data Driven EWMA, en el que obtenemos el valor
+óptimo de $\alpha$ directamente a partir de los datos. Finalmente,
+estimamos modelos ARCH/GARCH siguiendo el procedimiento trabajado en
+clase: primero definimos la ecuación de la media con un modelo ARMA,
+evaluamos la presencia de efectos ARCH y después comparamos distintas
+especificaciones de varianza mediante verosimilitud, AIC, BIC,
+persistencia y parsimonia.
 
-Para seleccionar los parámetros no utilizamos únicamente una decisión
-visual. En los promedios móviles comparamos distintas ventanas con
-medidas de error; en EWMA estimamos el parámetro de decaimiento mediante
-verosimilitud; en Data Driven EWMA obtenemos el alpha que minimiza el
-error del modelo; y para ARCH/GARCH seguimos el procedimiento utilizado
-en clase, comenzando por la ecuación de la media con un modelo ARMA,
-realizando una prueba ARCH-LM y comparando diferentes órdenes de la
-familia ARCH/GARCH mediante verosimilitud, AIC, BIC y parsimonia.
-
-Finalmente, comparamos las estimaciones de todos los modelos con una
-medida de volatilidad realizada basada en el valor absoluto del
-rendimiento diario. Esto nos permite analizar qué modelo responde mejor
-a periodos de alta volatilidad, cuál reacciona más rápido ante cambios
-en el mercado, cuál presenta estimaciones más estables y cuáles tienden
-a sobreestimar o subestimar el riesgo.
+Para evaluar la capacidad predictiva de los modelos reservamos las
+sesiones del 5 al 30 de octubre de 2026 como periodo fuera de muestra.
+Los parámetros se estiman únicamente con información disponible hasta
+el 30 de septiembre, de manera que los datos utilizados para evaluar los
+pronósticos no intervienen en su selección. Finalmente, comparamos las
+estimaciones diarias con la volatilidad realizada y analizamos qué
+modelo captura mejor los periodos de mayor riesgo, cuál reacciona más
+rápido ante cambios en el mercado, cuál produce estimaciones más
+estables y cuáles tienden a sobreestimar o subestimar la volatilidad.
 
 # Estimación de modelos
 
@@ -164,7 +160,7 @@ corte_tabla
 El promedio móvil estima la varianza utilizando los últimos $m$
 rendimientos al cuadrado:
 
-$$\hat\sigma_t^2(m)=\frac{1}{m}\sum_{i=1}^{^}r_{t-i}^2$$
+$\hat\sigma_t^2(m)=\frac{1}{m}\sum_{i=1}^{m}r_{t-i}^2$
 
 La elección de $m$ es importante porque una ventana pequeña reacciona
 rápidamente a los movimientos recientes, pero también puede ser más
@@ -482,7 +478,7 @@ tabla_ddewma <- data.frame(
 tabla_ddewma
 ```
 
-El alpha final es $\hat\alpha=$ `r round(alpha_optimo, 4)`. A diferencia
+El valor final de $\alpha$ es $\hat\alpha=$ `r round(alpha_optimo, 4)`. A diferencia
 de $\lambda$ en EWMA, un alpha más grande significa mayor peso sobre la
 observación reciente. Por eso, para comparar directamente ambos modelos
 es útil observar $\alpha$ frente a $1-\lambda$. En Alsea, el peso de la
