@@ -116,7 +116,11 @@ periodos <- data.frame(
   Observaciones = c(n_estimacion, n_octubre)
 )
 
-periodos
+knitr::kable(
+  periodos,
+  caption = "Periodos utilizados para estimación y evaluación",
+  align = "c"
+)
 ```
 
 Dentro del periodo de estimación hacemos además una división 70/30. El
@@ -152,7 +156,11 @@ corte_tabla <- data.frame(
   )
 )
 
-corte_tabla
+knitr::kable(
+  corte_tabla,
+  caption = "División interna del periodo de estimación",
+  align = "c"
+)
 ```
 
 ## Promedios móviles
@@ -232,8 +240,12 @@ tabla_ma$Rango_promedio <- rowMeans(
 
 m_optimo <- tabla_ma$m[which.min(tabla_ma$Rango_promedio)]
 
-tabla_ma
-m_optimo
+knitr::kable(
+  tabla_ma,
+  digits = 6,
+  caption = "Comparación de ventanas para el promedio móvil",
+  align = "c"
+)
 ```
 
 Seleccionamos **M`r m_optimo`** porque presenta el mejor rango promedio
@@ -351,7 +363,12 @@ tabla_lambda <- data.frame(
   )
 )
 
-tabla_lambda
+knitr::kable(
+  tabla_lambda,
+  digits = 4,
+  caption = "Selección del parámetro lambda en EWMA",
+  align = "c"
+)
 ```
 
 El valor final estimado es $\hat\lambda=$ `r round(lambda_optimo, 4)`.
@@ -393,6 +410,12 @@ A diferencia del promedio móvil, EWMA no elimina una observación de forma
 repentina cuando sale de una ventana fija. Su peso disminuye gradualmente.
 Por esta razón, puede producir una trayectoria más continua y evitar
 algunos cambios artificiales que aparecen en los promedios móviles.
+Además, el parámetro estimado permite que la respuesta ante nueva
+información dependa del peso $1-\lambda$, mientras que en el promedio
+móvil la reacción depende directamente del tamaño de la ventana elegida.
+Esta diferencia se contrasta nuevamente en el periodo fuera de muestra,
+donde medimos cuánto cambia cada estimación después del mayor choque de
+octubre.
 
 ## Data Driven EWMA
 
@@ -475,7 +498,12 @@ tabla_ddewma <- data.frame(
   )
 )
 
-tabla_ddewma
+knitr::kable(
+  tabla_ddewma,
+  digits = 4,
+  caption = "Selección del parámetro alpha en Data Driven EWMA",
+  align = "c"
+)
 ```
 
 El valor final de $\alpha$ es $\hat\alpha=$ `r round(alpha_optimo, 4)`. A diferencia
@@ -561,15 +589,23 @@ resumen_media <- data.frame(
   BIC = BIC(modelo_media)
 )
 
-resumen_media
+knitr::kable(
+  resumen_media,
+  digits = 4,
+  caption = "Modelo seleccionado para la ecuación de la media",
+  align = "c"
+)
 ```
 
 El modelo seleccionado para la ecuación de la media es
 **ARMA(`r p_media`,`r q_media`)**. La selección se realiza con
 `auto.arima`, que compara distintas especificaciones estacionarias y
-penaliza modelos innecesariamente complejos. De esta manera, la ecuación
-de la media se define antes de estudiar el comportamiento de la
-innovación $\epsilon_t$.
+penaliza la complejidad mediante criterios de información como AIC y BIC.
+Esto permite conservar una estructura parsimoniosa para la media y evita
+atribuir a la varianza patrones que en realidad provengan de dependencia
+serial en los rendimientos. Una vez filtrada esa dinámica, analizamos las
+innovaciones $\epsilon_t$ para determinar si todavía existe
+heterocedasticidad condicional que justifique un modelo ARCH/GARCH.
 
 ```{r residuos_media, fig.width=9, fig.height=4}
 residuos_media <- residuals(modelo_media)
@@ -648,7 +684,12 @@ resultado_arch <- data.frame(
   )
 )
 
-resultado_arch
+knitr::kable(
+  resultado_arch,
+  digits = 4,
+  caption = "Prueba ARCH-LM sobre las innovaciones de la media",
+  align = "c"
+)
 ```
 
 El p-valor obtenido es `r format.pval(arch_pre$p.value, digits = 4)`. Por
@@ -674,7 +715,11 @@ modelos_candidatos <- data.frame(
   stringsAsFactors = FALSE
 )
 
-modelos_candidatos
+knitr::kable(
+  modelos_candidatos,
+  caption = "Modelos ARCH/GARCH candidatos",
+  align = "c"
+)
 ```
 
 ```{r funciones_garch}
@@ -821,7 +866,17 @@ for (nombre in names(fit)) {
   )
 }
 
-tabla_modelos
+tabla_modelos_presentacion <- tabla_modelos[, c(
+  "Modelo", "Convergencia", "logLik", "AIC", "BIC",
+  "alpha_sum", "beta_sum", "Persistencia", "p_max_varianza"
+)]
+
+knitr::kable(
+  tabla_modelos_presentacion,
+  digits = 4,
+  caption = "Comparación de modelos ARCH/GARCH",
+  align = "c"
+)
 ```
 
 Para seleccionar el modelo primero revisamos que la estimación converja,
@@ -870,7 +925,6 @@ fila_elegida <- modelos_candidatos[
 p_garch <- fila_elegida$p
 q_garch <- fila_elegida$q
 
-modelo_garch_elegido
 ```
 
 El modelo seleccionado es **`r modelo_garch_elegido`**. Su persistencia
@@ -910,7 +964,17 @@ fit_final <- ugarchfit(
   solver = "hybrid"
 )
 
-coef(fit_final)
+coeficientes_finales <- data.frame(
+  Parametro = names(coef(fit_final)),
+  Estimacion = as.numeric(coef(fit_final))
+)
+
+knitr::kable(
+  coeficientes_finales,
+  digits = 6,
+  caption = paste0("Parámetros finales del modelo ", modelo_garch_elegido),
+  align = "c"
+)
 ```
 
 # Evaluación de modelos
@@ -989,7 +1053,12 @@ comparacion_octubre <- data.frame(
   GARCH = sigma_garch_oct
 )
 
-comparacion_octubre
+knitr::kable(
+  comparacion_octubre,
+  digits = 5,
+  caption = "Volatilidad observada y estimada del 5 al 30 de octubre de 2026",
+  align = "c"
+)
 ```
 
 La tabla anterior permite contrastar, para cada sesión, el movimiento
@@ -1037,7 +1106,12 @@ for (modelo in modelos) {
   )
 }
 
-tabla_metricas
+knitr::kable(
+  tabla_metricas,
+  digits = 5,
+  caption = "Evaluación fuera de muestra de los modelos de volatilidad",
+  align = "c"
+)
 ```
 
 ```{r grafica_octubre, fig.width=10, fig.height=5}
@@ -1110,7 +1184,12 @@ errores_alta <- data.frame(
   )
 )
 
-errores_alta
+knitr::kable(
+  errores_alta,
+  digits = 5,
+  caption = "Error durante los días de mayor volatilidad",
+  align = "c"
+)
 
 modelo_alta <- errores_alta$Modelo[
   which.min(errores_alta$MAE_alta)
@@ -1158,10 +1237,25 @@ if (pos_shock < nrow(comparacion_octubre)) {
   modelo_reaccion <- NA
 }
 
-reaccion
+knitr::kable(
+  reaccion,
+  digits = 5,
+  caption = "Reacción de cada modelo después del mayor choque de octubre",
+  align = "c"
+)
 ```
 
 `r ifelse(is.na(modelo_reaccion), "El mayor choque ocurre en la última sesión del periodo y por eso no es posible observar su efecto en una sesión posterior dentro de la muestra.", paste0("El modelo que presenta el mayor ajuste inmediato después del choque es ", modelo_reaccion, ". Una reacción rápida permite reconocer antes un aumento en el riesgo, aunque también puede generar estimaciones más variables si el movimiento fue solamente transitorio."))`
+
+En particular, la comparación permite distinguir la respuesta del EWMA
+frente al promedio móvil seleccionado: después del mayor choque, el
+cambio relativo de EWMA es de
+**`r round(100 * reaccion$Cambio_relativo[reaccion$Modelo == "EWMA"], 2)`%**,
+mientras que el del promedio móvil es de
+**`r round(100 * reaccion$Cambio_relativo[reaccion$Modelo == "MA"], 2)`%**.
+Así, la diferencia de reacción entre ambos modelos no se interpreta solo
+por su construcción teórica, sino también por el comportamiento observado
+fuera de muestra.
 
 ## ¿Qué modelo presenta mayor estabilidad en sus estimaciones?
 
@@ -1174,7 +1268,6 @@ modelo_estable <- tabla_metricas$Modelo[
   which.min(tabla_metricas$Estabilidad)
 ]
 
-modelo_estable
 ```
 
 El modelo más estable durante octubre es
@@ -1198,7 +1291,12 @@ tabla_sesgo$Comportamiento <- ifelse(
   )
 )
 
-tabla_sesgo
+knitr::kable(
+  tabla_sesgo,
+  digits = 5,
+  caption = "Sesgo promedio de las estimaciones de volatilidad",
+  align = "c"
+)
 ```
 
 La tabla muestra que el sesgo no es igual entre los modelos. Una
@@ -1223,7 +1321,6 @@ modelo_decision <- tabla_decision$Modelo[
   which.min(tabla_decision$Rango_promedio)
 ]
 
-modelo_decision
 ```
 
 En esta cuarta entrega comparamos diferentes modelos para estimar la
