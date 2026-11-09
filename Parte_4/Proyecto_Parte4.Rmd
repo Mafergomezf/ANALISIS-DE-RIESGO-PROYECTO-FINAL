@@ -168,7 +168,9 @@ knitr::kable(
 El promedio móvil estima la varianza utilizando los últimos $m$
 rendimientos al cuadrado:
 
-$\hat\sigma_t^2(m)=\frac{1}{m}\sum_{i=1}^{m}r_{t-i}^2$
+$$
+\hat\sigma_t^2(m)=\frac{1}{m}\sum_{i=1}^{m}r_{t-i}^2
+$$
 
 La elección de $m$ es importante porque una ventana pequeña reacciona
 rápidamente a los movimientos recientes, pero también puede ser más
