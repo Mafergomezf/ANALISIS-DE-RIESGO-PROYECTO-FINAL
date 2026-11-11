@@ -79,7 +79,7 @@ entre el 5 y el 30 de octubre de 2026.
 
 ```{r datos}
 clave <- "ALSEA.MX"
-getSymbols(clave, from = "2021-01-01", to = "2026-10-31")
+invisible(getSymbols(clave, from = "2021-01-01", to = "2026-10-31"))
 
 precio <- Ad(get(clave))
 names(precio) <- "Precio"
@@ -123,12 +123,14 @@ knitr::kable(
 )
 ```
 
-Dentro del periodo de estimación hacemos además una división 70/30. El
-primer 70% se utiliza para seleccionar las estructuras y parámetros y el
-30% restante funciona como una validación previa. Después de seleccionar
-cada modelo, sus parámetros finales se estiman con toda la información
-disponible hasta el 30 de septiembre. Octubre no participa en ninguna
-selección ni estimación de parámetros.
+Siguiendo la estructura trabajada en clase, dentro del periodo de
+estimación hacemos una división 70/30. El primer 70% se utiliza como
+muestra de entrenamiento y el 30% restante como muestra de prueba para
+comparar el desempeño de las especificaciones. Una vez elegida la
+estructura de cada modelo, utilizamos toda la información disponible
+hasta el 30 de septiembre para obtener la estimación final que se evalúa
+en octubre. De esta manera, octubre no participa en la selección de los
+modelos ni de sus parámetros.
 
 ```{r corte}
 Tn <- NROW(rendimientos_estimacion)
@@ -201,7 +203,7 @@ perdidas_varianza <- function(real, estimada) {
   data.frame(
     RMSE = sqrt(mean((real - estimada)^2)),
     MAE = mean(abs(real - estimada)),
-    QLIKE = mean(real / estimada - log(real / estimada) - 1)
+    QLIKE = mean(estimada / real - log(estimada / real) - 1)
   )
 }
 ```
@@ -336,7 +338,7 @@ ewma_loglik <- function(r, lambda) {
 ```{r seleccion_ewma}
 opt_lambda_train <- optimize(
   function(lambda) ewma_loglik(r_train, lambda),
-  interval = c(0.80, 0.999),
+  interval = c(0.001, 0.9999),
   maximum = TRUE
 )
 
@@ -344,7 +346,7 @@ lambda_train <- opt_lambda_train$maximum
 
 opt_lambda_full <- optimize(
   function(lambda) ewma_loglik(r_estimacion, lambda),
-  interval = c(0.80, 0.999),
+  interval = c(0.001, 0.9999),
   maximum = TRUE
 )
 
@@ -475,7 +477,7 @@ escala_train <- escala_ddewma(r_train)
 
 opt_alpha_train <- optimize(
   function(alpha) ddewma_sse(r_train, alpha, escala_train),
-  interval = c(0.001, 0.999)
+  interval = c(0.001, 0.9999)
 )
 
 alpha_train <- opt_alpha_train$minimum
@@ -484,7 +486,7 @@ escala_full <- escala_ddewma(r_estimacion)
 
 opt_alpha_full <- optimize(
   function(alpha) ddewma_sse(r_estimacion, alpha, escala_full),
-  interval = c(0.001, 0.999)
+  interval = c(0.001, 0.9999)
 )
 
 alpha_optimo <- opt_alpha_full$minimum
@@ -601,13 +603,15 @@ knitr::kable(
 
 El modelo seleccionado para la ecuación de la media es
 **ARMA(`r p_media`,`r q_media`)**. La selección se realiza con
-`auto.arima`, que compara distintas especificaciones estacionarias y
-penaliza la complejidad mediante criterios de información como AIC y BIC.
-Esto permite conservar una estructura parsimoniosa para la media y evita
-atribuir a la varianza patrones que en realidad provengan de dependencia
-serial en los rendimientos. Una vez filtrada esa dinámica, analizamos las
-innovaciones $\epsilon_t$ para determinar si todavía existe
-heterocedasticidad condicional que justifique un modelo ARCH/GARCH.
+`auto.arima`, de la misma forma que en el notebook de clase, comparando
+distintas especificaciones estacionarias para elegir una estructura
+parsimoniosa de la media. En la tabla reportamos además el AIC y BIC del
+modelo seleccionado como medidas de referencia de su ajuste. Al modelar
+primero la media evitamos atribuir a la varianza patrones que en realidad
+provengan de dependencia serial en los rendimientos. Una vez filtrada
+esa dinámica, analizamos las innovaciones $\epsilon_t$ para determinar
+si todavía existe heterocedasticidad condicional que justifique un
+modelo ARCH/GARCH.
 
 ```{r residuos_media, fig.width=9, fig.height=4}
 residuos_media <- residuals(modelo_media)
@@ -1021,7 +1025,7 @@ sigma_ddewma_all <- ddewma_vol(
   escala_full
 )
 
-# GARCH: pronósticos rolling de un paso con parámetros fijos
+# ARCH/GARCH seleccionado: pronósticos rolling de un paso con parámetros fijos
 forecast_garch <- ugarchforecast(
   fit_final,
   n.ahead = 1,
@@ -1051,15 +1055,17 @@ comparacion_octubre <- data.frame(
   Volatilidad_realizada = abs(r_all[indices_oct]),
   MA = sigma_ma_all[indices_oct],
   EWMA = sigma_ewma_all[indices_oct],
-  DDEWMA = sigma_ddewma_all[indices_oct],
-  GARCH = sigma_garch_oct
+  DDEWMA = sigma_ddewma_all[indices_oct]
 )
+
+comparacion_octubre[[modelo_garch_elegido]] <- sigma_garch_oct
 
 knitr::kable(
   comparacion_octubre,
   digits = 5,
   caption = "Volatilidad observada y estimada del 5 al 30 de octubre de 2026",
-  align = "c"
+  align = "c",
+  row.names = FALSE
 )
 ```
 
@@ -1089,7 +1095,7 @@ metricas_modelo <- function(real, estimada) {
   )
 }
 
-modelos <- c("MA", "EWMA", "DDEWMA", "GARCH")
+modelos <- c("MA", "EWMA", "DDEWMA", modelo_garch_elegido)
 
 tabla_metricas <- data.frame()
 
@@ -1112,7 +1118,8 @@ knitr::kable(
   tabla_metricas,
   digits = 5,
   caption = "Evaluación fuera de muestra de los modelos de volatilidad",
-  align = "c"
+  align = "c",
+  row.names = FALSE
 )
 ```
 
@@ -1134,12 +1141,12 @@ lines(comparacion_octubre$Fecha, comparacion_octubre$EWMA,
       col = "darkred", lwd = 2)
 lines(comparacion_octubre$Fecha, comparacion_octubre$DDEWMA,
       col = "darkgreen", lwd = 2)
-lines(comparacion_octubre$Fecha, comparacion_octubre$GARCH,
+lines(comparacion_octubre$Fecha, comparacion_octubre[[modelo_garch_elegido]],
       col = "purple", lwd = 2)
 
 legend(
   "topright",
-  legend = c("Realizada |r|", "MA", "EWMA", "DDEWMA", "GARCH"),
+  legend = c("Realizada |r|", "MA", "EWMA", "DDEWMA", modelo_garch_elegido),
   col = c("gray70", "darkblue", "darkred", "darkgreen", "purple"),
   lty = c(1, 1, 1, 1, 1),
   lwd = c(3, 2, 2, 2, 2),
@@ -1175,7 +1182,7 @@ alta <- comparacion_octubre$Volatilidad_realizada >= umbral_alto
 
 errores_alta <- data.frame(
   Modelo = modelos,
-  MAE_alta = sapply(
+  MAE_alta = unname(sapply(
     modelos,
     function(modelo) {
       mean(abs(
@@ -1183,14 +1190,15 @@ errores_alta <- data.frame(
         comparacion_octubre$Volatilidad_realizada[alta]
       ))
     }
-  )
+  ))
 )
 
 knitr::kable(
   errores_alta,
   digits = 5,
   caption = "Error durante los días de mayor volatilidad",
-  align = "c"
+  align = "c",
+  row.names = FALSE
 )
 
 modelo_alta <- errores_alta$Modelo[
@@ -1219,8 +1227,8 @@ pos_shock <- which.max(comparacion_octubre$Volatilidad_realizada)
 if (pos_shock < nrow(comparacion_octubre)) {
   reaccion <- data.frame(
     Modelo = modelos,
-    Antes = sapply(modelos, function(m) comparacion_octubre[[m]][pos_shock]),
-    Despues = sapply(modelos, function(m) comparacion_octubre[[m]][pos_shock + 1])
+    Antes = unname(sapply(modelos, function(m) comparacion_octubre[[m]][pos_shock])),
+    Despues = unname(sapply(modelos, function(m) comparacion_octubre[[m]][pos_shock + 1]))
   )
   
   reaccion$Cambio_relativo <-
@@ -1243,7 +1251,8 @@ knitr::kable(
   reaccion,
   digits = 5,
   caption = "Reacción de cada modelo después del mayor choque de octubre",
-  align = "c"
+  align = "c",
+  row.names = FALSE
 )
 ```
 
@@ -1297,7 +1306,8 @@ knitr::kable(
   tabla_sesgo,
   digits = 5,
   caption = "Sesgo promedio de las estimaciones de volatilidad",
-  align = "c"
+  align = "c",
+  row.names = FALSE
 )
 ```
 
