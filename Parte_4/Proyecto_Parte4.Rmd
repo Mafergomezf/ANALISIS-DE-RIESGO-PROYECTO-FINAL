@@ -253,7 +253,7 @@ knitr::kable(
 ```
 
 Seleccionamos **M`r m_optimo`** porque presenta el mejor rango promedio
-entre las tres medidas de error. De esta manera, la elección no depende
+entre las tres medidas de error. Asignamos igual importancia a RMSE, MAE y QLIKE para equilibrar errores grandes, errores absolutos y ajuste relativo de varianza. Este criterio de rangos es una regla de decisión para Alsea, no una regla universal: la ventana seleccionada depende de la pérdida que se priorice para administrar riesgo. De esta manera, la elección no depende
 de una sola observación ni únicamente de qué curva se ve más suave, sino
 de su capacidad para anticipar la varianza en datos que no participaron
 en el cálculo de cada pronóstico.
@@ -376,8 +376,7 @@ knitr::kable(
 ```
 
 El valor final estimado es $\hat\lambda=$ `r round(lambda_optimo, 4)`.
-Lo seleccionamos porque maximiza la verosimilitud con los datos de Alsea,
-en lugar de utilizar automáticamente el valor estándar de 0.94. Su vida
+Lo seleccionamos porque maximiza la verosimilitud normal con los datos de Alsea hasta septiembre, en lugar de utilizar automáticamente 0.94. El resultado del primer 70% permite observar la sensibilidad del parámetro a la muestra; el valor final se reestima con toda la información hasta septiembre. Octubre no participa en la optimización ni en la selección de lambda. Su vida
 media es de aproximadamente `r round(log(0.5) / log(lambda_optimo), 1)`
 sesiones, lo que indica cuánto tarda en reducirse a la mitad el peso de
 un choque en la estimación de volatilidad.
@@ -510,7 +509,7 @@ knitr::kable(
 )
 ```
 
-El valor final de $\alpha$ es $\hat\alpha=$ `r round(alpha_optimo, 4)`. A diferencia
+El valor final de $\alpha$ es $\hat\alpha=$ `r round(alpha_optimo, 4)`. Lo obtenemos minimizando los errores cuadrados entre la señal transformada $z_t$ y el pronóstico obtenido con información rezagada. El valor del primer 70% documenta el entrenamiento; para el pronóstico final lo reestimamos con la información hasta septiembre, sin utilizar octubre. A diferencia
 de $\lambda$ en EWMA, un alpha más grande significa mayor peso sobre la
 observación reciente. Por eso, para comparar directamente ambos modelos
 es útil observar $\alpha$ frente a $1-\lambda$. En Alsea, el peso de la
@@ -605,8 +604,7 @@ El modelo seleccionado para la ecuación de la media es
 **ARMA(`r p_media`,`r q_media`)**. La selección se realiza con
 `auto.arima`, de la misma forma que en el notebook de clase, comparando
 distintas especificaciones estacionarias para elegir una estructura
-parsimoniosa de la media. En la tabla reportamos además el AIC y BIC del
-modelo seleccionado como medidas de referencia de su ajuste. Al modelar
+parsimoniosa de la media. En la tabla reportamos además el AIC y BIC del modelo seleccionado como medidas de referencia de su ajuste. La restricción $d=0$ y `stationary = TRUE` se aplican porque modelamos rendimientos, no niveles de precios. El orden se obtiene mediante el procedimiento automático y su criterio de información, no por inspección visual. Al modelar
 primero la media evitamos atribuir a la varianza patrones que en realidad
 provengan de dependencia serial en los rendimientos. Una vez filtrada
 esa dinámica, analizamos las innovaciones $\epsilon_t$ para determinar
@@ -933,7 +931,7 @@ q_garch <- fila_elegida$q
 
 ```
 
-El modelo seleccionado es **`r modelo_garch_elegido`**. Su persistencia
+El modelo seleccionado es **`r modelo_garch_elegido`**. Priorizamos convergencia, persistencia inferior a uno y significancia de los parámetros de varianza; entre candidatos admisibles, minimizamos BIC para favorecer la parsimonia. Si ningún modelo satisface todos los filtros, se aplica la regla alternativa descrita sin atribuirle propiedades que no verificó. Su persistencia
 es de `r round(tabla_modelos$Persistencia[tabla_modelos$Modelo == modelo_garch_elegido], 4)` y el mayor p-valor entre sus coeficientes ARCH/GARCH es `r round(tabla_modelos$p_max_varianza[tabla_modelos$Modelo == modelo_garch_elegido], 4)`. La persistencia nos permite interpretar qué tan rápido desaparece el efecto de un choque. Una persistencia más cercana a uno implica que la volatilidad tarda más en regresar a su nivel de largo plazo.
 
 ### Reestimación del modelo elegido hasta septiembre de 2026
@@ -997,8 +995,7 @@ en la consigna:
 
 $$\sigma_{t,realizada}=\sqrt{r_t^2}=|r_t|$$
 
-Esta medida es muy variable porque utiliza una sola observación por día,
-pero permite comparar todos los modelos con el mismo valor observado.
+Esta medida es muy variable porque utiliza una sola observación por día, pero permite comparar todos los modelos con el mismo valor observado. No es la volatilidad condicional verdadera, que no puede observarse directamente: RMSE y MAE miden la distancia frente a este proxy. Los pronósticos son de un paso; el rendimiento de la sesión $t$ puede actualizar el pronóstico de $t+1$, pero no el de su propia sesión.
 
 ## Pronósticos diarios de octubre
 
@@ -1212,7 +1209,7 @@ perspectiva financiera porque los errores durante periodos tranquilos y
 los errores durante periodos de estrés no tienen el mismo costo. Un
 modelo que subestima el riesgo precisamente cuando ocurren movimientos
 grandes puede producir límites de exposición o medidas de riesgo
-demasiado optimistas.
+demasiado optimistas. Esta identificación de días extremos es *ex post*, porque se basa en $|r_t|$ observado: permite evaluar episodios de estrés, no predecir de antemano qué días serán extremos.
 
 ## ¿Qué modelo reacciona más rápidamente ante cambios en el mercado?
 
@@ -1256,7 +1253,7 @@ knitr::kable(
 )
 ```
 
-`r ifelse(is.na(modelo_reaccion), "El mayor choque ocurre en la última sesión del periodo y por eso no es posible observar su efecto en una sesión posterior dentro de la muestra.", paste0("El modelo que presenta el mayor ajuste inmediato después del choque es ", modelo_reaccion, ". Una reacción rápida permite reconocer antes un aumento en el riesgo, aunque también puede generar estimaciones más variables si el movimiento fue solamente transitorio."))`
+`r ifelse(is.na(modelo_reaccion), "El mayor choque ocurre en la última sesión del periodo y por eso no es posible observar su efecto en una sesión posterior dentro de la muestra.", paste0("El modelo que presenta el mayor ajuste inmediato después del choque es ", modelo_reaccion, ". Una reacción rápida incorpora un choque ya observado al pronóstico de la siguiente sesión, pero puede generar estimaciones más variables si fue transitorio. Un cambio relativo mayor no garantiza menor error predictivo."))`
 
 En particular, la comparación permite distinguir la respuesta del EWMA
 frente al promedio móvil seleccionado: después del mayor choque, el
@@ -1311,10 +1308,7 @@ knitr::kable(
 )
 ```
 
-La tabla muestra que el sesgo no es igual entre los modelos. Una
-sobreestimación implica una postura más conservadora porque asigna un
-nivel de riesgo superior al observado, aunque también puede llevar a
-reservar más capital del necesario. Una subestimación puede parecer más
+La tabla muestra que el sesgo no es igual entre los modelos. Una sobreestimación frente al proxy $|r_t|$ puede indicar una postura más conservadora, pero no demuestra por sí sola exceso de capital, porque volatilidad condicional y rendimiento absoluto de una sesión no son magnitudes idénticas. Una subestimación puede parecer más
 eficiente durante periodos tranquilos, pero representa un riesgo mayor
 si el modelo deja de reconocer movimientos importantes del mercado.
 
