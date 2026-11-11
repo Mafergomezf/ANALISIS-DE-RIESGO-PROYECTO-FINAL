@@ -1295,7 +1295,7 @@ modelo_estable <- tabla_metricas$Modelo[
 
 El modelo más estable durante octubre es
 **`r modelo_estable`**, con un cambio absoluto promedio entre
-sesiones de **`r round(min(tabla_metricas$Estabilidad), 5)`**. Esta estabilidad puede ser útil para la toma de
+sesiones de **`r formatC(min(tabla_metricas$Estabilidad), format = 'f', digits = 5)`**. Esta estabilidad puede ser útil para la toma de
 decisiones porque evita que las medidas de riesgo cambien demasiado por
 una sola observación. Sin embargo, demasiada estabilidad también puede
 convertirse en rezago si el mercado entra en un nuevo régimen de
