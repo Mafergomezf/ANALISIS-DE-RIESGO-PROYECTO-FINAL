@@ -18,10 +18,15 @@ editor_options:
 
 # Introducción
 
-En esta cuarta entrega analizamos la volatilidad de Alsea mediante
-distintos modelos de varianza. El propósito es estudiar cómo cambia el
-riesgo a través del tiempo y comparar qué tan bien diferentes métodos
-pueden estimar y anticipar esos cambios. Para esto utilizamos los
+En la tercera entrega analizamos los rendimientos de Alsea y
+utilizamos el movimiento browniano geométrico para simular posibles
+trayectorias de su precio. Ese análisis nos permitió reconocer una
+limitación importante: la volatilidad no necesariamente permanece
+constante y los movimientos extremos pueden ser más frecuentes que
+los previstos por una distribución normal. En esta cuarta entrega
+continuamos ese trabajo mediante modelos de varianza que permiten
+estudiar cómo cambia el riesgo a través del tiempo y comparar qué
+tan bien distintas metodologías anticipan esos movimientos. Para esto utilizamos los
 rendimientos logarítmicos diarios de la acción y trabajamos con
 información comprendida entre enero de 2021 y septiembre de 2026.
 
@@ -418,7 +423,9 @@ información dependa del peso $1-\lambda$, mientras que en el promedio
 móvil la reacción depende directamente del tamaño de la ventana elegida.
 Esta diferencia se contrasta nuevamente en el periodo fuera de muestra,
 donde medimos cuánto cambia cada estimación después del mayor choque de
-octubre.
+octubre. Por ello, no consideramos que una trayectoria más suave sea
+necesariamente mejor: si el riesgo aumenta repentinamente, reaccionar
+con retraso puede llevar a subestimar la exposición de la acción.
 
 ## Data Driven EWMA
 
@@ -552,7 +559,9 @@ los movimientos extremos entran mediante su valor absoluto y no mediante
 el rendimiento al cuadrado. Por esta razón, puede reaccionar de manera
 diferente ante días con movimientos muy grandes. La comparación fuera
 de muestra nos permitirá evaluar si esa diferencia mejora la estimación
-de riesgo para Alsea.
+de riesgo para Alsea. Es importante distinguir entre suavizar los
+movimientos diarios y anticipar episodios de estrés: una menor
+variabilidad del pronóstico no significa automáticamente menor error.
 
 ## Modelo ARCH/GARCH
 
@@ -932,7 +941,7 @@ q_garch <- fila_elegida$q
 ```
 
 El modelo seleccionado es **`r modelo_garch_elegido`**. Priorizamos convergencia, persistencia inferior a uno y significancia de los parámetros de varianza; entre candidatos admisibles, minimizamos BIC para favorecer la parsimonia. Si ningún modelo satisface todos los filtros, se aplica la regla alternativa descrita sin atribuirle propiedades que no verificó. Su persistencia
-es de `r round(tabla_modelos$Persistencia[tabla_modelos$Modelo == modelo_garch_elegido], 4)` y el mayor p-valor entre sus coeficientes ARCH/GARCH es `r round(tabla_modelos$p_max_varianza[tabla_modelos$Modelo == modelo_garch_elegido], 4)`. La persistencia nos permite interpretar qué tan rápido desaparece el efecto de un choque. Una persistencia más cercana a uno implica que la volatilidad tarda más en regresar a su nivel de largo plazo.
+es de `r round(tabla_modelos$Persistencia[tabla_modelos$Modelo == modelo_garch_elegido], 4)` y el mayor p-valor entre sus coeficientes ARCH/GARCH es `r round(tabla_modelos$p_max_varianza[tabla_modelos$Modelo == modelo_garch_elegido], 4)`. La persistencia nos permite interpretar qué tan rápido desaparece el efecto de un choque. Una persistencia más cercana a uno implica que la volatilidad tarda más en regresar a su nivel de largo plazo. Financiera y operativamente, esta memoria del riesgo importa porque un aumento temporal de incertidumbre puede afectar durante varias sesiones las estimaciones utilizadas para decidir posiciones y límites de exposición.
 
 ### Reestimación del modelo elegido hasta septiembre de 2026
 
@@ -1152,9 +1161,11 @@ legend(
 ```
 
 De acuerdo con el RMSE, el modelo con menor error fuera de muestra es
-**`r tabla_metricas$Modelo[which.min(tabla_metricas$RMSE)]`**, mientras
-que por MAE el mejor resultado corresponde a
-**`r tabla_metricas$Modelo[which.min(tabla_metricas$MAE)]`**. Estas
+**`r tabla_metricas$Modelo[which.min(tabla_metricas$RMSE)]`**, con un
+RMSE de **`r round(min(tabla_metricas$RMSE), 5)`** en unidades de
+volatilidad diaria. Por MAE, el mejor resultado corresponde a
+**`r tabla_metricas$Modelo[which.min(tabla_metricas$MAE)]`**, con un
+MAE de **`r round(min(tabla_metricas$MAE), 5)`**. Estas
 medidas no necesariamente eligen al mismo modelo porque el RMSE penaliza
 más los errores grandes, mientras que el MAE trata de forma más uniforme
 las diferencias de cada día.
@@ -1204,7 +1215,11 @@ modelo_alta <- errores_alta$Modelo[
 ```
 
 El modelo que se acerca más a la volatilidad realizada durante los días
-más extremos es **`r modelo_alta`**. Esto es relevante desde una
+más extremos es **`r modelo_alta`**, con un error absoluto promedio de
+**`r round(min(errores_alta$MAE_alta), 5)`**. Este resultado se obtiene
+considerando únicamente las sesiones que superan el percentil 75 de
+$|r_t|$ y no necesariamente coincide con el mejor modelo del mes
+completo. Esto es relevante desde una
 perspectiva financiera porque los errores durante periodos tranquilos y
 los errores durante periodos de estrés no tienen el mismo costo. Un
 modelo que subestima el riesgo precisamente cuando ocurren movimientos
@@ -1279,7 +1294,8 @@ modelo_estable <- tabla_metricas$Modelo[
 ```
 
 El modelo más estable durante octubre es
-**`r modelo_estable`**. Esta estabilidad puede ser útil para la toma de
+**`r modelo_estable`**, con un cambio absoluto promedio entre
+sesiones de **`r round(min(tabla_metricas$Estabilidad), 5)`**. Esta estabilidad puede ser útil para la toma de
 decisiones porque evita que las medidas de riesgo cambien demasiado por
 una sola observación. Sin embargo, demasiada estabilidad también puede
 convertirse en rezago si el mercado entra en un nuevo régimen de
@@ -1329,9 +1345,14 @@ modelo_decision <- tabla_decision$Modelo[
 
 ```
 
-En esta cuarta entrega comparamos diferentes modelos para estimar la
-volatilidad de Alsea utilizando información de 2021 a septiembre de
-2026 y dejando octubre como un periodo completamente fuera de muestra.
+En la entrega anterior observamos que el GBM es útil para representar
+precios futuros, pero mantener una volatilidad constante limita su
+capacidad para describir cambios de riesgo. En esta cuarta entrega
+comparamos modelos de volatilidad de Alsea utilizando información de
+2021 a septiembre de 2026 y dejando las sesiones evaluadas de octubre
+como un periodo fuera de muestra. Así, pasamos de reconocer las
+limitaciones del supuesto de volatilidad constante a estimar cómo
+cambia el riesgo diario.
 Los resultados muestran que la elección del modelo modifica tanto la
 velocidad con la que se reconoce un cambio en el riesgo como la
 estabilidad de las estimaciones.
