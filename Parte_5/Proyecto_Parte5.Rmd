@@ -18,6 +18,19 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Presentación homogénea: sin índices automáticos en data.frames
+# y con cantidades en formato decimal (sin notación científica).
+tabla_reporte <- function(x, ...) {
+  if (is.data.frame(x)) {
+    rownames(x) <- NULL
+    knitr::kable(x, row.names = FALSE,
+                 format.args = list(big.mark = ",", scientific = FALSE), ...)
+  } else {
+    knitr::kable(x, row.names = TRUE,
+                 format.args = list(big.mark = ",", scientific = FALSE), ...)
+  }
+}
 ```
 
 # Introducción
@@ -113,8 +126,6 @@ stopifnot(NROW(precios) > 252, NROW(precios) == NROW(cierres),
 rendimientos_activos <- na.omit(diff(log(precios)))
 colnames(rendimientos_activos) <- clave
 
-head(precios)
-tail(precios)
 cat("Primera sesión común:", as.character(first(index(precios))), "\n")
 cat("Última sesión común:", as.character(last(index(precios))), "\n")
 ```
@@ -161,7 +172,7 @@ tabla_portafolio <- data.frame(
   row.names = NULL
 )
 
-knitr::kable(tabla_portafolio,
+tabla_reporte(tabla_portafolio,
              caption = paste("Composición inicial al", fecha_cierre))
 cat("Valor inicial del portafolio (MXN):",
     format(V0, big.mark = ",", scientific = FALSE), "\n")
@@ -198,7 +209,7 @@ resumen_rendimientos <- data.frame(
   Volatilidad_diaria = round(sd(rendimientos_portafolio), 6)
 )
 
-knitr::kable(resumen_rendimientos,
+tabla_reporte(resumen_rendimientos,
              caption = "Resumen de rendimientos diarios del portafolio")
 
 plot(rendimientos_portafolio,
@@ -278,7 +289,7 @@ tabla_hist <- var_historico
 tabla_hist$Confianza <- paste0(100 * tabla_hist$Confianza, "%")
 tabla_hist$VaR_MXN <- round(tabla_hist$VaR_MXN, 2)
 tabla_hist$VaR_pct <- round(tabla_hist$VaR_pct, 3)
-knitr::kable(tabla_hist,
+tabla_reporte(tabla_hist,
              caption = "VaR por simulación histórica del portafolio")
 ```
 
@@ -348,8 +359,8 @@ tabla_vol <- data.frame(
   Activo = clave,
   Volatilidad_diaria_pct = round(100 * sigma_individual, 3)
 )
-knitr::kable(tabla_vol, caption = "Volatilidad diaria: últimos seis meses")
-knitr::kable(round(10000 * Sigma, 4),
+tabla_reporte(tabla_vol, caption = "Volatilidad diaria: últimos seis meses")
+tabla_reporte(round(10000 * Sigma, 4),
              caption = "Matriz de covarianzas diarias, en puntos porcentuales al cuadrado")
 ```
 
@@ -379,7 +390,7 @@ tabla_par <- var_parametrico
 tabla_par$Confianza <- paste0(100 * tabla_par$Confianza, "%")
 tabla_par$VaR_MXN <- round(tabla_par$VaR_MXN, 2)
 tabla_par$VaR_pct <- round(tabla_par$VaR_pct, 3)
-knitr::kable(tabla_par,
+tabla_reporte(tabla_par,
              caption = "VaR paramétrico normal del portafolio")
 ```
 
@@ -406,7 +417,7 @@ comparacion_var <- merge(
 )
 comparacion_var$Diferencia_MXN <- comparacion_var$VaR_MXN_Historico -
   comparacion_var$VaR_MXN_Normal
-knitr::kable(transform(
+tabla_reporte(transform(
   comparacion_var,
   Confianza = paste0(100 * Confianza, "%"),
   VaR_MXN_Historico = round(VaR_MXN_Historico, 2),
@@ -509,7 +520,7 @@ resumen_bt <- do.call(rbind, lapply(confianzas, function(nc) {
   }))
 }))
 rownames(resumen_bt) <- NULL
-knitr::kable(transform(
+tabla_reporte(transform(
   resumen_bt,
   Confianza = paste0(100 * Confianza, "%"),
   Violaciones_esperadas = round(Violaciones_esperadas, 2),
@@ -546,10 +557,12 @@ ni evalúa, por sí sola, la magnitud de cada pérdida extrema.
 ```{r interpretacion-backtesting, results='asis'}
 for (nc in confianzas) {
   d <- resumen_bt[abs(resumen_bt$Confianza - nc) < 1e-9, ]
+  n_h <- d$Violaciones_observadas[d$Metodo == "Historico"]
+  n_n <- d$Violaciones_observadas[d$Metodo == "Normal"]
+  texto_n <- function(n) paste(n, if (n == 1L) "violación" else "violaciones")
   cat(sprintf(
-    "Al **%s%%**, el modelo histórico presenta **%d** violaciones y el normal **%d**, frente a **%.2f** esperadas. ",
-    100 * nc, d$Violaciones_observadas[d$Metodo == "Historico"],
-    d$Violaciones_observadas[d$Metodo == "Normal"],
+    "Al **%s%%**, el modelo histórico presenta **%s** y el normal **%s**, frente a **%.2f** esperadas. ",
+    format(100 * nc, trim = TRUE), texto_n(n_h), texto_n(n_n),
     d$Violaciones_esperadas[1]
   ))
   cat("La prueba de Kupiec ")
@@ -631,7 +644,7 @@ tabla_pesos <- data.frame(
   Monto_inicial_MXN = round(V0 * pesos_iniciales, 2),
   Monto_optimo_MXN = round(V0 * pesos_optimos, 2)
 )
-knitr::kable(tabla_pesos, caption = "Composición inicial y de mínimo VaR normal")
+tabla_reporte(tabla_pesos, caption = "Composición inicial y de mínimo VaR normal")
 ```
 
 ## Pesos óptimos y VaR mínimo
@@ -642,7 +655,7 @@ comparacion_opt <- data.frame(
   Volatilidad_diaria_pct = round(100 * c(sigma_portafolio, sigma_opt), 3),
   VaR_normal_99_MXN = round(c(var_normal_inicial, var_normal_opt), 2)
 )
-knitr::kable(comparacion_opt,
+tabla_reporte(comparacion_opt,
              caption = "VaR normal diario al 99%, antes y después de optimizar")
 ```
 
@@ -672,7 +685,7 @@ tabla_div <- data.frame(
   Mayor_peso_pct = round(100 * c(max(pesos_iniciales), max(pesos_optimos)), 2),
   VaR_historico_99_MXN = round(var_hist_comparado, 2)
 )
-knitr::kable(tabla_div,
+tabla_reporte(tabla_div,
              caption = "Diversificación y sensibilidad al riesgo histórico")
 ```
 
@@ -752,7 +765,7 @@ tabla_alsea <- data.frame(
   Monto_MXN = round(c(var_mc_alsea, es_mc_alsea), 2),
   Porcentaje_posicion = round(100 * c(var_mc_alsea, es_mc_alsea) / 100000, 3)
 )
-knitr::kable(tabla_alsea,
+tabla_reporte(tabla_alsea,
              caption = "Riesgo individual de ALSEA por Monte Carlo, un día")
 ```
 
@@ -781,8 +794,8 @@ for (h in horizontes) {
     abs(comparacion_var$Confianza - 0.99) < 1e-9, ]
   mayor <- if (x$Diferencia_MXN > 0) "histórico" else "paramétrico"
   cat(sprintf(
-    "A **%d días** y **99%%**, el VaR histórico es **$%s** y el normal **$%s**. El modelo **%s** estima el mayor límite, con una diferencia absoluta de **$%s**.\n\n",
-    h,
+    "A **%s** y **99%%**, el VaR histórico es **$%s** y el normal **$%s**. El modelo **%s** estima el mayor límite, con una diferencia absoluta de **$%s**.\n\n",
+    if (h == 1L) "1 día" else paste(h, "días"),
     format(round(x$VaR_MXN_Historico, 2), big.mark = ",", nsmall = 2),
     format(round(x$VaR_MXN_Normal, 2), big.mark = ",", nsmall = 2),
     mayor,
@@ -827,7 +840,7 @@ tabla_eventos <- data.frame(
   check.names = FALSE
 )
 colnames(tabla_eventos)[-(1:2)] <- clave
-knitr::kable(tabla_eventos,
+tabla_reporte(tabla_eventos,
              caption = "Cinco sesiones de mayor pérdida: contribuciones por emisora en MXN")
 ```
 
@@ -842,10 +855,42 @@ La mayor pérdida diaria conjunta de la muestra equivale a
 **`r format(round(perdida_peor, 2), big.mark = ",", nsmall = 2)` MXN**,
 correspondiente al **`r format(fecha_peor, "%d/%m/%Y")`**.
 En **`r n_hist_mayor` de `r nrow(comparacion_var)`**
-comparaciones, el VaR histórico es superior al normal. Este
-resultado permite describir cuál fue más conservador en nuestra
-muestra, pero no garantiza que lo siga siendo en otra etapa del
-mercado.
+comparaciones, el VaR histórico es superior al normal. Una explicación
+plausible de esta diferencia es el **distinto periodo de calibración**:
+el histórico incorpora caídas intensas de toda la muestra, mientras
+que el paramétrico estima su matriz de covarianzas con los seis meses
+previos al corte y después aplica una aproximación normal.
+Por lo tanto, la diferencia no debe interpretarse como una prueba
+aislada de que la distribución normal siempre subestima el riesgo.
+
+La jornada del **17 de marzo de 2020** coincide con el episodio de
+volatilidad asociado a la pandemia de COVID-19. La Bolsa Mexicana de
+Valores retrocedió cerca de 3.1%, mientras que fuentes periodísticas
+reportaron desplomes especialmente intensos en ALSEA y GAP.
+Esta noticia proporciona **contexto**, no una identificación causal
+del rendimiento de cada acción. Véase [La Jornada, 17 de marzo de
+2020](https://www.jornada.com.mx/noticia/2020/03/17/economia/peso-cierra-con-nuevo-minimo-historico-frente-al-dolar-2981).
+
+En nuestro ejercicio, en esa sesión ALSEA aportó una pérdida de
+**`r format(round(-aportaciones[which(as.Date(tabla_eventos$Fecha) == as.Date("2020-03-17")), "ALSEA.MX"], 2), big.mark = ",", nsmall = 2)` MXN**
+y GAP otra de
+**`r format(round(-aportaciones[which(as.Date(tabla_eventos$Fecha) == as.Date("2020-03-17")), "GAPB.MX"], 2), big.mark = ",", nsmall = 2)` MXN**.
+Las seis posiciones registraron contribuciones negativas; por ello la
+diversificación entre esas emisoras no evitó la pérdida conjunta.
+
+Otro episodio fue el **3 de junio de 2024**, cuando la cartera sufrió
+una pérdida histórica de
+**`r format(round(-pnl_eventos[which(as.Date(index(rendimientos_simples_activos)) == as.Date("2024-06-03"))], 2), big.mark = ",", nsmall = 2)` MXN**.
+Ese día el IPC mexicano cayó aproximadamente 6% tras los resultados
+electorales y las preocupaciones del mercado por la composición del
+Congreso; la coincidencia ayuda a interpretar la exposición a un
+choque de mercado nacional, sin afirmar que una sola noticia determinó
+todos los retornos.
+Fuente: [El Economista, 3 de junio de 2024](https://www.eleconomista.com.mx/mercados/Bolsas-caen-6-el-peor-dia-desde-marzo-del-2020-20240603-0200.html).
+
+Estos dos episodios ilustran **riesgo sistemático**: cuando varias
+emisoras caen a la vez, los beneficios habituales de diversificar
+pueden reducirse precisamente cuando más se necesitan.
 
 ## Subestimación del riesgo
 
@@ -875,7 +920,7 @@ severidad_bt <- do.call(rbind, lapply(c("Historico", "Normal"), function(m) {
     Exceso_maximo_MXN = if (any(exc > 0)) max(exc) else NA_real_
   )
 }))
-knitr::kable(transform(
+tabla_reporte(transform(
   severidad_bt,
   Exceso_medio_MXN = round(Exceso_medio_MXN, 2),
   Exceso_maximo_MXN = round(Exceso_maximo_MXN, 2)
