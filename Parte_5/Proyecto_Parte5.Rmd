@@ -865,9 +865,10 @@ La jornada del **17 de marzo de 2020** coincide con el episodio de
 volatilidad asociado a la pandemia de COVID-19. La Bolsa Mexicana de
 Valores retrocedió cerca de 3.1%, mientras que fuentes periodísticas
 reportaron desplomes especialmente intensos en ALSEA y GAP.
-Esta noticia proporciona **contexto**, no una identificación causal
-del rendimiento de cada acción. Véase [La Jornada, 17 de marzo de
-2020](https://www.jornada.com.mx/noticia/2020/03/17/economia/peso-cierra-con-nuevo-minimo-historico-frente-al-dolar-2981).
+De acuerdo con La Jornada (2020), la caída del mercado mexicano
+ocurrió en un contexto de preocupación por los efectos económicos
+de la pandemia. Esta información proporciona **contexto**, no una
+identificación causal del rendimiento de cada acción.
 
 En nuestro ejercicio, en esa sesión ALSEA aportó una pérdida de
 **`r format(round(-aportaciones[which(as.Date(tabla_eventos$Fecha) == as.Date("2020-03-17")), "ALSEA.MX"], 2), big.mark = ",", nsmall = 2)` MXN**
@@ -884,7 +885,8 @@ electorales y las preocupaciones del mercado por la composición del
 Congreso; la coincidencia ayuda a interpretar la exposición a un
 choque de mercado nacional, sin afirmar que una sola noticia determinó
 todos los retornos.
-Fuente: [El Economista, 3 de junio de 2024](https://www.eleconomista.com.mx/mercados/Bolsas-caen-6-el-peor-dia-desde-marzo-del-2020-20240603-0200.html).
+El Economista (2024) documenta la caída del índice bursátil en
+esa sesión, después de las elecciones.
 
 Estos dos episodios ilustran **riesgo sistemático**: cuando varias
 emisoras caen a la vez, los beneficios habituales de diversificar
@@ -970,7 +972,8 @@ histórico registró
 **`r resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Historico"]`**
 `r if (resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Historico"] == 1) "violación" else "violaciones"`
 y el paramétrico
-**`r resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Normal"]`**,
+**`r resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Normal"]`**
+`r if (resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Normal"] == 1) "violación" else "violaciones"`,
 frente a
 **`r round(nrow(bt99) * 0.01, 2)`** esperadas. La prueba de Kupiec
 `r if (all(resumen_bt$P_valor_Kupiec[resumen_bt$Confianza == 0.99] >= 0.05)) "no rechazó la cobertura nominal de ninguno de los dos modelos" else "detectó evidencia de cobertura insuficiente o excesiva en al menos uno de los modelos"`
@@ -988,7 +991,9 @@ al 99% pasó de
 a
 **`r format(round(var_normal_opt, 2), big.mark = ",", nsmall = 2)` MXN**,
 una disminución de
-**`r round(100 * (var_normal_inicial - var_normal_opt) / var_normal_inicial, 2)`%**.
+**`r round(100 * (var_normal_inicial - var_normal_opt) / var_normal_inicial, 2)`%**. Nuestro
+resultado corresponde al VaR paramétrico optimizado, por lo que
+también revisamos su efecto bajo la simulación histórica.
 Pero también observamos que la cartera quedó más concentrada,
 pues su número efectivo de activos pasó de
 **`r round(nefectivo[1], 2)`** a
@@ -1001,7 +1006,7 @@ unas cuantas empresas.
 Al revisar los días con pérdidas más grandes encontramos que
 los acontecimientos externos pueden afectar a varias acciones
 simultáneamente. El caso más claro fue el
-**`r format(fecha_peor, "%d de %B de %Y")`**,
+**`r format(fecha_peor, "%d/%m/%Y")`**,
 cuando la pérdida estimada del portafolio alcanzó
 **`r format(round(perdida_peor, 2), big.mark = ",", nsmall = 2)` MXN**.
 Al relacionar este resultado con la crisis de COVID-19 y
@@ -1043,3 +1048,19 @@ sean pequeñas. Así, esta parte del proyecto nos
 permitió pasar de observar la incertidumbre en
 Alsea a medirla y evaluar cómo administrarla en
 un portafolio.
+
+# Referencias
+
+**Datos y metodología**
+
+Yahoo Finance. (2026). *Precios históricos diarios ajustados y de cierre de ORBIA.MX, WALMEX.MX, GMEXICOB.MX, ALSEA.MX, GAPB.MX y BBAJIOO.MX* [Datos de mercado]. https://finance.yahoo.com/
+
+Ryan, J. A., y Ulrich, J. M. (s. f.). *quantmod: Quantitative Financial Modelling Framework* [Paquete de R]. CRAN. https://cran.r-project.org/package=quantmod
+
+**Eventos relevantes del mercado**
+
+La Jornada. (17 de marzo de 2020). *Peso cierra con nuevo mínimo histórico frente al dólar*. https://www.jornada.com.mx/noticia/2020/03/17/economia/peso-cierra-con-nuevo-minimo-historico-frente-al-dolar-2981
+
+La Jornada. (18 de marzo de 2020). *Toca el peso nuevo mínimo histórico; el dólar alcanzó $23.16, dice el BdeM*. https://www.jornada.com.mx/2020/03/18/economia/023n2eco
+
+El Economista. (3 de junio de 2024). *Bolsas caen 6%, el peor día desde marzo del 2020*. https://www.eleconomista.com.mx/mercados/Bolsas-caen-6-el-peor-dia-desde-marzo-del-2020-20240603-0200.html
