@@ -82,7 +82,7 @@ El código conserva la estructura de descarga mediante `getSymbols`,
 extracción del precio ajustado con `Ad` y cálculo de rendimientos que
 utilizamos previamente.
 
-```{r datos-portafolio, eval=TRUE}
+```{r datos-portafolio, eval=TRUE, results='asis'}
 library(quantmod)
 library(xts)
 
@@ -126,8 +126,8 @@ stopifnot(NROW(precios) > 252, NROW(precios) == NROW(cierres),
 rendimientos_activos <- na.omit(diff(log(precios)))
 colnames(rendimientos_activos) <- clave
 
-cat("Primera sesión común:", as.character(first(index(precios))), "\n")
-cat("Última sesión común:", as.character(last(index(precios))), "\n")
+cat("**Primera sesión común:**", as.character(first(index(precios))), "  \n")
+cat("**Última sesión común:**", as.character(last(index(precios))), "  \n")
 ```
 
 ## Inversión inicial y valor del portafolio
@@ -939,7 +939,7 @@ stopifnot(nrow(h1) == 1)
 En esta quinta parte del proyecto pasamos de analizar el riesgo de
 Alsea de manera individual a estudiar cómo se comporta un portafolio
 formado por seis empresas mexicanas. Con una inversión inicial de
-$100,000 MXN en cada acción, construimos una cartera de $600,000 MXN
+$100,000 MXN en cada una de las seis emisoras, construimos una cartera de $600,000 MXN
 y calculamos sus posibles pérdidas con dos metodologías. Lo primero
 que observamos es que el riesgo depende tanto del comportamiento
 de cada empresa como de la manera en que se mueven todas al mismo
