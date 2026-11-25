@@ -55,7 +55,7 @@ implicaciones para la toma de decisiones financieras.
 
 ## Selección de los seis activos y preparación de datos
 
-Partimos de los seis activos analizados durante el curso. Para mantener
+Partimos de las seis emisoras asignadas a los equipos del curso: Orbia,\nWalmart de México, Grupo México, Alsea, Grupo Aeroportuario del Pacífico\ny Banco del Bajío. Para mantener
 la consistencia con las entregas anteriores y con los ejercicios de clase,
 trabajamos con precios ajustados obtenidos mediante `quantmod`. Antes de
 calcular rendimientos alineamos las series por fecha y conservamos
@@ -66,13 +66,18 @@ El código conserva la estructura de descarga mediante `getSymbols`,
 extracción del precio ajustado con `Ad` y cálculo de rendimientos que
 utilizamos previamente.
 
-```{r datos-portafolio, eval=FALSE}
+```{r datos-portafolio, eval=TRUE}
 library(quantmod)
 library(xts)
 
-# Sustituir NA por los cinco tickers confirmados del curso.
-clave <- c("ALSEA.MX", NA_character_, NA_character_,
-           NA_character_, NA_character_, NA_character_)
+clave <- c(
+  "ORBIA.MX",
+  "WALMEX.MX",
+  "GMEXICOB.MX",
+  "ALSEA.MX",
+  "GAPB.MX",
+  "BBAJIOO.MX"
+)
 
 fecha_analisis <- as.Date("2026-10-30")
 fecha_inicio <- as.Date("2021-01-01")
@@ -111,7 +116,7 @@ permite mantener exactamente la asignación monetaria solicitada; por
 simplicidad, trabajamos con posiciones fraccionarias teóricas, sin
 comisiones ni costos de transacción.
 
-```{r valor-portafolio, eval=FALSE}
+```{r valor-portafolio, eval=TRUE}
 S0 <- as.numeric(last(precios))
 names(S0) <- clave
 
@@ -150,7 +155,7 @@ Calculamos el rendimiento simple diario a partir de los cambios en el
 valor agregado; además, conservamos los rendimientos logarítmicos de los
 activos para reutilizarlos en los modelos posteriores.
 
-```{r rendimientos-portafolio, eval=FALSE}
+```{r rendimientos-portafolio, eval=TRUE}
 valor_portafolio_hist <- xts(
   as.numeric(as.matrix(precios) %*% numero),
   order.by = index(precios)
