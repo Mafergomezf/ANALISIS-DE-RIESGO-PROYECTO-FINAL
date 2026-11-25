@@ -22,13 +22,159 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 # Introducción
 
+En las entregas anteriores analizamos los principales riesgos financieros
+asociados con Alsea, el comportamiento histórico de su acción y las
+características estadísticas de sus rendimientos. En la tercera parte
+utilizamos el movimiento browniano geométrico (GBM) para estudiar posibles
+trayectorias del precio, mientras que en la cuarta estimamos la volatilidad
+mediante MA, EWMA, DDEWMA y modelos ARCH/GARCH. Al comparar sus resultados
+fuera de muestra encontramos que una medida con menor error promedio no
+necesariamente responde mejor cuando aumentan los movimientos extremos.
+
+En esta quinta entrega ampliamos el análisis del riesgo de un activo
+individual a un portafolio de seis acciones. Nuestro objetivo es estimar
+las pérdidas potenciales mediante el Valor en Riesgo (VaR) con simulación
+histórica y con un enfoque paramétrico basado en normalidad, y contrastar
+ambas metodologías a distintos horizontes y niveles de confianza. También
+utilizamos backtesting para evaluar si sus estimaciones se corresponden
+con las pérdidas observadas y examinamos cómo cambia la exposición al
+riesgo al modificar los pesos del portafolio.
+
+Primero construimos un portafolio con una inversión de $100,000 MXN en
+cada uno de los seis activos y calculamos sus rendimientos. Después
+estimamos el VaR no paramétrico y paramétrico para horizontes de 1, 5,
+10 y 20 días. A continuación comparamos ambos modelos mediante
+backtesting, buscamos una combinación de pesos que minimice el VaR y
+estimamos, para una posición individual de $100,000 MXN en ALSEA, el
+VaR por Monte Carlo y el Expected Shortfall al 99%. Finalmente,
+interpretamos las diferencias entre los resultados, especialmente su
+capacidad para representar eventos extremos, sus supuestos y sus
+implicaciones para la toma de decisiones financieras.
+
 # Construcción del portafolio
 
 ## Selección de los seis activos y preparación de datos
 
+Partimos de los seis activos analizados durante el curso. Para mantener
+la consistencia con las entregas anteriores y con los ejercicios de clase,
+trabajamos con precios ajustados obtenidos mediante `quantmod`. Antes de
+calcular rendimientos alineamos las series por fecha y conservamos
+únicamente las sesiones con información disponible para todos los activos.
+Así evitamos combinar movimientos bursátiles de días distintos.
+
+El código conserva la estructura de descarga mediante `getSymbols`,
+extracción del precio ajustado con `Ad` y cálculo de rendimientos que
+utilizamos previamente.
+
+```{r datos-portafolio, eval=FALSE}
+library(quantmod)
+library(xts)
+
+# Sustituir NA por los cinco tickers confirmados del curso.
+clave <- c("ALSEA.MX", NA_character_, NA_character_,
+           NA_character_, NA_character_, NA_character_)
+
+fecha_analisis <- as.Date("2026-10-30")
+fecha_inicio <- as.Date("2021-01-01")
+
+stopifnot(length(clave) == 6, !anyNA(clave),
+          length(unique(clave)) == 6)
+
+precios_lista <- lapply(clave, function(ticker) {
+  x <- getSymbols(ticker, src = "yahoo", from = fecha_inicio,
+                  to = fecha_analisis + 1, auto.assign = FALSE)
+  Ad(x)
+})
+
+precios <- do.call(merge, precios_lista)
+precios <- na.omit(precios[index(precios) <= fecha_analisis])
+colnames(precios) <- clave
+stopifnot(NROW(precios) > 252, all(is.finite(coredata(precios))),
+          all(coredata(precios) > 0))
+
+rendimientos_activos <- na.omit(diff(log(precios)))
+colnames(rendimientos_activos) <- clave
+
+head(precios)
+tail(precios)
+```
+
 ## Inversión inicial y valor del portafolio
 
+Tomamos como fecha de análisis el último cierre disponible dentro del
+periodo seleccionado. Asignamos un capital inicial de $100,000 MXN a
+cada activo, por lo que el valor de referencia del portafolio es
+$600,000 MXN y cada posición representa una sexta parte de la inversión.
+La cantidad de acciones se obtiene dividiendo el monto asignado entre
+el precio ajustado de cada acción en la fecha de análisis. Este enfoque
+permite mantener exactamente la asignación monetaria solicitada; por
+simplicidad, trabajamos con posiciones fraccionarias teóricas, sin
+comisiones ni costos de transacción.
+
+```{r valor-portafolio, eval=FALSE}
+S0 <- as.numeric(last(precios))
+names(S0) <- clave
+
+inversion_por_activo <- 100000
+numero <- rep(inversion_por_activo, length(clave)) / S0
+names(numero) <- clave
+
+valor_posiciones <- numero * S0
+V0 <- sum(valor_posiciones)
+pesos_iniciales <- valor_posiciones / V0
+
+fecha_cierre <- as.Date(last(index(precios)))
+
+tabla_portafolio <- data.frame(
+  Activo = clave,
+  Precio_ajustado = round(S0, 4),
+  Numero_de_acciones = round(numero, 4),
+  Inversion_MXN = round(valor_posiciones, 2),
+  Peso = round(100 * pesos_iniciales, 2),
+  row.names = NULL
+)
+
+knitr::kable(tabla_portafolio,
+             caption = paste("Composición inicial al", fecha_cierre))
+cat("Valor inicial del portafolio (MXN):",
+    format(V0, big.mark = ",", scientific = FALSE), "\n")
+```
+
 ## Rendimientos del portafolio
+
+Para calcular los rendimientos partimos de los precios diarios ajustados
+y mantenemos fijo el número teórico de acciones de cada activo. De este
+modo, el valor histórico del portafolio recoge conjuntamente los cambios
+de precio de los seis activos y respeta su movimiento simultáneo.
+Calculamos el rendimiento simple diario a partir de los cambios en el
+valor agregado; además, conservamos los rendimientos logarítmicos de los
+activos para reutilizarlos en los modelos posteriores.
+
+```{r rendimientos-portafolio, eval=FALSE}
+valor_portafolio_hist <- xts(
+  as.numeric(as.matrix(precios) %*% numero),
+  order.by = index(precios)
+)
+colnames(valor_portafolio_hist) <- "Valor_portafolio"
+
+rendimientos_portafolio <- na.omit(
+  valor_portafolio_hist / lag(valor_portafolio_hist, 1) - 1
+)
+colnames(rendimientos_portafolio) <- "Rendimiento_simple"
+
+resumen_rendimientos <- data.frame(
+  Observaciones = NROW(rendimientos_portafolio),
+  Rendimiento_medio_diario = round(mean(rendimientos_portafolio), 6),
+  Volatilidad_diaria = round(sd(rendimientos_portafolio), 6)
+)
+
+knitr::kable(resumen_rendimientos,
+             caption = "Resumen de rendimientos diarios del portafolio")
+
+plot(rendimientos_portafolio,
+     main = "Rendimientos simples diarios del portafolio",
+     ylab = "Rendimiento diario", xlab = "Fecha")
+```
 
 # VaR no paramétrico: simulación histórica
 
