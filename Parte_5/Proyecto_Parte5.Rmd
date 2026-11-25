@@ -1,0 +1,133 @@
+---
+title: "Proyecto Final - Parte 5"
+subtitle: "Valor en Riesgo (VaR) y Expected Shortfall de un portafolio"
+author:
+  - "Nicole Getzabel Flores Godínez"
+  - "Andrea Gutiérrez Rentería"
+  - "Isaac Emiliano Meza López"
+  - "María Fernanda Gómez Flores"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Introducción
+
+*Pendiente: presentar el objetivo de la Parte 5 y su conexión con las entregas anteriores.*
+
+# Construcción del portafolio
+
+## Selección de los seis activos y preparación de datos
+
+*Pendiente: reunir y alinear los precios ajustados de los seis activos del curso.*
+
+## Inversión inicial y valor del portafolio
+
+*Pendiente: distribuir $100,000 MXN por activo y documentar el valor inicial.*
+
+**Por aclarar:** las indicaciones dicen $100,000 por activo ($600,000 en total), pero la rúbrica menciona 100 acciones de cada activo.
+
+## Rendimientos del portafolio
+
+*Pendiente: estimar los rendimientos del portafolio.*
+
+# VaR no paramétrico: simulación histórica
+
+## Escenarios históricos de pérdidas y ganancias
+
+*Pendiente: seguir el procedimiento del notebook de clase.*
+
+## VaR histórico a 1, 5, 10 y 20 días
+
+*Pendiente: obtener los cuatro horizontes y justificar el método.*
+
+## Distribución y VaR al 95%, 97.5% y 99%
+
+*Pendiente: gráfica de pérdidas y ganancias con umbrales de VaR a un día.*
+
+# VaR paramétrico
+
+## Supuesto normal, volatilidades y matriz de covarianzas
+
+*Pendiente: estimar la volatilidad de seis meses y conservar las correlaciones.*
+
+## VaR paramétrico a 1, 5, 10 y 20 días
+
+*Pendiente: calcular e interpretar el VaR de cada horizonte.*
+
+## Escalamiento temporal
+
+*Pendiente: explicar los supuestos de escalamiento.*
+
+# Backtesting del VaR a un día
+
+## Separación de estimación y evaluación
+
+*Pendiente: establecer la evaluación fuera de muestra sin fuga de información.*
+
+## Violaciones observadas y esperadas
+
+*Pendiente: automatizar las estimaciones diarias y contar excepciones.*
+
+## Evaluación comparativa
+
+*Pendiente: interpretar críticamente el desempeño de ambos métodos.*
+
+# Optimización del portafolio
+
+## Objetivo y restricciones
+
+*Pendiente: justificar la minimización del VaR y definir restricciones.*
+
+## Pesos óptimos y VaR mínimo
+
+*Pendiente: determinar la composición óptima.*
+
+## Riesgo y diversificación
+
+*Pendiente: comparar la composición inicial y optimizada.*
+
+# VaR individual de ALSEA mediante Monte Carlo
+
+## Posición de $100,000 MXN
+
+*Pendiente: determinar la posición individual.*
+
+## VaR Monte Carlo al 99%
+
+*Pendiente: estimar el VaR monetario y porcentual siguiendo los notebooks.*
+
+## Expected Shortfall al 99%
+
+*Pendiente: calcular e interpretar las pérdidas extremas promedio.*
+
+# Análisis e interpretación financiera
+
+## Diferencias entre metodologías
+
+*Pendiente: comparar empíricamente VaR histórico y paramétrico.*
+
+## Eventos extremos y conservadurismo
+
+*Pendiente: justificar qué modelo captura mejor los extremos.*
+
+## Subestimación del riesgo
+
+*Pendiente: discutir implicaciones para la gestión de riesgo.*
+
+## Resultados del backtesting
+
+*Pendiente: interpretar los resultados del contraste empírico.*
+
+# Conclusiones
+
+*Pendiente: justificar cuál metodología utilizaríamos en la práctica.*
