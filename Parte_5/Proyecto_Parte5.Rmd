@@ -927,6 +927,13 @@ tabla_reporte(transform(
 
 # Conclusión
 
+```{r datos-conclusion, include=FALSE}
+h1 <- comparacion_var[
+  comparacion_var$Horizonte_dias == 1 &
+    abs(comparacion_var$Confianza - 0.99) < 1e-9, ]
+stopifnot(nrow(h1) == 1)
+```
+
 En esta quinta parte del proyecto pasamos de analizar el riesgo de
 Alsea de manera individual a estudiar cómo se comporta un portafolio
 formado por seis empresas mexicanas. Con una inversión inicial de
