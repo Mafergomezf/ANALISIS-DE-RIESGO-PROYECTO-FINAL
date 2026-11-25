@@ -700,7 +700,7 @@ individual no conserva el agrupamiento temporal de la volatilidad.
 Para aprovechar toda la historia del activo individual, utilizamos su
 propia serie ajustada desde su primera fecha disponible hasta el corte.
 
-\`\`\`{r parametros-mc-alsea}
+```{r parametros-mc-alsea}
 set.seed(456)
 i_alsea <- match("ALSEA.MX", clave)
 serie_alsea <- series_descargadas[[i_alsea]]$ajustado
@@ -713,28 +713,28 @@ n_mc <- 100000L
 ret_mc_alsea <- sample(ret_alsea, size = n_mc, replace = TRUE)
 pyg_mc_alsea <- 100000 * ret_mc_alsea
 perdidas_mc_alsea <- -pyg_mc_alsea
-\`\`\`
+```
 
 ## VaR Monte Carlo al 99%
 
-\`\`\`{r var-mc-alsea}
+```{r var-mc-alsea}
 var_mc_alsea <- as.numeric(quantile(perdidas_mc_alsea, 0.99))
-\`\`\`
+```
 
 El VaR individual estimado al **99%** para un día es de
-**\`r format(round(var_mc_alsea, 2), big.mark = ",", nsmall = 2)\` MXN**,
-es decir, **\`r round(100 * var_mc_alsea / 100000, 3)\`%**
+**`r format(round(var_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**,
+es decir, **`r round(100 * var_mc_alsea / 100000, 3)`%**
 del valor invertido. El remuestreo se basó en
-**\`r length(ret_alsea)\`** rendimientos históricos del activo.
+**`r length(ret_alsea)`** rendimientos históricos del activo.
 
-\`\`\`{r grafica-mc-alsea, fig.width=9, fig.height=4.8}
+```{r grafica-mc-alsea, fig.width=9, fig.height=4.8}
 hist(perdidas_mc_alsea, breaks = 65, col = "#dce8eb",
      border = "white", xlab = "Pérdida (-ganancia), MXN",
      main = "Monte Carlo no paramétrico: pérdidas de ALSEA")
 abline(v = var_mc_alsea, col = "#a84248", lwd = 2.5, lty = 2)
 legend("topright", legend = "VaR al 99%", col = "#a84248",
        lty = 2, lwd = 2.5, bty = "n")
-\`\`\`
+```
 
 ## Expected Shortfall al 99%
 
@@ -743,7 +743,7 @@ escenarios. Para evitar ambigüedades en el umbral cuando el remuestreo
 repite algún rendimiento, promediamos exactamente los peores
 \(n_{\mathrm{MC}}(1-0.99)\) resultados.
 
-\`\`\`{r es-mc-alsea}
+```{r es-mc-alsea}
 n_cola <- as.integer(n_mc * 0.01)
 es_mc_alsea <- mean(sort(perdidas_mc_alsea, decreasing = TRUE)[seq_len(n_cola)])
 stopifnot(es_mc_alsea >= var_mc_alsea)
@@ -754,13 +754,13 @@ tabla_alsea <- data.frame(
 )
 knitr::kable(tabla_alsea,
              caption = "Riesgo individual de ALSEA por Monte Carlo, un día")
-\`\`\`
+```
 
 El ES al 99% alcanza
-**\`r format(round(es_mc_alsea, 2), big.mark = ",", nsmall = 2)\` MXN**,
-equivalente al **\`r round(100 * es_mc_alsea / 100000, 3)\`%**
+**`r format(round(es_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**,
+equivalente al **`r round(100 * es_mc_alsea / 100000, 3)`%**
 de la posición. El valor supera al VaR por
-**\`r format(round(es_mc_alsea - var_mc_alsea, 2), big.mark = ",", nsmall = 2)\` MXN**.
+**`r format(round(es_mc_alsea - var_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**.
 El ES evidencia el costo medio condicionado a la cola, aunque la
 estimación sigue limitada por los episodios ya observados.
 
@@ -814,7 +814,7 @@ descomponemos su pérdida entre las seis posiciones. El impacto por activo
 se estima con la exposición de 100,000 MXN multiplicada por su
 rendimiento simple observado en la jornada.
 
-\`\`\`{r contribucion-eventos-extremos}
+```{r contribucion-eventos-extremos}
 R_eventos <- as.matrix(rendimientos_simples_activos)
 pnl_eventos <- as.numeric(V0 * R_eventos %*% pesos_iniciales)
 peores_indices <- head(order(pnl_eventos), 5L)
@@ -829,7 +829,7 @@ tabla_eventos <- data.frame(
 colnames(tabla_eventos)[-(1:2)] <- clave
 knitr::kable(tabla_eventos,
              caption = "Cinco sesiones de mayor pérdida: contribuciones por emisora en MXN")
-\`\`\`
+```
 
 La tabla permite distinguir pérdidas generalizadas de jornadas
 dominadas por una sola emisora. Las aportaciones negativas identifican
