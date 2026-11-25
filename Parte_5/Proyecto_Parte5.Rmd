@@ -142,10 +142,8 @@ mientras que los rendimientos y escenarios de riesgo se calculan con
 **precios ajustados** para incorporar correctamente los cambios por
 dividendos y eventos corporativos. El valor actual del portafolio es de
 600,000 MXN por construcción. Trabajamos con cantidades fraccionarias
-teóricas, sin comisiones ni costos de transacción. La rúbrica menciona
-100 títulos por activo, pero elegimos la inversión de 100,000 MXN por
-emisor porque el enunciado exige expresamente un total de 600,000 MXN;
-100 títulos por activo implicarían pesos monetarios distintos.
+teóricas para representar exactamente la inversión de 100,000 MXN
+por emisora, sin comisiones ni costos de transacción.
 
 ```{r valor-portafolio, eval=TRUE}
 S0 <- as.numeric(last(precios))
@@ -927,36 +925,114 @@ tabla_reporte(transform(
 ), caption = "Severidad de las violaciones al 99%")
 ```
 
-# Conclusiones
+# Conclusión
 
-La comparación debe considerar simultáneamente magnitud del VaR,
-cobertura fuera de muestra y sensibilidad a las pérdidas extremas.
-En nuestra aplicación, el histórico preserva los choques conjuntos
-observados, mientras que el normal ofrece una actualización directa
-de la exposición mediante la matriz de covarianzas reciente.
+En esta quinta parte del proyecto pasamos de analizar el riesgo de
+Alsea de manera individual a estudiar cómo se comporta un portafolio
+formado por seis empresas mexicanas. Con una inversión inicial de
+$100,000 MXN en cada acción, construimos una cartera de $600,000 MXN
+y calculamos sus posibles pérdidas con dos metodologías. Lo primero
+que observamos es que el riesgo depende tanto del comportamiento
+de cada empresa como de la manera en que se mueven todas al mismo
+tiempo. Por eso no basta con tener varias acciones: también importa
+qué tan relacionadas están sus pérdidas.
 
-```{r cierre-conclusiones, results='asis'}
-h1 <- comparacion_var[
-  comparacion_var$Horizonte_dias == 1 &
-  abs(comparacion_var$Confianza - 0.99) < 1e-9, ]
-cat(sprintf(
-  "A un día y al 99%%, la diferencia entre metodologías fue de **$%s**; ",
-  format(round(abs(h1$Diferencia_MXN), 2), big.mark = ",", nsmall = 2)
-))
-cat(sprintf(
-  "durante el backtesting tuvimos **%d** sesiones evaluadas y **%.2f** violaciones esperadas al 99%%. ",
-  nrow(bt99), nrow(bt99) * 0.01
-))
-cat("Estos resultados deben leerse junto con las violaciones observadas y su severidad, sin convertir un menor número de excepciones en una garantía de precisión.\n\n")
-```
+Al comparar los resultados encontramos que el VaR histórico a un
+día y al 99% fue de
+**`r format(round(h1$VaR_MXN_Historico, 2), big.mark = ",", nsmall = 2)` MXN**,
+mientras que el VaR paramétrico fue de
+**`r format(round(h1$VaR_MXN_Normal, 2), big.mark = ",", nsmall = 2)` MXN**.
+En nuestro caso, el histórico dio una estimación mayor. Esto tiene
+sentido porque incorpora episodios de pérdidas fuertes observados
+en toda la historia disponible, mientras que el normal se basa en
+la volatilidad y las covarianzas de los últimos seis meses, además
+de asumir una distribución normal. Sin embargo, no concluimos
+que uno siempre sea más conservador: ambos resultados dependen
+de los datos, el periodo de estimación y el horizonte considerado.
+Al aumentar el plazo de 1 a 5, 10 y 20 días, también aumentan
+las pérdidas potenciales, aunque el método histórico utiliza
+movimientos acumulados realmente observados y el normal se escala
+con la raíz del tiempo.
 
-En una aplicación práctica utilizaríamos el **VaR histórico como
-referencia de los choques conjuntos observados**, contrastado con
-el **paramétrico para monitorear variaciones recientes de
-volatilidad y efectos de diversificación**. La elección del límite
-operativo debe atender también los resultados de cobertura y la
-severidad de las violaciones, no sólo la magnitud de una estimación. Para dimensionar
-las pérdidas más allá del umbral, incorporaríamos además el
-**Expected Shortfall**. Esta elección es condicional a la
-validación obtenida y debe revisarse si cambia la estructura
-de dependencia o surgen eventos no representados en la muestra.
+El backtesting nos permitió ir más allá de comparar cifras y
+revisar cómo se habrían comportado estas estimaciones frente
+a pérdidas que todavía no se conocían cuando se calculó cada
+pronóstico. Durante
+**`r nrow(bt99)` sesiones** de evaluación al 99%, el método
+histórico registró
+**`r resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Historico"]`**
+`r if (resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Historico"] == 1) "violación" else "violaciones"`
+y el paramétrico
+**`r resumen_bt$Violaciones_observadas[resumen_bt$Confianza == 0.99 & resumen_bt$Metodo == "Normal"]`**,
+frente a
+**`r round(nrow(bt99) * 0.01, 2)`** esperadas. La prueba de Kupiec
+`r if (all(resumen_bt$P_valor_Kupiec[resumen_bt$Confianza == 0.99] >= 0.05)) "no rechazó la cobertura nominal de ninguno de los dos modelos" else "detectó evidencia de cobertura insuficiente o excesiva en al menos uno de los modelos"`
+al 5% de significancia. Aun así, consideramos que el número de
+sesiones es limitado para sacar conclusiones definitivas sobre
+pérdidas que se esperan en aproximadamente el 1% de los días.
+También revisamos qué tan grandes fueron las pérdidas que
+superaron cada límite, porque contar violaciones por sí solo
+no muestra toda la severidad del riesgo.
+
+La optimización mostró que modificar los pesos sí puede ayudar
+a reducir el riesgo medido por el modelo normal. El VaR diario
+al 99% pasó de
+**`r format(round(var_normal_inicial, 2), big.mark = ",", nsmall = 2)` MXN**
+a
+**`r format(round(var_normal_opt, 2), big.mark = ",", nsmall = 2)` MXN**,
+una disminución de
+**`r round(100 * (var_normal_inicial - var_normal_opt) / var_normal_inicial, 2)`%**.
+Pero también observamos que la cartera quedó más concentrada,
+pues su número efectivo de activos pasó de
+**`r round(nefectivo[1], 2)`** a
+**`r round(nefectivo[2], 2)`**. Esto nos hizo ver que
+minimizar una medida de riesgo no significa mejorar todas las
+características del portafolio: una estrategia puede reducir
+la volatilidad estimada y, al mismo tiempo, depender más de
+unas cuantas empresas.
+
+Al revisar los días con pérdidas más grandes encontramos que
+los acontecimientos externos pueden afectar a varias acciones
+simultáneamente. El caso más claro fue el
+**`r format(fecha_peor, "%d de %B de %Y")`**,
+cuando la pérdida estimada del portafolio alcanzó
+**`r format(round(perdida_peor, 2), big.mark = ",", nsmall = 2)` MXN**.
+Al relacionar este resultado con la crisis de COVID-19 y
+compararlo con otros episodios de tensión del mercado,
+entendimos por qué la diversificación no elimina el riesgo
+sistemático. En momentos de incertidumbre, empresas de
+sectores diferentes pueden registrar caídas al mismo
+tiempo y generar pérdidas mayores a las que esperaríamos
+en condiciones normales.
+
+Por último, al analizar únicamente una inversión de
+$100,000 MXN en Alsea mediante Monte Carlo no paramétrico,
+estimamos un VaR al 99% de
+**`r format(round(var_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**
+y un Expected Shortfall de
+**`r format(round(es_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**.
+La diferencia es importante porque el VaR señala un umbral
+de pérdida, mientras que el Expected Shortfall nos permite
+estimar qué tan fuertes serían, en promedio, las pérdidas
+dentro del peor 1% de escenarios. Esto confirma que para
+entender el riesgo no debemos fijarnos solamente en un
+límite, sino también en lo que puede suceder cuando se
+rebasa.
+
+En general, lo más importante que aprendimos es que
+**medir el riesgo no consiste en encontrar una sola cifra
+que describa todo lo que puede pasar**. El VaR histórico,
+el paramétrico, el backtesting, la optimización y el
+Expected Shortfall responden preguntas distintas y
+se complementan. Para tomar una decisión financiera
+utilizaríamos el VaR histórico como referencia de los
+choques que ya han ocurrido, el paramétrico para seguir
+los cambios recientes de volatilidad y el backtesting
+para comprobar si las estimaciones continúan siendo
+razonables. También consideraríamos las pérdidas
+extremas, porque el hecho de que una pérdida sea
+poco probable no significa que sus consecuencias
+sean pequeñas. Así, esta parte del proyecto nos
+permitió pasar de observar la incertidumbre en
+Alsea a medirla y evaluar cómo administrarla en
+un portafolio.
