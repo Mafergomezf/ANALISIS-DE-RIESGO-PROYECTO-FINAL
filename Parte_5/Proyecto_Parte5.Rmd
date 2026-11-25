@@ -55,11 +55,14 @@ implicaciones para la toma de decisiones financieras.
 
 ## Selección de los seis activos y preparación de datos
 
-Partimos de las seis emisoras asignadas a los equipos del curso: Orbia,\nWalmart de México, Grupo México, Alsea, Grupo Aeroportuario del Pacífico\ny Banco del Bajío. Para mantener
-la consistencia con las entregas anteriores y con los ejercicios de clase,
-trabajamos con precios ajustados obtenidos mediante `quantmod`. Antes de
-calcular rendimientos alineamos las series por fecha y conservamos
-únicamente las sesiones con información disponible para todos los activos.
+Partimos de las seis emisoras asignadas a los equipos del curso: Orbia,
+Walmart de México, Grupo México, Alsea, Grupo Aeroportuario del Pacífico
+y Banco del Bajío. Para mantener la consistencia con las entregas
+anteriores y con los ejercicios de clase, descargamos precios de cierre
+y precios ajustados mediante `quantmod`. Buscamos todas las fechas
+disponibles desde el año 2000, en lugar de imponer un corte en 2021,
+y retenemos las sesiones comunes con cotizaciones válidas. La ventana
+histórica efectiva comienza cuando ya cotizan las seis emisoras.
 Así evitamos combinar movimientos bursátiles de días distintos.
 
 El código conserva la estructura de descarga mediante `getSymbols`,
@@ -79,29 +82,41 @@ clave <- c(
   "BBAJIOO.MX"
 )
 
-fecha_analisis <- as.Date("2026-10-30")
-fecha_inicio <- as.Date("2021-01-01")
+fecha_analisis <- as.Date("2026-11-24")
+fecha_inicio <- as.Date("2000-01-01")
 
 stopifnot(length(clave) == 6, !anyNA(clave),
           length(unique(clave)) == 6)
 
-precios_lista <- lapply(clave, function(ticker) {
+series_descargadas <- lapply(clave, function(ticker) {
   x <- getSymbols(ticker, src = "yahoo", from = fecha_inicio,
                   to = fecha_analisis + 1, auto.assign = FALSE)
-  Ad(x)
+  list(ajustado = Ad(x), cierre = Cl(x))
 })
-
-precios <- do.call(merge, precios_lista)
-precios <- na.omit(precios[index(precios) <= fecha_analisis])
+precios <- do.call(merge, lapply(series_descargadas, function(x) x$ajustado))
+cierres <- do.call(merge, lapply(series_descargadas, function(x) x$cierre))
 colnames(precios) <- clave
-stopifnot(NROW(precios) > 252, all(is.finite(coredata(precios))),
-          all(coredata(precios) > 0))
+colnames(cierres) <- clave
+
+# Sólo sesiones con cotización válida de las seis emisoras.
+panel <- na.omit(merge(precios, cierres, join = "inner"))
+fechas_comunes <- as.Date(index(panel))
+precios <- na.omit(precios[fechas_comunes])
+cierres <- na.omit(cierres[fechas_comunes])
+fechas_comunes <- intersect(as.Date(index(precios)), as.Date(index(cierres)))
+precios <- precios[fechas_comunes]
+cierres <- cierres[fechas_comunes]
+stopifnot(NROW(precios) > 252, NROW(precios) == NROW(cierres),
+          all(is.finite(coredata(precios))), all(coredata(precios) > 0),
+          all(is.finite(coredata(cierres))), all(coredata(cierres) > 0))
 
 rendimientos_activos <- na.omit(diff(log(precios)))
 colnames(rendimientos_activos) <- clave
 
 head(precios)
 tail(precios)
+cat("Primera sesión común:", as.character(first(index(precios))), "\n")
+cat("Última sesión común:", as.character(last(index(precios))), "\n")
 ```
 
 ## Inversión inicial y valor del portafolio
@@ -110,21 +125,28 @@ Tomamos como fecha de análisis el último cierre disponible dentro del
 periodo seleccionado. Asignamos un capital inicial de $100,000 MXN a
 cada activo, por lo que el valor de referencia del portafolio es
 $600,000 MXN y cada posición representa una sexta parte de la inversión.
-La cantidad de acciones se obtiene dividiendo el monto asignado entre
-el precio ajustado de cada acción en la fecha de análisis. Este enfoque
-permite mantener exactamente la asignación monetaria solicitada; por
-simplicidad, trabajamos con posiciones fraccionarias teóricas, sin
-comisiones ni costos de transacción.
+La cantidad teórica de acciones se obtiene dividiendo el monto asignado
+entre el **precio de cierre** de cada acción en la fecha de análisis,
+mientras que los rendimientos y escenarios de riesgo se calculan con
+**precios ajustados** para incorporar correctamente los cambios por
+dividendos y eventos corporativos. El valor actual del portafolio es de
+600,000 MXN por construcción. Trabajamos con cantidades fraccionarias
+teóricas, sin comisiones ni costos de transacción. La rúbrica menciona
+100 títulos por activo, pero elegimos la inversión de 100,000 MXN por
+emisor porque el enunciado exige expresamente un total de 600,000 MXN;
+100 títulos por activo implicarían pesos monetarios distintos.
 
 ```{r valor-portafolio, eval=TRUE}
 S0 <- as.numeric(last(precios))
 names(S0) <- clave
+precios_cierre <- as.numeric(last(cierres))
+names(precios_cierre) <- clave
 
 inversion_por_activo <- 100000
-numero <- rep(inversion_por_activo, length(clave)) / S0
+numero <- rep(inversion_por_activo, length(clave)) / precios_cierre
 names(numero) <- clave
 
-valor_posiciones <- numero * S0
+valor_posiciones <- numero * precios_cierre
 V0 <- sum(valor_posiciones)
 pesos_iniciales <- valor_posiciones / V0
 
@@ -132,7 +154,7 @@ fecha_cierre <- as.Date(last(index(precios)))
 
 tabla_portafolio <- data.frame(
   Activo = clave,
-  Precio_ajustado = round(S0, 4),
+  Precio_cierre = round(precios_cierre, 4),
   Numero_de_acciones = round(numero, 4),
   Inversion_MXN = round(valor_posiciones, 2),
   Peso = round(100 * pesos_iniciales, 2),
@@ -157,10 +179,10 @@ para la simulación individual.
 
 ```{r rendimientos-portafolio, eval=TRUE}
 valor_portafolio_hist <- xts(
-  as.numeric(as.matrix(precios) %*% numero),
-  order.by = index(precios)
+  as.numeric(as.matrix(cierres) %*% numero),
+  order.by = index(cierres)
 )
-colnames(valor_portafolio_hist) <- "Valor_portafolio"
+colnames(valor_portafolio_hist) <- "Valor_portafolio_no_rebalanceado"
 
 rendimientos_simples_activos <- na.omit(precios / lag(precios, 1) - 1)
 colnames(rendimientos_simples_activos) <- clave
@@ -200,6 +222,9 @@ PyG_{t,h}=V_0\sum_{i=1}^{6}w_i
 \left(\frac{P_{i,t}}{P_{i,t-h}}-1\right).
 \]
 
+La muestra histórica disponible para el portafolio comprende desde
+**`r format(first(index(precios)), "%d/%m/%Y")`** hasta
+**`r format(last(index(precios)), "%d/%m/%Y")`**.
 Los escenarios se construyen con las fechas comunes del panel; para
 \(h>1\), se emplean bloques de \(h\) sesiones históricas, **sin escalar
 artificialmente el cuantil diario**. Los bloques traslapados preservan más
@@ -583,7 +608,17 @@ names(pesos_optimos) <- clave
 # Suavizar solamente errores numéricos de frontera, sin alterar la solución.
 stopifnot(solucion$convergence == 0, all(pesos_optimos >= -1e-6),
           all(pesos_optimos <= tope_peso + 1e-6),
-          abs(sum(pesos_optimos) - 1) < 1e-6)
+          abs(sum(pesos_optimos) - 1) < 1e-6,
+          objetivo_var(solucion$par) <=
+            objetivo_var(pesos_iniciales[-n_activos]) + 1e-7)
+# Condiciones de optimalidad: no debe existir una transferencia factible
+# de capital desde un activo a otro que reduzca la varianza.
+gradiente <- as.numeric(2 * Sigma %*% pesos_optimos)
+origenes <- which(pesos_optimos > 1e-5)
+destinos <- which(pesos_optimos < tope_peso - 1e-5)
+stopifnot(
+  min(outer(gradiente[destinos], gradiente[origenes], "-")) > -1e-6
+)
 
 sigma_opt <- sqrt(as.numeric(t(pesos_optimos) %*% Sigma %*% pesos_optimos))
 var_normal_inicial <- V0 * qnorm(0.99) * sigma_portafolio
@@ -652,58 +687,66 @@ la solución bajo una metodología diferente de aquella que optimizamos.
 
 ## Posición de $100,000 MXN
 
-Estudiamos separadamente una posición teórica de 100,000 MXN en
-ALSEA.MX. Mantenemos la fecha de análisis y los precios ajustados del
-portafolio para que las estimaciones sean comparables. Para Monte
-Carlo seguimos la simulación de precios con **movimiento browniano
-geométrico (GBM)** trabajada en el curso. Su normalidad de
-log-rendimientos es un supuesto que contrastaremos críticamente con
-las pérdidas históricas.
+Estudiamos una posición de 100,000 MXN en ALSEA.MX al cierre común
+del portafolio. Como la consigna exige una metodología **no
+paramétrica por Monte Carlo**, generamos 100,000 escenarios mediante
+remuestreo con reemplazo (*bootstrap*) de los rendimientos simples
+históricos de ALSEA, sin imponerles una distribución normal.
 
-```{r parametros-mc-alsea}
+A diferencia de un GBM con shocks normales, este procedimiento
+preserva los rendimientos extremos de la muestra. Sin embargo,
+no produce pérdidas más severas que las históricas y el remuestreo
+individual no conserva el agrupamiento temporal de la volatilidad.
+Para aprovechar toda la historia del activo individual, utilizamos su
+propia serie ajustada desde su primera fecha disponible hasta el corte.
+
+\`\`\`{r parametros-mc-alsea}
 set.seed(456)
 i_alsea <- match("ALSEA.MX", clave)
-precio_alsea <- S0[i_alsea]
-logret_alsea <- as.numeric(rendimientos_activos[, i_alsea])
-mu_log_alsea <- mean(logret_alsea)
-sigma_log_alsea <- sd(logret_alsea)
+serie_alsea <- series_descargadas[[i_alsea]]$ajustado
+serie_alsea <- na.omit(serie_alsea[
+  as.Date(index(serie_alsea)) <= fecha_cierre
+])
+ret_alsea <- as.numeric(na.omit(serie_alsea / lag(serie_alsea, 1) - 1))
+stopifnot(length(ret_alsea) > 250, all(is.finite(ret_alsea)))
 n_mc <- 100000L
-precio_mc_alsea <- precio_alsea *
-  exp(mu_log_alsea + sigma_log_alsea * rnorm(n_mc))
-pyg_mc_alsea <- 100000 * (precio_mc_alsea / precio_alsea - 1)
+ret_mc_alsea <- sample(ret_alsea, size = n_mc, replace = TRUE)
+pyg_mc_alsea <- 100000 * ret_mc_alsea
 perdidas_mc_alsea <- -pyg_mc_alsea
-```
+\`\`\`
 
 ## VaR Monte Carlo al 99%
 
-```{r var-mc-alsea}
+\`\`\`{r var-mc-alsea}
 var_mc_alsea <- as.numeric(quantile(perdidas_mc_alsea, 0.99))
-```
+\`\`\`
 
 El VaR individual estimado al **99%** para un día es de
-**`r format(round(var_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**,
-es decir, **`r round(100 * var_mc_alsea / 100000, 3)`%**
-del valor invertido.
+**\`r format(round(var_mc_alsea, 2), big.mark = ",", nsmall = 2)\` MXN**,
+es decir, **\`r round(100 * var_mc_alsea / 100000, 3)\`%**
+del valor invertido. El remuestreo se basó en
+**\`r length(ret_alsea)\`** rendimientos históricos del activo.
 
-```{r grafica-mc-alsea, fig.width=9, fig.height=4.8}
+\`\`\`{r grafica-mc-alsea, fig.width=9, fig.height=4.8}
 hist(perdidas_mc_alsea, breaks = 65, col = "#dce8eb",
      border = "white", xlab = "Pérdida (-ganancia), MXN",
-     main = "Monte Carlo: distribución de pérdidas de ALSEA")
+     main = "Monte Carlo no paramétrico: pérdidas de ALSEA")
 abline(v = var_mc_alsea, col = "#a84248", lwd = 2.5, lty = 2)
 legend("topright", legend = "VaR al 99%", col = "#a84248",
        lty = 2, lwd = 2.5, bty = "n")
-```
+\`\`\`
 
 ## Expected Shortfall al 99%
 
-El Expected Shortfall (ES) es el promedio de las pérdidas en el peor
-1% de escenarios. A diferencia del VaR, resume la severidad de las
-pérdidas una vez superado el umbral.
+El Expected Shortfall (ES) es la pérdida media del **1% peor** de
+escenarios. Para evitar ambigüedades en el umbral cuando el remuestreo
+repite algún rendimiento, promediamos exactamente los peores
+\(n_{\mathrm{MC}}(1-0.99)\) resultados.
 
-```{r es-mc-alsea}
-es_mc_alsea <- mean(perdidas_mc_alsea[
-  perdidas_mc_alsea >= var_mc_alsea
-])
+\`\`\`{r es-mc-alsea}
+n_cola <- as.integer(n_mc * 0.01)
+es_mc_alsea <- mean(sort(perdidas_mc_alsea, decreasing = TRUE)[seq_len(n_cola)])
+stopifnot(es_mc_alsea >= var_mc_alsea)
 tabla_alsea <- data.frame(
   Medida = c("VaR 99%", "Expected Shortfall 99%"),
   Monto_MXN = round(c(var_mc_alsea, es_mc_alsea), 2),
@@ -711,16 +754,15 @@ tabla_alsea <- data.frame(
 )
 knitr::kable(tabla_alsea,
              caption = "Riesgo individual de ALSEA por Monte Carlo, un día")
-```
+\`\`\`
 
 El ES al 99% alcanza
-**`r format(round(es_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**,
-equivalente al **`r round(100 * es_mc_alsea / 100000, 3)`%**
+**\`r format(round(es_mc_alsea, 2), big.mark = ",", nsmall = 2)\` MXN**,
+equivalente al **\`r round(100 * es_mc_alsea / 100000, 3)\`%**
 de la posición. El valor supera al VaR por
-**`r format(round(es_mc_alsea - var_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**.
-La simulación GBM es reproducible mediante la semilla indicada, pero
-puede subestimar colas pesadas y cambios de volatilidad si los
-rendimientos reales no siguen la distribución supuesta.
+**\`r format(round(es_mc_alsea - var_mc_alsea, 2), big.mark = ",", nsmall = 2)\` MXN**.
+El ES evidencia el costo medio condicionado a la cola, aunque la
+estimación sigue limitada por los episodios ya observados.
 
 # Análisis e interpretación financiera
 
@@ -765,6 +807,36 @@ fecha_peor <- escenarios$Fecha[escenarios$Horizonte == 1][peor_dia]
 perdida_peor <- -pl_dia[peor_dia]
 n_hist_mayor <- sum(comparacion_var$Diferencia_MXN > 0)
 ```
+
+Para estudiar las pérdidas extremas sin atribuirlas automáticamente
+a una noticia, identificamos las cinco peores sesiones de la cartera y
+descomponemos su pérdida entre las seis posiciones. El impacto por activo
+se estima con la exposición de 100,000 MXN multiplicada por su
+rendimiento simple observado en la jornada.
+
+\`\`\`{r contribucion-eventos-extremos}
+R_eventos <- as.matrix(rendimientos_simples_activos)
+pnl_eventos <- as.numeric(V0 * R_eventos %*% pesos_iniciales)
+peores_indices <- head(order(pnl_eventos), 5L)
+aportaciones <- sweep(R_eventos[peores_indices, , drop = FALSE],
+                      2, V0 * pesos_iniciales, "*")
+tabla_eventos <- data.frame(
+  Fecha = as.Date(index(rendimientos_simples_activos))[peores_indices],
+  Perdida_cartera_MXN = round(-pnl_eventos[peores_indices], 2),
+  round(aportaciones, 2),
+  check.names = FALSE
+)
+colnames(tabla_eventos)[-(1:2)] <- clave
+knitr::kable(tabla_eventos,
+             caption = "Cinco sesiones de mayor pérdida: contribuciones por emisora en MXN")
+\`\`\`
+
+La tabla permite distinguir pérdidas generalizadas de jornadas
+dominadas por una sola emisora. Las aportaciones negativas identifican
+acciones que restaron valor, y las positivas identifican posiciones
+que amortiguaron la pérdida. No atribuimos causalidad a acontecimientos
+específicos sin consultar información económica o corporativa de la
+fecha correspondiente.
 
 La mayor pérdida diaria conjunta de la muestra equivale a
 **`r format(round(perdida_peor, 2), big.mark = ",", nsmall = 2)` MXN**,
@@ -834,9 +906,11 @@ cat("Estos resultados deben leerse junto con las violaciones observadas y su sev
 ```
 
 En una aplicación práctica utilizaríamos el **VaR histórico como
-referencia principal de escenarios observados**, complementado por
+referencia de los choques conjuntos observados**, contrastado con
 el **paramétrico para monitorear variaciones recientes de
-volatilidad y efectos de diversificación**. Para dimensionar
+volatilidad y efectos de diversificación**. La elección del límite
+operativo debe atender también los resultados de cobertura y la
+severidad de las violaciones, no sólo la magnitud de una estimación. Para dimensionar
 las pérdidas más allá del umbral, incorporaríamos además el
 **Expected Shortfall**. Esta elección es condicional a la
 validación obtenida y debe revisarse si cambia la estructura
