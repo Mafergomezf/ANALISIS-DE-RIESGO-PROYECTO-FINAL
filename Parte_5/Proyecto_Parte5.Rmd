@@ -147,13 +147,13 @@ cat("Valor inicial del portafolio (MXN):",
 
 ## Rendimientos del portafolio
 
-Para calcular los rendimientos partimos de los precios diarios ajustados
-y mantenemos fijo el número teórico de acciones de cada activo. De este
-modo, el valor histórico del portafolio recoge conjuntamente los cambios
-de precio de los seis activos y respeta su movimiento simultáneo.
-Calculamos el rendimiento simple diario a partir de los cambios en el
-valor agregado; además, conservamos los rendimientos logarítmicos de los
-activos para reutilizarlos en los modelos posteriores.
+Para medir el riesgo de la asignación inicial utilizamos los rendimientos
+simples de los seis activos y los ponderamos por sus pesos iguales de
+16.67%. Esto equivale a valorar cada escenario con las posiciones actuales
+y evita confundir los pesos iniciales con los pesos que habría tenido una
+cartera histórica sin rebalanceo. Conservamos, adicionalmente, la serie
+de valor de una cartera de cantidades fijas y los rendimientos logarítmicos
+para la simulación individual.
 
 ```{r rendimientos-portafolio, eval=TRUE}
 valor_portafolio_hist <- xts(
@@ -162,8 +162,11 @@ valor_portafolio_hist <- xts(
 )
 colnames(valor_portafolio_hist) <- "Valor_portafolio"
 
-rendimientos_portafolio <- na.omit(
-  valor_portafolio_hist / lag(valor_portafolio_hist, 1) - 1
+rendimientos_simples_activos <- na.omit(precios / lag(precios, 1) - 1)
+colnames(rendimientos_simples_activos) <- clave
+rendimientos_portafolio <- xts(
+  as.numeric(as.matrix(rendimientos_simples_activos) %*% pesos_iniciales),
+  order.by = index(rendimientos_simples_activos)
 )
 colnames(rendimientos_portafolio) <- "Rendimiento_simple"
 
@@ -181,54 +184,660 @@ plot(rendimientos_portafolio,
      ylab = "Rendimiento diario", xlab = "Fecha")
 ```
 
+
 # VaR no paramétrico: simulación histórica
 
 ## Escenarios históricos de pérdidas y ganancias
 
+Para estimar el VaR histórico no suponemos una distribución teórica de los
+rendimientos. Reproducimos sobre las posiciones actuales los cambios
+conjuntos que las seis acciones tuvieron en cada ventana observada. Esta
+decisión mantiene la dependencia entre activos durante caídas simultáneas.
+La ganancia o pérdida de un escenario con horizonte \(h\) se define como
+
+\[
+PyG_{t,h}=V_0\sum_{i=1}^{6}w_i
+\left(\frac{P_{i,t}}{P_{i,t-h}}-1\right).
+\]
+
+Los escenarios se construyen con las fechas comunes del panel; para
+\(h>1\), se emplean bloques de \(h\) sesiones históricas, **sin escalar
+artificialmente el cuantil diario**. Los bloques traslapados preservan más
+observaciones, aunque no equivalen a escenarios independientes.
+
+```{r escenarios-historicos}
+horizontes <- c(1L, 5L, 10L, 20L)
+confianzas <- c(0.95, 0.975, 0.99)
+
+escenarios_historicos <- function(precios, h, pesos, capital) {
+  p <- as.matrix(precios)
+  n <- nrow(p)
+  stopifnot(h >= 1, h < n)
+  cambios <- p[(h + 1):n, , drop = FALSE] /
+    p[1:(n - h), , drop = FALSE] - 1
+  data.frame(
+    Fecha = as.Date(index(precios)[(h + 1):n]),
+    Horizonte = h,
+    Rendimiento = as.numeric(cambios %*% pesos),
+    PyG_MXN = capital * as.numeric(cambios %*% pesos)
+  )
+}
+
+escenarios <- do.call(rbind, lapply(horizontes, function(h) {
+  escenarios_historicos(precios, h, pesos_iniciales, V0)
+}))
+rownames(escenarios) <- NULL
+```
+
 ## VaR histórico a 1, 5, 10 y 20 días
 
+Expresamos el VaR como una **pérdida positiva**: es el negativo del
+cuantil inferior de la distribución de ganancias y pérdidas. Por
+ejemplo, al 99% el umbral se obtiene a partir del cuantil del 1% de
+\(PyG\). Utilizamos toda la muestra disponible para cada horizonte.
+
+```{r tabla-var-historico}
+var_historico <- do.call(rbind, lapply(horizontes, function(h) {
+  x <- escenarios$PyG_MXN[escenarios$Horizonte == h]
+  data.frame(
+    Horizonte_dias = h,
+    Confianza = confianzas,
+    Escenarios = length(x),
+    VaR_MXN = -as.numeric(quantile(x, probs = 1 - confianzas)),
+    VaR_pct = -100 * as.numeric(quantile(x, probs = 1 - confianzas)) / V0
+  )
+}))
+rownames(var_historico) <- NULL
+
+tabla_hist <- var_historico
+tabla_hist$Confianza <- paste0(100 * tabla_hist$Confianza, "%")
+tabla_hist$VaR_MXN <- round(tabla_hist$VaR_MXN, 2)
+tabla_hist$VaR_pct <- round(tabla_hist$VaR_pct, 3)
+knitr::kable(tabla_hist,
+             caption = "VaR por simulación histórica del portafolio")
+```
+
 ## Distribución y VaR al 95%, 97.5% y 99%
+
+```{r grafica-var-historico, fig.width=9, fig.height=5.5}
+pl_dia <- escenarios$PyG_MXN[escenarios$Horizonte == 1]
+umbrales_hist <- -sapply(confianzas, function(nc) {
+  var_historico$VaR_MXN[var_historico$Horizonte_dias == 1 &
+                          abs(var_historico$Confianza - nc) < 1e-9]
+})
+colores_var <- c("#d09532", "#337fa3", "#a84248")
+hist(pl_dia, breaks = 65, col = "#dce8eb", border = "white",
+     main = "Distribución histórica de pérdidas y ganancias a un día",
+     xlab = "Pérdida (-) / ganancia (+), MXN", ylab = "Frecuencia")
+abline(v = umbrales_hist, col = colores_var, lty = c(2, 3, 4), lwd = 2.5)
+legend("topright",
+       legend = c("VaR 95%", "VaR 97.5%", "VaR 99%"),
+       col = colores_var, lty = c(2, 3, 4), lwd = 2.5, bty = "n")
+```
+
+El VaR histórico al 99% a un día alcanza **`r format(round(var_historico$VaR_MXN[var_historico$Horizonte_dias == 1 & var_historico$Confianza == 0.99], 2), big.mark = ",", nsmall = 2)` MXN**,
+equivalente al **`r round(var_historico$VaR_pct[var_historico$Horizonte_dias == 1 & var_historico$Confianza == 0.99], 3)`%** del capital.
+Esto no significa que la pérdida máxima esté limitada a esa cantidad:
+el 1% de los escenarios históricos está en la cola que rebasa el umbral.
 
 # VaR paramétrico
 
 ## Supuesto normal, volatilidades y matriz de covarianzas
 
+Para el método paramétrico usamos los rendimientos **simples diarios**
+y calculamos sus covarianzas con los últimos seis meses de calendario
+disponibles hasta la fecha de valuación. La covarianza considera
+las correlaciones entre las emisoras; sumar volatilidades individuales
+ignoraría el beneficio o costo de los movimientos conjuntos.
+
+\[
+\sigma_p=\sqrt{\mathbf{w}^{\top}\Sigma\mathbf{w}}.
+\]
+
+```{r covarianzas-parametricas}
+meses_atras <- function(fecha, n) {
+  y <- as.integer(format(fecha, "%Y"))
+  m <- as.integer(format(fecha, "%m"))
+  d <- as.integer(format(fecha, "%d"))
+  id <- 12 * y + (m - 1) - n
+  yy <- id %/% 12
+  mm <- id %% 12 + 1
+  primero <- as.Date(sprintf("%04d-%02d-01", yy, mm))
+  siguiente <- seq(primero, by = "month", length.out = 2)[2]
+  primero + min(d, as.integer(siguiente - primero)) - 1
+}
+
+inicio_6m <- meses_atras(fecha_cierre, 6)
+ret_6m <- rendimientos_simples_activos[
+  index(rendimientos_simples_activos) > inicio_6m &
+    index(rendimientos_simples_activos) <= fecha_cierre
+]
+stopifnot(NROW(ret_6m) >= 60)
+
+Sigma <- cov(as.matrix(ret_6m))
+sigma_individual <- sqrt(diag(Sigma))
+sigma_portafolio <- sqrt(as.numeric(
+  t(pesos_iniciales) %*% Sigma %*% pesos_iniciales
+))
+tabla_vol <- data.frame(
+  Activo = clave,
+  Volatilidad_diaria_pct = round(100 * sigma_individual, 3)
+)
+knitr::kable(tabla_vol, caption = "Volatilidad diaria: últimos seis meses")
+knitr::kable(round(10000 * Sigma, 4),
+             caption = "Matriz de covarianzas diarias, en puntos porcentuales al cuadrado")
+```
+
+La ventana incluye **`r NROW(ret_6m)`** rendimientos diarios,
+del **`r format(min(as.Date(index(ret_6m))), "%d/%m/%Y")`** al
+**`r format(max(as.Date(index(ret_6m))), "%d/%m/%Y")`**.
+La volatilidad diaria del portafolio es
+**`r round(100 * sigma_portafolio, 3)`%**.
+
 ## VaR paramétrico a 1, 5, 10 y 20 días
 
+Adoptamos una media diaria igual a cero para aislar el riesgo de
+dispersión a corto plazo, y declaramos ese supuesto en lugar de
+presentarlo como una propiedad de los datos.
+
+```{r tabla-var-parametrico}
+var_parametrico <- expand.grid(
+  Horizonte_dias = horizontes,
+  Confianza = confianzas
+)
+var_parametrico <- var_parametrico[
+  order(var_parametrico$Horizonte_dias, var_parametrico$Confianza), ]
+var_parametrico$VaR_MXN <- V0 * qnorm(var_parametrico$Confianza) *
+  sigma_portafolio * sqrt(var_parametrico$Horizonte_dias)
+var_parametrico$VaR_pct <- 100 * var_parametrico$VaR_MXN / V0
+tabla_par <- var_parametrico
+tabla_par$Confianza <- paste0(100 * tabla_par$Confianza, "%")
+tabla_par$VaR_MXN <- round(tabla_par$VaR_MXN, 2)
+tabla_par$VaR_pct <- round(tabla_par$VaR_pct, 3)
+knitr::kable(tabla_par,
+             caption = "VaR paramétrico normal del portafolio")
+```
+
 ## Escalamiento temporal
+
+Bajo varianza constante y ausencia de autocorrelación de los rendimientos,
+la varianza acumulada durante \(h\) sesiones crece proporcionalmente
+a \(h\), y su desviación estándar aumenta con \(\sqrt{h}\):
+
+\[
+VaR_{c,h}=V_0\,\Phi^{-1}(c)\,\sigma_p\sqrt{h}.
+\]
+
+Este escalamiento no es una identidad empírica: puede fallar si existe
+agrupamiento de volatilidad, cambios de régimen o dependencia temporal.
+Por ello, más adelante contrastamos sus resultados con los bloques
+efectivamente observados en la simulación histórica.
+
+```{r tabla-comparativa-var}
+comparacion_var <- merge(
+  var_historico[, c("Horizonte_dias", "Confianza", "VaR_MXN")],
+  var_parametrico[, c("Horizonte_dias", "Confianza", "VaR_MXN")],
+  by = c("Horizonte_dias", "Confianza"), suffixes = c("_Historico", "_Normal")
+)
+comparacion_var$Diferencia_MXN <- comparacion_var$VaR_MXN_Historico -
+  comparacion_var$VaR_MXN_Normal
+knitr::kable(transform(
+  comparacion_var,
+  Confianza = paste0(100 * Confianza, "%"),
+  VaR_MXN_Historico = round(VaR_MXN_Historico, 2),
+  VaR_MXN_Normal = round(VaR_MXN_Normal, 2),
+  Diferencia_MXN = round(Diferencia_MXN, 2)
+), caption = "Comparación de VaR histórico y normal")
+```
 
 # Backtesting del VaR a un día
 
 ## Separación de estimación y evaluación
 
+El backtesting evalúa los pronósticos fuera de muestra durante las
+sesiones de 2026 hasta el corte de valuación, usando exclusivamente
+rendimientos anteriores a cada sesión. Elegimos este periodo, en lugar
+de únicamente las veinte sesiones de octubre, para disponer de más
+observaciones de violaciones raras al 99%. La evaluación es secuencial:
+la información del día evaluado nunca entra al VaR que se contrasta
+con su pérdida.
+
+En cada fecha el VaR histórico se recalcula con **toda la historia
+anterior disponible** y el normal con una **ventana móvil de seis meses**.
+Comparamos ambas estimaciones con el mismo capital de referencia de
+600,000 MXN y los mismos pesos equiponderados.
+
+```{r backtesting-var}
+datos_bt <- data.frame(
+  Fecha = as.Date(index(rendimientos_simples_activos)),
+  as.matrix(rendimientos_simples_activos),
+  check.names = FALSE
+)
+R_bt <- as.matrix(rendimientos_simples_activos)
+fechas_bt <- as.Date(index(rendimientos_simples_activos))
+ret_p_bt <- as.numeric(R_bt %*% pesos_iniciales)
+inicio_bt <- as.Date("2026-01-01")
+indices_bt <- which(fechas_bt >= inicio_bt & fechas_bt <= fecha_cierre)
+
+lista_bt <- lapply(indices_bt, function(i) {
+  anteriores <- which(fechas_bt < fechas_bt[i])
+  if (length(anteriores) < 250) return(NULL)
+  desde <- meses_atras(fechas_bt[i] - 1, 6)
+  ventana <- anteriores[fechas_bt[anteriores] > desde]
+  if (length(ventana) < 60) return(NULL)
+
+  pl_anterior <- V0 * ret_p_bt[anteriores]
+  sigma_t <- sqrt(as.numeric(
+    t(pesos_iniciales) %*% cov(R_bt[ventana, , drop = FALSE]) %*%
+      pesos_iniciales
+  ))
+  data.frame(
+    Fecha = fechas_bt[i],
+    Confianza = confianzas,
+    PyG_real = V0 * ret_p_bt[i],
+    VaR_Historico = -as.numeric(quantile(
+      pl_anterior, probs = 1 - confianzas
+    )),
+    VaR_Normal = V0 * qnorm(confianzas) * sigma_t
+  )
+})
+backtesting <- do.call(rbind, lista_bt)
+if (is.null(backtesting) || nrow(backtesting) == 0) {
+  stop("No hay suficientes sesiones para el backtesting fuera de muestra.")
+}
+rownames(backtesting) <- NULL
+```
+
 ## Violaciones observadas y esperadas
 
+Una violación se registra cuando la pérdida real supera el VaR de
+ese día: \(-PyG_t > VaR_t\). Si el método está correctamente
+calibrado, para \(n\) evaluaciones al nivel \(c\) esperaríamos
+\(n(1-c)\) violaciones. Además del conteo, aplicamos la prueba de
+cobertura incondicional de Kupiec, que contrasta si la frecuencia
+observada es consistente con la probabilidad nominal.
+
+```{r tabla-backtesting}
+prueba_kupiec <- function(x, n, p) {
+  phat <- x / n
+  lr <- 2 * (dbinom(x, n, phat, log = TRUE) -
+               dbinom(x, n, p, log = TRUE))
+  lr <- max(0, lr)
+  pchisq(lr, df = 1, lower.tail = FALSE)
+}
+
+resumen_bt <- do.call(rbind, lapply(confianzas, function(nc) {
+  d <- backtesting[abs(backtesting$Confianza - nc) < 1e-9, ]
+  n <- nrow(d)
+  do.call(rbind, lapply(c("Historico", "Normal"), function(metodo) {
+    limites <- d[[paste0("VaR_", metodo)]]
+    violaciones <- sum(-d$PyG_real > limites)
+    data.frame(
+      Confianza = nc,
+      Metodo = metodo,
+      Sesiones = n,
+      Violaciones_observadas = violaciones,
+      Violaciones_esperadas = n * (1 - nc),
+      Frecuencia_observada_pct = 100 * violaciones / n,
+      P_valor_Kupiec = prueba_kupiec(violaciones, n, 1 - nc)
+    )
+  }))
+}))
+rownames(resumen_bt) <- NULL
+knitr::kable(transform(
+  resumen_bt,
+  Confianza = paste0(100 * Confianza, "%"),
+  Violaciones_esperadas = round(Violaciones_esperadas, 2),
+  Frecuencia_observada_pct = round(Frecuencia_observada_pct, 2),
+  P_valor_Kupiec = round(P_valor_Kupiec, 4)
+), caption = "Cobertura fuera de muestra del VaR diario")
+```
+
+```{r grafica-backtesting, fig.width=9, fig.height=5}
+bt99 <- backtesting[abs(backtesting$Confianza - 0.99) < 1e-9, ]
+plot(bt99$Fecha, -bt99$PyG_real, type = "l", col = "#686868",
+     xlab = "Fecha", ylab = "Pérdida realizada / VaR (MXN)",
+     main = "Backtesting diario al 99%")
+lines(bt99$Fecha, bt99$VaR_Historico, col = "#ad4848", lwd = 2)
+lines(bt99$Fecha, bt99$VaR_Normal, col = "#287b94", lwd = 2)
+exceso_hist <- -bt99$PyG_real > bt99$VaR_Historico
+points(bt99$Fecha[exceso_hist], -bt99$PyG_real[exceso_hist],
+       pch = 19, col = "#ad4848")
+legend("topright",
+       legend = c("Pérdida observada", "VaR histórico", "VaR normal",
+                  "Violación histórica"),
+       col = c("#686868", "#ad4848", "#287b94", "#ad4848"),
+       lty = c(1, 1, 1, NA), pch = c(NA, NA, NA, 19), bty = "n")
+```
+
 ## Evaluación comparativa
+
+No basta con observar cuál método registra menos violaciones: una
+cantidad anormalmente baja puede indicar un VaR sistemáticamente
+excesivo. La prueba de Kupiec identifica desviaciones de la tasa
+nominal, pero no comprueba que las violaciones sean independientes
+ni evalúa, por sí sola, la magnitud de cada pérdida extrema.
+
+```{r interpretacion-backtesting, results='asis'}
+for (nc in confianzas) {
+  d <- resumen_bt[abs(resumen_bt$Confianza - nc) < 1e-9, ]
+  cat(sprintf(
+    "Al **%s%%**, el modelo histórico presenta **%d** violaciones y el normal **%d**, frente a **%.2f** esperadas. ",
+    100 * nc, d$Violaciones_observadas[d$Metodo == "Historico"],
+    d$Violaciones_observadas[d$Metodo == "Normal"],
+    d$Violaciones_esperadas[1]
+  ))
+  cat("La prueba de Kupiec ")
+  if (all(d$P_valor_Kupiec >= 0.05)) {
+    cat("no rechaza la cobertura nominal de ninguno de los dos modelos")
+  } else {
+    cat("rechaza la cobertura nominal de al menos uno de los modelos")
+  }
+  cat(" al 5% de significancia; esto no prueba que los supuestos de distribución sean correctos.\n\n")
+}
+```
 
 # Optimización del portafolio
 
 ## Objetivo y restricciones
 
+Bajo el modelo normal con media cero, minimizar el VaR al 99% a un
+día equivale a minimizar \(\mathbf{w}^{\top}\Sigma\mathbf{w}\).
+Seleccionamos esta medida porque incorpora covarianzas, tiene una
+solución global bajo restricciones convexas y permite contrastar
+claramente los pesos nuevos con la asignación inicial.
+
+Restringimos la inversión a posiciones largas, con pesos que suman
+100% y un máximo de 40% por emisora. Este último límite es una
+decisión de gestión para evitar que la minimización de varianza
+produzca una concentración excesiva.
+
+```{r optimizacion-var}
+# Optimización convexa en cinco pesos libres; el sexto completa el 100%.
+# constrOptim pertenece a stats, por lo que no requiere paquetes extra.
+n_activos <- length(clave)
+tope_peso <- 0.40
+pesos_desde_x <- function(x) c(x, 1 - sum(x))
+objetivo_var <- function(x) {
+  w <- pesos_desde_x(x)
+  1e8 * as.numeric(t(w) %*% Sigma %*% w)
+}
+ui <- rbind(diag(n_activos - 1),
+            -diag(n_activos - 1),
+            -rep(1, n_activos - 1),
+            rep(1, n_activos - 1))
+ci <- c(rep(0, n_activos - 1),
+        rep(-tope_peso, n_activos - 1),
+        -1, 1 - tope_peso)
+
+solucion <- constrOptim(
+  theta = rep(1 / n_activos, n_activos - 1),
+  f = objetivo_var,
+  grad = NULL,
+  ui = ui,
+  ci = ci,
+  control = list(maxit = 5000, reltol = 1e-12)
+)
+pesos_optimos <- pesos_desde_x(solucion$par)
+names(pesos_optimos) <- clave
+# Suavizar solamente errores numéricos de frontera, sin alterar la solución.
+stopifnot(solucion$convergence == 0, all(pesos_optimos >= -1e-6),
+          all(pesos_optimos <= tope_peso + 1e-6),
+          abs(sum(pesos_optimos) - 1) < 1e-6)
+
+sigma_opt <- sqrt(as.numeric(t(pesos_optimos) %*% Sigma %*% pesos_optimos))
+var_normal_inicial <- V0 * qnorm(0.99) * sigma_portafolio
+var_normal_opt <- V0 * qnorm(0.99) * sigma_opt
+
+tabla_pesos <- data.frame(
+  Activo = clave,
+  Peso_inicial_pct = round(100 * pesos_iniciales, 2),
+  Peso_optimo_pct = round(100 * pesos_optimos, 2),
+  Monto_inicial_MXN = round(V0 * pesos_iniciales, 2),
+  Monto_optimo_MXN = round(V0 * pesos_optimos, 2)
+)
+knitr::kable(tabla_pesos, caption = "Composición inicial y de mínimo VaR normal")
+```
+
 ## Pesos óptimos y VaR mínimo
 
+```{r tabla-optimizacion}
+comparacion_opt <- data.frame(
+  Portafolio = c("Inicial", "Optimizado"),
+  Volatilidad_diaria_pct = round(100 * c(sigma_portafolio, sigma_opt), 3),
+  VaR_normal_99_MXN = round(c(var_normal_inicial, var_normal_opt), 2)
+)
+knitr::kable(comparacion_opt,
+             caption = "VaR normal diario al 99%, antes y después de optimizar")
+```
+
+La cartera optimizada `r if (var_normal_opt < var_normal_inicial) "reduce" else "no reduce"`
+el VaR normal al 99% en
+**`r format(round(var_normal_inicial - var_normal_opt, 2), big.mark = ",", nsmall = 2)` MXN**,
+equivalentes al **`r round(100 * (var_normal_inicial - var_normal_opt) / var_normal_inicial, 2)`%**
+del VaR inicial.
+
 ## Riesgo y diversificación
+
+Para evaluar la diversificación calculamos el **número efectivo de
+activos**: \(N_{\mathrm{ef}}=1/\sum_i w_i^2\). Cuanto menor sea,
+más concentrada está la asignación. Asimismo, contrastamos ambas
+composiciones con la misma distribución histórica: minimizar el VaR
+normal no garantiza disminuir el VaR histórico.
+
+```{r diversificacion-var}
+perdidas_dia <- -V0 * as.matrix(rendimientos_simples_activos) %*%
+  cbind(Inicial = pesos_iniciales, Optimizado = pesos_optimos)
+var_hist_comparado <- apply(perdidas_dia, 2, quantile,
+                           probs = 0.99, names = FALSE)
+nefectivo <- 1 / c(sum(pesos_iniciales^2), sum(pesos_optimos^2))
+tabla_div <- data.frame(
+  Portafolio = c("Inicial", "Optimizado"),
+  Numero_efectivo_activos = round(nefectivo, 2),
+  Mayor_peso_pct = round(100 * c(max(pesos_iniciales), max(pesos_optimos)), 2),
+  VaR_historico_99_MXN = round(var_hist_comparado, 2)
+)
+knitr::kable(tabla_div,
+             caption = "Diversificación y sensibilidad al riesgo histórico")
+```
+
+La concentración pasa de **`r round(nefectivo[1], 2)`** a
+**`r round(nefectivo[2], 2)`** activos efectivos.
+El VaR histórico al 99% de la composición optimizada
+`r if (var_hist_comparado[2] < var_hist_comparado[1]) "disminuye" else if (var_hist_comparado[2] > var_hist_comparado[1]) "aumenta" else "permanece igual"`
+frente al inicial, resultado que confirma la importancia de verificar
+la solución bajo una metodología diferente de aquella que optimizamos.
 
 # VaR individual de ALSEA mediante Monte Carlo
 
 ## Posición de $100,000 MXN
 
+Estudiamos separadamente una posición teórica de 100,000 MXN en
+ALSEA.MX. Mantenemos la fecha de análisis y los precios ajustados del
+portafolio para que las estimaciones sean comparables. Para Monte
+Carlo seguimos la simulación de precios con **movimiento browniano
+geométrico (GBM)** trabajada en el curso. Su normalidad de
+log-rendimientos es un supuesto que contrastaremos críticamente con
+las pérdidas históricas.
+
+```{r parametros-mc-alsea}
+set.seed(456)
+i_alsea <- match("ALSEA.MX", clave)
+precio_alsea <- S0[i_alsea]
+logret_alsea <- as.numeric(rendimientos_activos[, i_alsea])
+mu_log_alsea <- mean(logret_alsea)
+sigma_log_alsea <- sd(logret_alsea)
+n_mc <- 100000L
+precio_mc_alsea <- precio_alsea *
+  exp(mu_log_alsea + sigma_log_alsea * rnorm(n_mc))
+pyg_mc_alsea <- 100000 * (precio_mc_alsea / precio_alsea - 1)
+perdidas_mc_alsea <- -pyg_mc_alsea
+```
+
 ## VaR Monte Carlo al 99%
 
+```{r var-mc-alsea}
+var_mc_alsea <- as.numeric(quantile(perdidas_mc_alsea, 0.99))
+```
+
+El VaR individual estimado al **99%** para un día es de
+**`r format(round(var_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**,
+es decir, **`r round(100 * var_mc_alsea / 100000, 3)`%**
+del valor invertido.
+
+```{r grafica-mc-alsea, fig.width=9, fig.height=4.8}
+hist(perdidas_mc_alsea, breaks = 65, col = "#dce8eb",
+     border = "white", xlab = "Pérdida (-ganancia), MXN",
+     main = "Monte Carlo: distribución de pérdidas de ALSEA")
+abline(v = var_mc_alsea, col = "#a84248", lwd = 2.5, lty = 2)
+legend("topright", legend = "VaR al 99%", col = "#a84248",
+       lty = 2, lwd = 2.5, bty = "n")
+```
+
 ## Expected Shortfall al 99%
+
+El Expected Shortfall (ES) es el promedio de las pérdidas en el peor
+1% de escenarios. A diferencia del VaR, resume la severidad de las
+pérdidas una vez superado el umbral.
+
+```{r es-mc-alsea}
+es_mc_alsea <- mean(perdidas_mc_alsea[
+  perdidas_mc_alsea >= var_mc_alsea
+])
+tabla_alsea <- data.frame(
+  Medida = c("VaR 99%", "Expected Shortfall 99%"),
+  Monto_MXN = round(c(var_mc_alsea, es_mc_alsea), 2),
+  Porcentaje_posicion = round(100 * c(var_mc_alsea, es_mc_alsea) / 100000, 3)
+)
+knitr::kable(tabla_alsea,
+             caption = "Riesgo individual de ALSEA por Monte Carlo, un día")
+```
+
+El ES al 99% alcanza
+**`r format(round(es_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**,
+equivalente al **`r round(100 * es_mc_alsea / 100000, 3)`%**
+de la posición. El valor supera al VaR por
+**`r format(round(es_mc_alsea - var_mc_alsea, 2), big.mark = ",", nsmall = 2)` MXN**.
+La simulación GBM es reproducible mediante la semilla indicada, pero
+puede subestimar colas pesadas y cambios de volatilidad si los
+rendimientos reales no siguen la distribución supuesta.
 
 # Análisis e interpretación financiera
 
 ## Diferencias entre metodologías
 
+El histórico utiliza la distribución empírica conjunta de los seis
+activos a cada horizonte; el normal utiliza una matriz de covarianzas
+reciente y un supuesto de distribución. Por lo tanto, las diferencias
+no se atribuyen exclusivamente a la normalidad: también intervienen
+las **ventanas de información distintas** y el escalamiento.
+
+```{r analisis-diferencias, results='asis'}
+for (h in horizontes) {
+  x <- comparacion_var[
+    comparacion_var$Horizonte_dias == h &
+    abs(comparacion_var$Confianza - 0.99) < 1e-9, ]
+  mayor <- if (x$Diferencia_MXN > 0) "histórico" else "paramétrico"
+  cat(sprintf(
+    "A **%d días** y **99%%**, el VaR histórico es **$%s** y el normal **$%s**. El modelo **%s** estima el mayor límite, con una diferencia absoluta de **$%s**.\n\n",
+    h,
+    format(round(x$VaR_MXN_Historico, 2), big.mark = ",", nsmall = 2),
+    format(round(x$VaR_MXN_Normal, 2), big.mark = ",", nsmall = 2),
+    mayor,
+    format(round(abs(x$Diferencia_MXN), 2), big.mark = ",", nsmall = 2)
+  ))
+}
+```
+
 ## Eventos extremos y conservadurismo
+
+El histórico puede capturar pérdidas extremas efectivamente
+registradas y caídas simultáneas, siempre que estén presentes en la
+muestra. El normal representa las colas a partir de su desviación
+estándar, por lo que puede subestimarlas ante asimetría o colas
+pesadas. Sin embargo, **no puede afirmarse de antemano** cuál será
+más conservador: esa conclusión depende del horizonte, nivel de
+confianza y periodo.
+
+```{r extremos-conservadurismo}
+peor_dia <- which.min(pl_dia)
+fecha_peor <- escenarios$Fecha[escenarios$Horizonte == 1][peor_dia]
+perdida_peor <- -pl_dia[peor_dia]
+n_hist_mayor <- sum(comparacion_var$Diferencia_MXN > 0)
+```
+
+La mayor pérdida diaria conjunta de la muestra equivale a
+**`r format(round(perdida_peor, 2), big.mark = ",", nsmall = 2)` MXN**,
+correspondiente al **`r format(fecha_peor, "%d/%m/%Y")`**.
+En **`r n_hist_mayor` de `r nrow(comparacion_var)`**
+comparaciones, el VaR histórico es superior al normal. Este
+resultado permite describir cuál fue más conservador en nuestra
+muestra, pero no garantiza que lo siga siendo en otra etapa del
+mercado.
 
 ## Subestimación del riesgo
 
+Un VaR subestimado puede llevar a reservar poca liquidez y capital
+para absorber pérdidas; también puede provocar decisiones de tamaño
+de posición inapropiadas o ventas forzadas durante episodios de
+estrés. Por otro lado, sobreestimar permanentemente el VaR inmoviliza
+capital y reduce la capacidad de invertir. Por eso buscamos una
+estimación **bien calibrada**, no sencillamente la más alta.
+
 ## Resultados del backtesting
 
+Las violaciones registradas permiten contrastar los límites con
+pérdidas reales. Comparamos observadas y esperadas, la prueba de
+Kupiec y el tamaño de las pérdidas que exceden el VaR. Una
+frecuencia compatible con la nominal es una condición útil,
+pero no suficiente, para confiar en un modelo bajo escenarios
+futuros de estrés.
+
+```{r severidad-backtesting}
+severidad_bt <- do.call(rbind, lapply(c("Historico", "Normal"), function(m) {
+  exc <- pmax(-bt99$PyG_real - bt99[[paste0("VaR_", m)]], 0)
+  data.frame(
+    Modelo = m,
+    Excepciones_99 = sum(exc > 0),
+    Exceso_medio_MXN = if (any(exc > 0)) mean(exc[exc > 0]) else NA_real_,
+    Exceso_maximo_MXN = if (any(exc > 0)) max(exc) else NA_real_
+  )
+}))
+knitr::kable(transform(
+  severidad_bt,
+  Exceso_medio_MXN = round(Exceso_medio_MXN, 2),
+  Exceso_maximo_MXN = round(Exceso_maximo_MXN, 2)
+), caption = "Severidad de las violaciones al 99%")
+```
+
 # Conclusiones
+
+La comparación debe considerar simultáneamente magnitud del VaR,
+cobertura fuera de muestra y sensibilidad a las pérdidas extremas.
+En nuestra aplicación, el histórico preserva los choques conjuntos
+observados, mientras que el normal ofrece una actualización directa
+de la exposición mediante la matriz de covarianzas reciente.
+
+```{r cierre-conclusiones, results='asis'}
+h1 <- comparacion_var[
+  comparacion_var$Horizonte_dias == 1 &
+  abs(comparacion_var$Confianza - 0.99) < 1e-9, ]
+cat(sprintf(
+  "A un día y al 99%%, la diferencia entre metodologías fue de **$%s**; ",
+  format(round(abs(h1$Diferencia_MXN), 2), big.mark = ",", nsmall = 2)
+))
+cat(sprintf(
+  "durante el backtesting tuvimos **%d** sesiones evaluadas y **%.2f** violaciones esperadas al 99%%. ",
+  nrow(bt99), nrow(bt99) * 0.01
+))
+cat("Estos resultados deben leerse junto con las violaciones observadas y su severidad, sin convertir un menor número de excepciones en una garantía de precisión.\n\n")
+```
+
+En una aplicación práctica utilizaríamos el **VaR histórico como
+referencia principal de escenarios observados**, complementado por
+el **paramétrico para monitorear variaciones recientes de
+volatilidad y efectos de diversificación**. Para dimensionar
+las pérdidas más allá del umbral, incorporaríamos además el
+**Expected Shortfall**. Esta elección es condicional a la
+validación obtenida y debe revisarse si cambia la estructura
+de dependencia o surgen eventos no representados en la muestra.
