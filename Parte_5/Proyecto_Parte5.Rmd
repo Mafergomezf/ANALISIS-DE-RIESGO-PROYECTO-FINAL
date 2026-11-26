@@ -458,6 +458,7 @@ Al compararlo con el VaR histórico de la misma muestra, la diferencia
 ya no se explica por la longitud de la ventana, sino por el modo de
 estimar el cuantil de pérdida. Al comparar los dos modelos normales,
 observamos el efecto de utilizar una ventana más reciente.
+
 # Backtesting del VaR a un día
 
 ## Separación de estimación y evaluación
@@ -656,6 +657,7 @@ demasiado escasas para interpretar el contraste con seguridad.
 No significa que hayamos demostrado independencia. Incluso con
 más excepciones, la aproximación asintótica debe interpretarse
 con cautela en muestras cortas.
+
 # Optimización del portafolio
 
 ## Objetivo y restricciones
@@ -813,6 +815,7 @@ es la emisora que más contribuye al riesgo total, aunque todas
 reciben la misma inversión. Esto confirma que diversificar el
 capital en partes iguales no equivale a repartir el riesgo
 en partes iguales.
+
 # VaR individual de ALSEA mediante Monte Carlo
 
 ## Posición de $100,000 MXN
@@ -938,6 +941,7 @@ La diferencia respecto al bootstrap refleja la forma de generar
 los rendimientos: uno reutiliza movimientos históricos y el otro
 simula una distribución normal de rendimientos logarítmicos.
 Ambos dependen de sus supuestos y del periodo de información.
+
 # Análisis e interpretación financiera
 
 ## Diferencias entre metodologías
