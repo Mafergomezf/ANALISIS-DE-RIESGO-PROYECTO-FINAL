@@ -424,6 +424,40 @@ tabla_reporte(transform(
 ), caption = "Comparación de VaR histórico y normal")
 ```
 
+## Comparación con la misma muestra histórica
+
+Hasta aquí, el VaR histórico utiliza la muestra completa y el normal
+los últimos seis meses. Para aislar el efecto de elegir ventanas distintas,
+calculamos también un VaR normal utilizando todos los rendimientos simples
+del periodo común. Así comparamos los métodos con la misma información,
+a un día y al 99%, manteniendo el capital y los pesos originales.
+
+```{r comparacion-misma-muestra}
+Sigma_completa <- cov(as.matrix(rendimientos_simples_activos))
+sigma_completa <- sqrt(as.numeric(t(pesos_iniciales) %*%
+  Sigma_completa %*% pesos_iniciales))
+var_normal_completa <- V0 * qnorm(0.99) * sigma_completa
+fila_hist_99 <- var_historico[
+  var_historico$Horizonte_dias == 1 &
+  abs(var_historico$Confianza - 0.99) < 1e-9, ]
+stopifnot(nrow(fila_hist_99) == 1)
+tabla_misma_muestra <- data.frame(
+  Metodo = c("Histórico: muestra completa", "Normal: muestra completa",
+             "Normal: últimos seis meses"),
+  VaR_99_MXN = round(c(fila_hist_99$VaR_MXN,
+                       var_normal_completa,
+                       V0 * qnorm(0.99) * sigma_portafolio), 2)
+)
+tabla_reporte(tabla_misma_muestra,
+             caption = "VaR diario al 99%: distribución y ventana")
+```
+
+El VaR normal con toda la muestra fue de
+**`r format(round(var_normal_completa, 2), big.mark = ",", nsmall = 2)` MXN**.
+Al compararlo con el VaR histórico de la misma muestra, la diferencia
+ya no se explica por la longitud de la ventana, sino por el modo de
+estimar el cuantil de pérdida. Al comparar los dos modelos normales,
+observamos el efecto de utilizar una ventana más reciente.
 # Backtesting del VaR a un día
 
 ## Separación de estimación y evaluación
@@ -573,6 +607,55 @@ for (nc in confianzas) {
 }
 ```
 
+## Independencia de las excepciones
+
+Kupiec evalúa la frecuencia de violaciones, pero no determina si se
+presentan agrupadas. La prueba de independencia de Christoffersen compara
+la frecuencia de transiciones entre días con y sin violaciones.
+Como al 99% ocurren muy pocas excepciones, solo reportamos un p-valor
+cuando hay suficientes transiciones para que la comparación tenga sentido.
+
+```{r independencia-backtesting}
+prueba_independencia <- function(v) {
+  v <- as.integer(v)
+  previo <- v[-length(v)]
+  actual <- v[-1]
+  n00 <- sum(previo == 0 & actual == 0)
+  n01 <- sum(previo == 0 & actual == 1)
+  n10 <- sum(previo == 1 & actual == 0)
+  n11 <- sum(previo == 1 & actual == 1)
+  if (n01 + n11 < 5 || n10 + n11 < 5 ||
+      n00 + n01 == 0 || n10 + n11 == 0) {
+    return(c(LR = NA_real_, P_valor = NA_real_,
+             Violaciones_consecutivas = n11))
+  }
+  p <- (n01 + n11) / (n00 + n01 + n10 + n11)
+  p01 <- n01 / (n00 + n01)
+  p11 <- n11 / (n10 + n11)
+  logn <- function(n, prob) if (n == 0) 0 else n * log(prob)
+  L0 <- logn(n00 + n10, 1 - p) + logn(n01 + n11, p)
+  L1 <- logn(n00, 1 - p01) + logn(n01, p01) +
+    logn(n10, 1 - p11) + logn(n11, p11)
+  LR <- max(0, 2 * (L1 - L0))
+  c(LR = LR, P_valor = pchisq(LR, 1, lower.tail = FALSE),
+    Violaciones_consecutivas = n11)
+}
+independencia_99 <- do.call(rbind, lapply(c("Historico", "Normal"), function(m) {
+  indicador <- -bt99$PyG_real > bt99[[paste0("VaR_", m)]]
+  prueba <- prueba_independencia(indicador)
+  data.frame(Modelo = m, LR = prueba["LR"], P_valor = prueba["P_valor"],
+             Violaciones_consecutivas = prueba["Violaciones_consecutivas"])
+}))
+rownames(independencia_99) <- NULL
+tabla_reporte(independencia_99,
+             caption = "Independencia de excepciones al 99%")
+```
+
+En esta evaluación, un **NA** significa que las violaciones son
+demasiado escasas para interpretar el contraste con seguridad.
+No significa que hayamos demostrado independencia. Incluso con
+más excepciones, la aproximación asintótica debe interpretarse
+con cautela en muestras cortas.
 # Optimización del portafolio
 
 ## Objetivo y restricciones
@@ -694,6 +777,42 @@ El VaR histórico al 99% de la composición optimizada
 frente al inicial, resultado que confirma la importancia de verificar
 la solución bajo una metodología diferente de aquella que optimizamos.
 
+## Contribución de cada activo al VaR normal
+
+Además de comparar los pesos, calculamos qué parte del VaR
+paramétrico corresponde a cada empresa, utilizando la
+descomposición de Euler. Para una cartera con media cero,
+la contribución de cada posición es:
+
+\[
+RC_i=V_0\Phi^{-1}(0.99)
+\frac{w_i(\Sigma\mathbf{w})_i}{\sigma_p}.
+\]
+
+```{r contribuciones-var-normal}
+aporte_var <- function(w, matriz_cov) {
+  sp <- sqrt(as.numeric(t(w) %*% matriz_cov %*% w))
+  V0 * qnorm(0.99) * as.numeric(w * (matriz_cov %*% w)) / sp
+}
+aporte_inicial <- aporte_var(pesos_iniciales, Sigma)
+aporte_optimo <- aporte_var(pesos_optimos, Sigma)
+stopifnot(abs(sum(aporte_inicial) - var_normal_inicial) < 1e-5,
+          abs(sum(aporte_optimo) - var_normal_opt) < 1e-5)
+tabla_aporte <- data.frame(
+  Activo = clave,
+  Inicial_MXN = round(aporte_inicial, 2),
+  Optimizado_MXN = round(aporte_optimo, 2),
+  Inicial_pct = round(100 * aporte_inicial / var_normal_inicial, 2),
+  Optimizado_pct = round(100 * aporte_optimo / var_normal_opt, 2)
+)
+tabla_reporte(tabla_aporte, caption = "Aporte al VaR normal diario al 99%")
+```
+
+En el portafolio inicial, **`r clave[which.max(aporte_inicial)]`**
+es la emisora que más contribuye al riesgo total, aunque todas
+reciben la misma inversión. Esto confirma que diversificar el
+capital en partes iguales no equivale a repartir el riesgo
+en partes iguales.
 # VaR individual de ALSEA mediante Monte Carlo
 
 ## Posición de $100,000 MXN
@@ -775,6 +894,50 @@ de la posición. El valor supera al VaR por
 El ES evidencia el costo medio condicionado a la cola, aunque la
 estimación sigue limitada por los episodios ya observados.
 
+## Monte Carlo con GBM como comparación
+
+Para complementar el remuestreo histórico realizamos una segunda
+simulación, esta vez con la solución exacta del movimiento browniano
+geométrico utilizada en clase:
+
+\[
+S_{t+1}=S_t\exp(\bar r_{\log}+\sigma_{\log} Z),\quad Z\sim N(0,1).
+\]
+
+Utilizamos la media y la desviación estándar de los rendimientos
+logarítmicos **diarios** de ALSEA. Por eso cada escenario corresponde
+a un día, sin necesidad de volver a anualizar. A diferencia del
+bootstrap anterior, aquí suponemos shocks normales.
+
+```{r mc-gbm-comparacion}
+set.seed(456)
+ret_log_alsea <- diff(log(as.numeric(serie_alsea)))
+mu_log_alsea <- mean(ret_log_alsea)
+sigma_log_alsea <- sd(ret_log_alsea)
+z_gbm <- rnorm(n_mc)
+perdidas_gbm <- -100000 *
+  (exp(mu_log_alsea + sigma_log_alsea * z_gbm) - 1)
+var_gbm_alsea <- as.numeric(quantile(perdidas_gbm, 0.99))
+es_gbm_alsea <- mean(sort(perdidas_gbm, decreasing = TRUE)[seq_len(n_cola)])
+stopifnot(all(is.finite(c(var_gbm_alsea, es_gbm_alsea))),
+          es_gbm_alsea >= var_gbm_alsea)
+tabla_dos_mc <- data.frame(
+  Metodo = c("Remuestreo histórico (bootstrap)", "Modelo GBM normal"),
+  VaR_99_MXN = round(c(var_mc_alsea, var_gbm_alsea), 2),
+  ES_99_MXN = round(c(es_mc_alsea, es_gbm_alsea), 2)
+)
+tabla_reporte(tabla_dos_mc,
+             caption = "ALSEA: comparación de Monte Carlo al 99%")
+```
+
+El GBM estima un VaR de
+**`r format(round(var_gbm_alsea, 2), big.mark = ",", nsmall = 2)` MXN**
+y un Expected Shortfall de
+**`r format(round(es_gbm_alsea, 2), big.mark = ",", nsmall = 2)` MXN**.
+La diferencia respecto al bootstrap refleja la forma de generar
+los rendimientos: uno reutiliza movimientos históricos y el otro
+simula una distribución normal de rendimientos logarítmicos.
+Ambos dependen de sus supuestos y del periodo de información.
 # Análisis e interpretación financiera
 
 ## Diferencias entre metodologías
@@ -927,6 +1090,23 @@ tabla_reporte(transform(
 ), caption = "Severidad de las violaciones al 99%")
 ```
 
+## Lectura conjunta de las comparaciones adicionales
+
+El VaR normal con toda la historia permitió separar el efecto
+de la ventana de estimación del supuesto de distribución.
+La contribución de cada activo mostró que asignar el mismo
+capital a las empresas no significa asignarles el mismo riesgo.
+La prueba de independencia añadió una revisión del agrupamiento
+de violaciones, aunque reconocemos que al 99% son pocas para
+obtener conclusiones definitivas.
+
+Finalmente, el Monte Carlo con GBM complementó el remuestreo
+histórico de Alsea: comparar ambos métodos permite ver cómo
+cambian el VaR y el Expected Shortfall cuando suponemos una
+distribución de rendimientos logarítmicos normales en lugar
+de utilizar los movimientos ya observados.
+
+
 # Conclusión
 
 ```{r datos-conclusion, include=FALSE}
@@ -1034,8 +1214,8 @@ rebasa.
 En general, lo más importante que aprendimos es que
 **medir el riesgo no consiste en encontrar una sola cifra
 que describa todo lo que puede pasar**. El VaR histórico,
-el paramétrico, el backtesting, la optimización y el
-Expected Shortfall responden preguntas distintas y
+el paramétrico, el backtesting, la optimización, las simulaciones
+de Monte Carlo y el Expected Shortfall responden preguntas distintas y
 se complementan. Para tomar una decisión financiera
 utilizaríamos el VaR histórico como referencia de los
 choques que ya han ocurrido, el paramétrico para seguir
